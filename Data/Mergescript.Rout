@@ -1,0 +1,88 @@
+
+R version 3.4.4 (2018-03-15) -- "Someone to Lean On"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## Combine the neighborhood survey data with the farmacy level data.
+> 
+> library(here)
+here() starts at /Users/jwbowers/Documents/PROJECTS/socialcontacturuguay
+> library(readstata13)
+> library(tidyverse)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.2.1 ──
+✔ ggplot2 2.2.1.9000     ✔ purrr   0.2.4     
+✔ tibble  1.4.2          ✔ dplyr   0.7.4     
+✔ tidyr   0.8.0          ✔ stringr 1.3.0     
+✔ readr   1.1.1          ✔ forcats 0.3.0     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::vars()   masks ggplot2::vars()
+> 
+> basevecinos <- read.dta13(here("Data","base vecinos con factores PUBLICS y STIGM.dta"), convert.factors = F)
+> 
+> basefarmacias <- read.dta13(here("Data","base farmacias.dta"), convert.factors = F)
+> 
+> which(names(basefarmacias)=="Q56")
+[1] 6
+> 
+> #Ac� estoy creando una observaci�n para la farmacia 24 que no ten�amos datos, as� la base queda con 60 unidades
+> basefarmacias[60,6]<- 24
+> 
+> dat <- inner_join(x=basevecinos, y=basefarmacias, by="Q56", suffix = c("i","p"))
+> 
+> ## Adding a test of the merge
+> stopifnot(nrow(dat)==nrow(basevecinos))
+> 
+> head(dat[,128:135])
+  Q32_6ii cfa_PUBLICS  cfa_STIGM  StartDate    EndDate Durationinseconds
+1       7   2.0874481  3.1297569 2017-06-22 2017-06-22              2334
+2       5  -1.2003629  0.5759932 2017-06-22 2017-06-22              2334
+3       3   0.9017984  1.5389491 2017-06-22 2017-06-22              2334
+4       3  -0.9405438  0.2821732 2017-06-22 2017-06-22              2334
+5       1  -2.9978061 -0.9653348 2017-06-22 2017-06-22              2334
+6       1  -0.2951897 -0.6725090 2017-06-22 2017-06-22              2334
+  LocationLatitudep LocationLongitudep
+1     -3.485809e+13       -5.61708e+13
+2     -3.485809e+13       -5.61708e+13
+3     -3.485809e+13       -5.61708e+13
+4     -3.485809e+13       -5.61708e+13
+5     -3.485809e+13       -5.61708e+13
+6     -3.485809e+13       -5.61708e+13
+> ## View(dat)
+> tail(basefarmacias[,1:10])
+    StartDate    EndDate Durationinseconds LocationLatitude LocationLongitude
+55 2017-06-28 2017-06-28              1437    -3.485809e+13      -5.61708e+13
+56 2017-06-27 2017-06-27              1834    -3.485809e+13      -5.61708e+13
+57 2017-06-19 2017-06-19              1035    -3.485809e+13      -5.61708e+13
+58 2017-06-19 2017-06-19              1227    -3.485809e+13      -5.61708e+13
+59 2017-06-28 2017-06-28              1448    -3.485809e+13      -5.61708e+13
+60       <NA>       <NA>                NA               NA                NA
+   Q56 Q76 Q82  Q58 Q1
+55  56   8  56 2806 14
+56  57  14  57   27 32
+57  58   9  58   19 39
+58  59   9  59   19 32
+59  60   3  60   28 20
+60  24  NA  NA   NA NA
+> 
+> write.csv(dat,file=here("Data","merged_ip.csv"))
+> save(dat,file=here("Data","merged_ip.rda")) ## This will be easier to use with R
+> 
+> proc.time()
+   user  system elapsed 
+  1.825   0.148   2.435 

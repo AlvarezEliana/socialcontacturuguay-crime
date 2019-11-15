@@ -1,0 +1,444 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\Eliana\Dropbox\LAMRI\Proyecto Farmacias\Proyecto\Análisis\Análisis factorial\factorial_V2-EFA & CFA (22.03).smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}22 Mar 2018, 16:01:11
+
+{com}.  help global
+
+. run "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. set more off
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. alpha Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i, item
+
+{txt}Test scale = mean(unstandardized items)
+
+                                                            average
+                             item-test     item-rest       interitem
+Item         {c |}  Obs  Sign   correlation   correlation     covariance      alpha
+{hline 13}{c +}{hline 65}
+Q31_1i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.7418{col 45} 0.6266{col 59} 1.322038{col 73} 0.7494
+{txt}Q31_2i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.7587{col 45} 0.6511{col 59} 1.308793{col 73} 0.7456
+{txt}Q31_3i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6866{col 45} 0.5444{col 59} 1.366069{col 73} 0.7633
+{txt}Q31_4i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6701{col 45} 0.5419{col 59} 1.419754{col 73} 0.7641
+{txt}Q31_5rec{col 14}{c |}{res}{col 16} 600{col 24}-{col 31} 0.3019{col 45} 0.1200{col 59} 1.809771{col 73} 0.8238
+{txt}Q31_6i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6785{col 45} 0.5542{col 59} 1.414208{col 73} 0.7623
+{txt}Q31_7i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.5667{col 45} 0.4173{col 59} 1.533215{col 73} 0.7829
+{txt}Q31_8i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6901{col 45} 0.5690{col 59} 1.402188{col 73} 0.7600
+{txt}{hline 13}{c +}{hline 65}
+Test scale{col 14}{c |}{res}{col 59} 1.447004{col 73} 0.7933
+{txt}{hline 13}{c BT}{hline 65}
+
+{com}. factor Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i
+{txt}(obs=600)
+
+Factor analysis/correlation{col 50}Number of obs    = {res}       600
+{col 5}{txt}Method: principal factors{col 50}Retained factors =   {res}       4
+{col 5}{txt}Rotation: (unrotated){col 50}Number of params =   {res}      26
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}     Factor  {c |} {ralign 12:Eigenvalue}   Difference        Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 11:Factor1}  {c |}{res}      2.86693      2.42075            0.9954       0.9954
+{txt}{col 5}{ralign 11:Factor2}  {c |}{res}      0.44617      0.28982            0.1549       1.1503
+{txt}{col 5}{ralign 11:Factor3}  {c |}{res}      0.15635      0.13409            0.0543       1.2046
+{txt}{col 5}{ralign 11:Factor4}  {c |}{res}      0.02226      0.10241            0.0077       1.2123
+{txt}{col 5}{ralign 11:Factor5}  {c |}{res}     -0.08015      0.05765           -0.0278       1.1845
+{txt}{col 5}{ralign 11:Factor6}  {c |}{res}     -0.13780      0.03445           -0.0478       1.1367
+{txt}{col 5}{ralign 11:Factor7}  {c |}{res}     -0.17224      0.04911           -0.0598       1.0769
+{txt}{col 5}{ralign 11:Factor8}  {c |}{res}     -0.22136            .           -0.0769       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+{col 5}LR test: independent vs. saturated:  chi2({res}28{txt}) ={res} 1424.25{txt} Prob>chi2 ={res} 0.0000
+
+{txt}Factor loadings (pattern matrix) and unique variances
+
+{space 4}{hline 13}{c  TT}{hline 10}{hline 10}{hline 10}{hline 10}{c  TT}{hline 14}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Factor1}{space 1}{space 1}{ralign 8:Factor2}{space 1}{space 1}{ralign 8:Factor3}{space 1}{space 1}{ralign 8:Factor4}{space 1}{c |}{space 1}{ralign 12:Uniqueness}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{hline 10}{hline 10}{hline 10}{c   +}{hline 14}
+{space 4}{space 0}{ralign 12:Q31_1i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7242}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2417}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0956}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0393}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.4064}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_2i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7500}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2956}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0692}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0216}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.3449}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_3i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6264}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.1684}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0309}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0647}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.5741}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_4i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5953}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0156}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2311}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0313}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.5910}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_5rec}{space 1}{c |}{space 1}{ralign 8:{res:{sf: -0.1333}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0470}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.2050}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.1025}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.9275}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_6i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6312}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.3260}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0980}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0115}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.4855}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_7i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4788}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.3501}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.1175}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0585}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6310}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_8i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6226}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.2019}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.1504}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0319}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.5479}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{hline 10}{hline 10}{hline 10}{c  BT}{hline 14}
+
+{com}. factor Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i, mineigen (1)
+{txt}(obs=600)
+
+Factor analysis/correlation{col 50}Number of obs    = {res}       600
+{col 5}{txt}Method: principal factors{col 50}Retained factors =   {res}       1
+{col 5}{txt}Rotation: (unrotated){col 50}Number of params =   {res}       8
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}     Factor  {c |} {ralign 12:Eigenvalue}   Difference        Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 11:Factor1}  {c |}{res}      2.86693      2.42075            0.9954       0.9954
+{txt}{col 5}{ralign 11:Factor2}  {c |}{res}      0.44617      0.28982            0.1549       1.1503
+{txt}{col 5}{ralign 11:Factor3}  {c |}{res}      0.15635      0.13409            0.0543       1.2046
+{txt}{col 5}{ralign 11:Factor4}  {c |}{res}      0.02226      0.10241            0.0077       1.2123
+{txt}{col 5}{ralign 11:Factor5}  {c |}{res}     -0.08015      0.05765           -0.0278       1.1845
+{txt}{col 5}{ralign 11:Factor6}  {c |}{res}     -0.13780      0.03445           -0.0478       1.1367
+{txt}{col 5}{ralign 11:Factor7}  {c |}{res}     -0.17224      0.04911           -0.0598       1.0769
+{txt}{col 5}{ralign 11:Factor8}  {c |}{res}     -0.22136            .           -0.0769       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+{col 5}LR test: independent vs. saturated:  chi2({res}28{txt}) ={res} 1424.25{txt} Prob>chi2 ={res} 0.0000
+
+{txt}Factor loadings (pattern matrix) and unique variances
+
+{space 4}{hline 13}{c  TT}{hline 10}{c  TT}{hline 14}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Factor1}{space 1}{c |}{space 1}{ralign 12:Uniqueness}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{c   +}{hline 14}
+{space 4}{space 0}{ralign 12:Q31_1i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7242}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.4755}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_2i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7500}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.4375}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_3i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6264}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6076}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_4i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5953}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6456}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_5rec}{space 1}{c |}{space 1}{ralign 8:{res:{sf: -0.1333}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.9822}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_6i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6312}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6015}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_7i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4788}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.7708}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_8i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6226}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6123}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{c  BT}{hline 14}
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. set more off
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. factor Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i
+{txt}(obs=600)
+
+Factor analysis/correlation{col 50}Number of obs    = {res}       600
+{col 5}{txt}Method: principal factors{col 50}Retained factors =   {res}       4
+{col 5}{txt}Rotation: (unrotated){col 50}Number of params =   {res}      26
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}     Factor  {c |} {ralign 12:Eigenvalue}   Difference        Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 11:Factor1}  {c |}{res}      2.86693      2.42075            0.9954       0.9954
+{txt}{col 5}{ralign 11:Factor2}  {c |}{res}      0.44617      0.28982            0.1549       1.1503
+{txt}{col 5}{ralign 11:Factor3}  {c |}{res}      0.15635      0.13409            0.0543       1.2046
+{txt}{col 5}{ralign 11:Factor4}  {c |}{res}      0.02226      0.10241            0.0077       1.2123
+{txt}{col 5}{ralign 11:Factor5}  {c |}{res}     -0.08015      0.05765           -0.0278       1.1845
+{txt}{col 5}{ralign 11:Factor6}  {c |}{res}     -0.13780      0.03445           -0.0478       1.1367
+{txt}{col 5}{ralign 11:Factor7}  {c |}{res}     -0.17224      0.04911           -0.0598       1.0769
+{txt}{col 5}{ralign 11:Factor8}  {c |}{res}     -0.22136            .           -0.0769       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+{col 5}LR test: independent vs. saturated:  chi2({res}28{txt}) ={res} 1424.25{txt} Prob>chi2 ={res} 0.0000
+
+{txt}Factor loadings (pattern matrix) and unique variances
+
+{space 4}{hline 13}{c  TT}{hline 10}{hline 10}{hline 10}{hline 10}{c  TT}{hline 14}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Factor1}{space 1}{space 1}{ralign 8:Factor2}{space 1}{space 1}{ralign 8:Factor3}{space 1}{space 1}{ralign 8:Factor4}{space 1}{c |}{space 1}{ralign 12:Uniqueness}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{hline 10}{hline 10}{hline 10}{c   +}{hline 14}
+{space 4}{space 0}{ralign 12:Q31_1i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7242}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2417}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0956}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0393}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.4064}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_2i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.7500}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2956}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0692}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0216}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.3449}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_3i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6264}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.1684}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0309}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0647}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.5741}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_4i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5953}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0156}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2311}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0313}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.5910}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_5rec}{space 1}{c |}{space 1}{ralign 8:{res:{sf: -0.1333}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0470}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.2050}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.1025}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.9275}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_6i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6312}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.3260}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0980}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0115}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.4855}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_7i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4788}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.3501}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.1175}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0585}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6310}}}{space 1}
+{space 4}{space 0}{ralign 12:Q31_8i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6226}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.2019}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.1504}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0319}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.5479}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{hline 10}{hline 10}{hline 10}{c  BT}{hline 14}
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. sem (PUBLIC STIGMA -> Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i) 
+{res}{err}model not identified;
+no paths from latent variable Q31_1i to observed variables
+{txt}{search r(503), local:r(503);}
+
+end of do-file
+
+{search r(503), local:r(503);}
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. sem (PUBLIC STIGMA -> Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i) 
+{res}{err}model not identified;
+no paths from latent variable Q31_1i to observed variables
+{txt}{search r(503), local:r(503);}
+
+end of do-file
+
+{search r(503), local:r(503);}
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. sem (PUBLIC STIGMA -> Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i)(STIGMA -> Q32_1i Q32_2i Q32_3i Q32_4i Q32_5i Q32_6i), latent (PUBLIC STIGMA SITGMA) method(mlmv) stand
+{res}{err}latent variable 'SITGMA' not referenced in the model
+{txt}{search r(198), local:r(198);}
+
+end of do-file
+
+{search r(198), local:r(198);}
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. sem (PUBLIC STI -> Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i)(STIGMA -> Q32_1i Q32_2i Q32_3i Q32_4i Q32_5i Q32_6i), latent (PUBLIC STI STIGMA) method(mlmv) stand
+{res}{txt}
+Endogenous variables
+
+{p 0 14 2}Measurement:{space 2}{res}Q31_1i Q31_2i Q31_3i Q31_4i Q31_5rec Q31_6i Q31_7i Q31_8i Q32_1i Q32_2i Q32_3i Q32_4i Q32_5i Q32_6i{p_end}
+{txt}
+Exogenous variables
+
+{p 0 14 2}Latent:{space 7}{res}PUBLIC STI STIGMA{p_end}
+{txt}
+Fitting target model:
+
+Iteration 0:{space 3}log likelihood = {res:-25182.204}  (not concave)
+Iteration 1:{space 3}log likelihood = {res:-24991.265}  (not concave)
+Iteration 2:{space 3}log likelihood = {res:-24918.821}  (not concave)
+Iteration 3:{space 3}log likelihood = {res: -24899.14}  (not concave)
+Iteration 4:{space 3}log likelihood = {res:-24895.353}  (not concave)
+Iteration 5:{space 3}log likelihood = {res:-24893.857}  (not concave)
+Iteration 6:{space 3}log likelihood = {res:-24892.984}  
+Iteration 7:{space 3}log likelihood = {res:-24890.815}  
+Iteration 8:{space 3}log likelihood = {res:-24890.454}  
+Iteration 9:{space 3}log likelihood = {res:-24890.451}  
+Iteration 10:{space 2}log likelihood = {res:-24890.451}  
+
+Structural equation model{col 49}Number of obs{col 67}= {res}       600
+{col 1}{txt}Estimation method{col 20}= {res}mlmv
+{col 1}{txt}Log likelihood{col 20}= {res}-24890.451
+
+{p 0 7}{space 1}{text:( 1)}{space 1} [Q31_1i]PUBLIC = 1{p_end}
+{p 0 7}{space 1}{text:( 2)}{space 1} [Q31_2i]STI = 1{p_end}
+{p 0 7}{space 1}{text:( 3)}{space 1} [Q32_1i]STIGMA = 1{p_end}
+{txt}{hline 18}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 19}{c |}{col 31}      OIM
+{col 1}     Standardized{col 19}{c |}      Coef.{col 31}   Std. Err.{col 43}      z{col 51}   P>|z|{col 59}     [95% Con{col 72}f. Interval]
+{hline 18}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}{res}Measurement      {col 19}{txt}{c |}
+{space 2}{col 3}Q31_1i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2}  .511017{col 31}{space 2} 26.62066{col 42}{space 1}    0.02{col 51}{space 3}0.985{col 59}{space 4}-51.66452{col 72}{space 3} 52.68655
+{txt}{space 14}STI {c |}{col 19}{res}{space 2}  .293707{col 31}{space 2}   30.509{col 42}{space 1}    0.01{col 51}{space 3}0.992{col 59}{space 4}-59.50284{col 72}{space 3} 60.09025
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} 2.022314{col 31}{space 2} .0712376{col 42}{space 1}   28.39{col 51}{space 3}0.000{col 59}{space 4} 1.882691{col 72}{space 3} 2.161937
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_2i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2} .3807277{col 31}{space 2} 35.85024{col 42}{space 1}    0.01{col 51}{space 3}0.992{col 59}{space 4}-69.88445{col 72}{space 3} 70.64591
+{txt}{space 14}STI {c |}{col 19}{res}{space 2} .5345627{col 31}{space 2} 31.19033{col 42}{space 1}    0.02{col 51}{space 3}0.986{col 59}{space 4}-60.59737{col 72}{space 3} 61.66649
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2}  1.99282{col 31}{space 2} .0705415{col 42}{space 1}   28.25{col 51}{space 3}0.000{col 59}{space 4} 1.854561{col 72}{space 3} 2.131078
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_3i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2} .5306319{col 31}{space 2} 30.28094{col 42}{space 1}    0.02{col 51}{space 3}0.986{col 59}{space 4}-58.81891{col 72}{space 3} 59.88017
+{txt}{space 14}STI {c |}{col 19}{res}{space 2} .1264013{col 31}{space 2} 36.02165{col 42}{space 1}    0.00{col 51}{space 3}0.997{col 59}{space 4}-70.47474{col 72}{space 3} 70.72754
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2}  1.89362{col 31}{space 2} .0682263{col 42}{space 1}   27.75{col 51}{space 3}0.000{col 59}{space 4} 1.759899{col 72}{space 3} 2.027341
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_4i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2} .7836677{col 31}{space 2} 70.31463{col 42}{space 1}    0.01{col 51}{space 3}0.991{col 59}{space 4}-137.0305{col 72}{space 3} 138.5978
+{txt}{space 14}STI {c |}{col 19}{res}{space 2}-.2522612{col 31}{space 2} 75.64125{col 42}{space 1}   -0.00{col 51}{space 3}0.997{col 59}{space 4}-148.5064{col 72}{space 3} 148.0019
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2}  2.48258{col 31}{space 2} .0824783{col 42}{space 1}   30.10{col 51}{space 3}0.000{col 59}{space 4} 2.320925{col 72}{space 3} 2.644234
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_5rec <-    {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2} -.048057{col 31}{space 2} 5.974199{col 42}{space 1}   -0.01{col 51}{space 3}0.994{col 59}{space 4}-11.75727{col 72}{space 3} 11.66116
+{txt}{space 14}STI {c |}{col 19}{res}{space 2}-.0862296{col 31}{space 2} 5.043269{col 42}{space 1}   -0.02{col 51}{space 3}0.986{col 59}{space 4}-9.970856{col 72}{space 3} 9.798397
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} 2.185161{col 31}{space 2} .0751384{col 42}{space 1}   29.08{col 51}{space 3}0.000{col 59}{space 4} 2.037893{col 72}{space 3}  2.33243
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_6i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2}  1.49746{col 31}{space 2} 175.9708{col 42}{space 1}    0.01{col 51}{space 3}0.993{col 59}{space 4} -343.399{col 72}{space 3} 346.3939
+{txt}{space 14}STI {c |}{col 19}{res}{space 2}-1.030106{col 31}{space 2} 179.6841{col 42}{space 1}   -0.01{col 51}{space 3}0.995{col 59}{space 4}-353.2045{col 72}{space 3} 351.1443
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} 2.146769{col 31}{space 2} .0742104{col 42}{space 1}   28.93{col 51}{space 3}0.000{col 59}{space 4} 2.001319{col 72}{space 3} 2.292218
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_7i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2} 1.223356{col 31}{space 2} 148.3185{col 42}{space 1}    0.01{col 51}{space 3}0.993{col 59}{space 4}-289.4756{col 72}{space 3} 291.9224
+{txt}{space 14}STI {c |}{col 19}{res}{space 2}-.8990316{col 31}{space 2} 150.6538{col 42}{space 1}   -0.01{col 51}{space 3}0.995{col 59}{space 4} -296.175{col 72}{space 3} 294.3769
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} 2.358766{col 31}{space 2} .0793924{col 42}{space 1}   29.71{col 51}{space 3}0.000{col 59}{space 4}  2.20316{col 72}{space 3} 2.514372
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q31_8i <-      {col 19}{c |}
+{space 11}PUBLIC {c |}{col 19}{res}{space 2} 1.119431{col 31}{space 2} 121.2018{col 42}{space 1}    0.01{col 51}{space 3}0.993{col 59}{space 4}-236.4318{col 72}{space 3} 238.6706
+{txt}{space 14}STI {c |}{col 19}{res}{space 2}-.6377413{col 31}{space 2} 125.5751{col 42}{space 1}   -0.01{col 51}{space 3}0.996{col 59}{space 4}-246.7605{col 72}{space 3}  245.485
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2}  2.58826{col 31}{space 2} .0851425{col 42}{space 1}   30.40{col 51}{space 3}0.000{col 59}{space 4} 2.421384{col 72}{space 3} 2.755136
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q32_1i <-      {col 19}{c |}
+{space 11}STIGMA {c |}{col 19}{res}{space 2}  .464218{col 31}{space 2}  .039958{col 42}{space 1}   11.62{col 51}{space 3}0.000{col 59}{space 4} .3859019{col 72}{space 3} .5425342
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} .3816545{col 31}{space 2} .0422853{col 42}{space 1}    9.03{col 51}{space 3}0.000{col 59}{space 4} .2987767{col 72}{space 3} .4645322
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q32_2i <-      {col 19}{c |}
+{space 11}STIGMA {c |}{col 19}{res}{space 2} .5685228{col 31}{space 2} .0362674{col 42}{space 1}   15.68{col 51}{space 3}0.000{col 59}{space 4} .4974401{col 72}{space 3} .6396055
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} .3667475{col 31}{space 2} .0421753{col 42}{space 1}    8.70{col 51}{space 3}0.000{col 59}{space 4} .2840855{col 72}{space 3} .4494095
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q32_3i <-      {col 19}{c |}
+{space 11}STIGMA {c |}{col 19}{res}{space 2} .4908592{col 31}{space 2} .0395684{col 42}{space 1}   12.41{col 51}{space 3}0.000{col 59}{space 4} .4133067{col 72}{space 3} .5684118
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} .2904532{col 31}{space 2}  .041677{col 42}{space 1}    6.97{col 51}{space 3}0.000{col 59}{space 4} .2087679{col 72}{space 3} .3721386
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q32_4i <-      {col 19}{c |}
+{space 11}STIGMA {c |}{col 19}{res}{space 2}  .521703{col 31}{space 2} .0378141{col 42}{space 1}   13.80{col 51}{space 3}0.000{col 59}{space 4} .4475886{col 72}{space 3} .5958174
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} .3943749{col 31}{space 2} .0423825{col 42}{space 1}    9.31{col 51}{space 3}0.000{col 59}{space 4} .3113067{col 72}{space 3} .4774431
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q32_5i <-      {col 19}{c |}
+{space 11}STIGMA {c |}{col 19}{res}{space 2} .5881983{col 31}{space 2} .0359292{col 42}{space 1}   16.37{col 51}{space 3}0.000{col 59}{space 4} .5177784{col 72}{space 3} .6586181
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} .3848232{col 31}{space 2} .0423093{col 42}{space 1}    9.10{col 51}{space 3}0.000{col 59}{space 4} .3018985{col 72}{space 3} .4677478
+{space 2}{txt}{hline 16}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}{col 3}Q32_6i <-      {col 19}{c |}
+{space 11}STIGMA {c |}{col 19}{res}{space 2}  .657342{col 31}{space 2} .0329413{col 42}{space 1}   19.95{col 51}{space 3}0.000{col 59}{space 4} .5927784{col 72}{space 3} .7219057
+{txt}{space 12}_cons {c |}{col 19}{res}{space 2} .4059441{col 31}{space 2} .0424734{col 42}{space 1}    9.56{col 51}{space 3}0.000{col 59}{space 4} .3226977{col 72}{space 3} .4891905
+{txt}{hline 18}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+     var(e.Q31_1i){c |}{col 19}{res}{space 2} .3902946{col 31}{space 2} .0352534{col 59}{space 4} .3269699{col 72}{space 3} .4658836
+{txt}     var(e.Q31_2i){c |}{col 19}{res}{space 2} .2136029{col 31}{space 2} .0438532{col 59}{space 4} .1428411{col 72}{space 3} .3194193
+{txt}     var(e.Q31_3i){c |}{col 19}{res}{space 2} .5852334{col 31}{space 2} .0353254{col 59}{space 4} .5199356{col 72}{space 3} .6587318
+{txt}     var(e.Q31_4i){c |}{col 19}{res}{space 2} .6677198{col 31}{space 2} .0357309{col 59}{space 4} .6012359{col 72}{space 3} .7415554
+{txt}   var(e.Q31_5rec){c |}{col 19}{res}{space 2} .9830128{col 31}{space 2} .0114655{col 59}{space 4} .9607957{col 72}{space 3} 1.005744
+{txt}     var(e.Q31_6i){c |}{col 19}{res}{space 2} .3923162{col 31}{space 2}  .054572{col 59}{space 4} .2986981{col 72}{space 3} .5152762
+{txt}     var(e.Q31_7i){c |}{col 19}{res}{space 2} .6172675{col 31}{space 2} .0448843{col 59}{space 4} .5352772{col 72}{space 3} .7118166
+{txt}     var(e.Q31_8i){c |}{col 19}{res}{space 2} .5878187{col 31}{space 2} .0424385{col 59}{space 4} .5102577{col 72}{space 3} .6771693
+{txt}     var(e.Q32_1i){c |}{col 19}{res}{space 2} .7845016{col 31}{space 2} .0370984{col 59}{space 4}  .715058{col 72}{space 3} .8606894
+{txt}     var(e.Q32_2i){c |}{col 19}{res}{space 2} .6767818{col 31}{space 2} .0412376{col 59}{space 4} .6005972{col 72}{space 3} .7626303
+{txt}     var(e.Q32_3i){c |}{col 19}{res}{space 2} .7590572{col 31}{space 2}  .038845{col 59}{space 4} .6866161{col 72}{space 3} .8391412
+{txt}     var(e.Q32_4i){c |}{col 19}{res}{space 2}  .727826{col 31}{space 2} .0394555{col 59}{space 4} .6544611{col 72}{space 3}  .809415
+{txt}     var(e.Q32_5i){c |}{col 19}{res}{space 2} .6540228{col 31}{space 2} .0422669{col 59}{space 4}  .576213{col 72}{space 3} .7423397
+{txt}     var(e.Q32_6i){c |}{col 19}{res}{space 2} .5679014{col 31}{space 2} .0433073{col 59}{space 4} .4890594{col 72}{space 3} .6594538
+{txt}       var(PUBLIC){c |}{col 19}{res}{space 2}        1{col 31}{space 2}        .{col 59}{space 4}        .{col 72}{space 3}        .
+{txt}          var(STI){c |}{col 19}{res}{space 2}        1{col 31}{space 2}        .{col 59}{space 4}        .{col 72}{space 3}        .
+{txt}       var(STIGMA){c |}{col 19}{res}{space 2}        1{col 31}{space 2}        .{col 59}{space 4}        .{col 72}{space 3}        .
+{txt}{hline 18}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+   cov(PUBLIC,STI){c |}{col 19}{res}{space 2} .8738238{col 31}{space 2} 35.82345{col 42}{space 1}    0.02{col 51}{space 3}0.981{col 59}{space 4}-69.33884{col 72}{space 3} 71.08649
+{txt}cov(PUBLIC,STIGMA){c |}{col 19}{res}{space 2}  .366091{col 31}{space 2} 4.381938{col 42}{space 1}    0.08{col 51}{space 3}0.933{col 59}{space 4}-8.222349{col 72}{space 3} 8.954531
+{txt}   cov(STI,STIGMA){c |}{col 19}{res}{space 2} .2640576{col 31}{space 2} 11.91345{col 42}{space 1}    0.02{col 51}{space 3}0.982{col 59}{space 4}-23.08588{col 72}{space 3}   23.614
+{txt}{hline 18}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+LR test of model vs. saturated: chi2({res:66})  = {res:   175.05}, Prob > chi2 = {res}0.0000
+{txt}
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. estat gof, stats(all)
+{res}
+{txt}{hline 21}{c TT}{hline 54}
+{lalign 21:Fit statistic}{c |}      Value   Description
+{hline 21}{c +}{hline 54}
+{lalign 21:Likelihood ratio}{c |}
+{ralign 20:chi2_ms({res:66})} {c |} {res}{ralign 10:   175.053}{txt}   model vs. saturated
+{ralign 20:p > chi2} {c |} {res}{ralign 10:     0.000}
+{txt}{ralign 20:chi2_bs({res:91})} {c |} {res}{ralign 10:  2148.796}{txt}   baseline vs. saturated
+{ralign 20:p > chi2} {c |} {res}{ralign 10:     0.000}
+{txt}{hline 21}{c +}{hline 54}
+{lalign 21:Population error}{c |}
+{ralign 20:RMSEA} {c |} {res}{ralign 10:     0.052}{txt}   Root mean squared error of approximation
+{ralign 20:90% CI, lower bound} {c |} {res}{ralign 10:     0.043}
+{txt}{ralign 20:upper bound} {c |} {res}{ralign 10:     0.062}
+{txt}{ralign 20:pclose} {c |} {res}{ralign 10:     0.319}{txt}   Probability RMSEA <= 0.05
+{hline 21}{c +}{hline 54}
+{lalign 21:Information criteria}{c |}
+{ralign 20:AIC} {c |} {res}{ralign 10: 49886.901}{txt}   Akaike's information criterion
+{ralign 20:BIC} {c |} {res}{ralign 10: 50119.938}{txt}   Bayesian information criterion
+{hline 21}{c +}{hline 54}
+{lalign 21:Baseline comparison}{c |}
+{ralign 20:CFI} {c |} {res}{ralign 10:     0.947}{txt}   Comparative fit index
+{ralign 20:TLI} {c |} {res}{ralign 10:     0.927}{txt}   Tucker-Lewis index
+{hline 21}{c +}{hline 54}
+{lalign 21:Size of residuals}{c |}
+{ralign 20:SRMR} {c |} {res}{ralign 10:     0.036}{txt}   Standardized root mean squared residual
+{ralign 20:CD} {c |} {res}{ralign 10:     0.987}{txt}   Coefficient of determination
+{hline 21}{c BT}{hline 54}
+
+{com}. estat mindices
+{res}{txt}(no modification indices to report, all MI values less than 3.841458820694123)
+
+{com}. 
+{txt}end of do-file
+
+{com}. do "C:\Users\Eliana\AppData\Local\Temp\STD00000000.tmp"
+{txt}
+{com}. alpha Q32_1i Q32_2i Q32_3i Q32_4i Q32_5i Q32_6i, item
+
+{txt}Test scale = mean(unstandardized items)
+
+                                                            average
+                             item-test     item-rest       interitem
+Item         {c |}  Obs  Sign   correlation   correlation     covariance      alpha
+{hline 13}{c +}{hline 65}
+Q32_1i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.5559{col 45} 0.3793{col 59} 116.3707{col 73} 0.6924
+{txt}Q32_2i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6534{col 45} 0.4603{col 59} 101.2216{col 73} 0.6686
+{txt}Q32_3i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.5538{col 45} 0.4243{col 59}  121.288{col 73} 0.6890
+{txt}Q32_4i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6572{col 45} 0.4318{col 59} 98.86101{col 73} 0.6800
+{txt}Q32_5i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.6741{col 45} 0.4916{col 59} 98.72702{col 73} 0.6590
+{txt}Q32_6i{col 14}{c |}{res}{col 16} 600{col 24}+{col 31} 0.7534{col 45} 0.5381{col 59} 81.61745{col 73} 0.6441
+{txt}{hline 13}{c +}{hline 65}
+Test scale{col 14}{c |}{res}{col 59} 103.0143{col 73} 0.7125
+{txt}{hline 13}{c BT}{hline 65}
+
+{com}. factor Q32_1i Q32_2i Q32_3i Q32_4i Q32_5i Q32_6i
+{txt}(obs=600)
+
+Factor analysis/correlation{col 50}Number of obs    = {res}       600
+{col 5}{txt}Method: principal factors{col 50}Retained factors =   {res}       3
+{col 5}{txt}Rotation: (unrotated){col 50}Number of params =   {res}      15
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}     Factor  {c |} {ralign 12:Eigenvalue}   Difference        Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 11:Factor1}  {c |}{res}      1.75685      1.58872            1.2202       1.2202
+{txt}{col 5}{ralign 11:Factor2}  {c |}{res}      0.16814      0.16789            0.1168       1.3370
+{txt}{col 5}{ralign 11:Factor3}  {c |}{res}      0.00025      0.09769            0.0002       1.3372
+{txt}{col 5}{ralign 11:Factor4}  {c |}{res}     -0.09745      0.03094           -0.0677       1.2695
+{txt}{col 5}{ralign 11:Factor5}  {c |}{res}     -0.12839      0.13124           -0.0892       1.1803
+{txt}{col 5}{ralign 11:Factor6}  {c |}{res}     -0.25962            .           -0.1803       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+{col 5}LR test: independent vs. saturated:  chi2({res}15{txt}) ={res}  596.01{txt} Prob>chi2 ={res} 0.0000
+
+{txt}Factor loadings (pattern matrix) and unique variances
+
+{space 4}{hline 13}{c  TT}{hline 10}{hline 10}{hline 10}{c  TT}{hline 14}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Factor1}{space 1}{space 1}{ralign 8:Factor2}{space 1}{space 1}{ralign 8:Factor3}{space 1}{c |}{space 1}{ralign 12:Uniqueness}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{hline 10}{hline 10}{c   +}{hline 14}
+{space 4}{space 0}{ralign 12:Q32_1i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4629}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.1849}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0044}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.7515}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_2i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5552}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0447}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0113}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6896}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_3i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5089}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.2590}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0021}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6739}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_4i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5101}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0610}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0098}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.7360}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_5i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5671}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.2446}}}{space 1}{space 1}{ralign 8:{res:{sf:  0.0008}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6185}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_6i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6273}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0362}}}{space 1}{space 1}{ralign 8:{res:{sf: -0.0004}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6052}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{hline 10}{hline 10}{c  BT}{hline 14}
+
+{com}. factor Q32_1i Q32_2i Q32_3i Q32_4i Q32_5i Q32_6i, mineigen (1)
+{txt}(obs=600)
+
+Factor analysis/correlation{col 50}Number of obs    = {res}       600
+{col 5}{txt}Method: principal factors{col 50}Retained factors =   {res}       1
+{col 5}{txt}Rotation: (unrotated){col 50}Number of params =   {res}       6
+
+{txt}{col 5}{hline 13}{c TT}{hline 60}
+{col 5}     Factor  {c |} {ralign 12:Eigenvalue}   Difference        Proportion   Cumulative
+{col 5}{hline 13}{c +}{hline 60}
+{col 5}{ralign 11:Factor1}  {c |}{res}      1.75685      1.58872            1.2202       1.2202
+{txt}{col 5}{ralign 11:Factor2}  {c |}{res}      0.16814      0.16789            0.1168       1.3370
+{txt}{col 5}{ralign 11:Factor3}  {c |}{res}      0.00025      0.09769            0.0002       1.3372
+{txt}{col 5}{ralign 11:Factor4}  {c |}{res}     -0.09745      0.03094           -0.0677       1.2695
+{txt}{col 5}{ralign 11:Factor5}  {c |}{res}     -0.12839      0.13124           -0.0892       1.1803
+{txt}{col 5}{ralign 11:Factor6}  {c |}{res}     -0.25962            .           -0.1803       1.0000
+{txt}{col 5}{hline 13}{c BT}{hline 60}
+{col 5}LR test: independent vs. saturated:  chi2({res}15{txt}) ={res}  596.01{txt} Prob>chi2 ={res} 0.0000
+
+{txt}Factor loadings (pattern matrix) and unique variances
+
+{space 4}{hline 13}{c  TT}{hline 10}{c  TT}{hline 14}
+{space 4}{space 0}{ralign 12:Variable}{space 1}{c |}{space 1}{ralign 8:Factor1}{space 1}{c |}{space 1}{ralign 12:Uniqueness}{space 1}
+{space 4}{hline 13}{c   +}{hline 10}{c   +}{hline 14}
+{space 4}{space 0}{ralign 12:Q32_1i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.4629}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.7857}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_2i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5552}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6917}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_3i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5089}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.7410}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_4i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5101}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.7398}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_5i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.5671}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6784}}}{space 1}
+{space 4}{space 0}{ralign 12:Q32_6i}{space 1}{c |}{space 1}{ralign 8:{res:{sf:  0.6273}}}{space 1}{c |}{space 1}{center 12:{res:{sf:    0.6065}}}{space 1}
+{space 4}{hline 13}{c  BT}{hline 10}{c  BT}{hline 14}
+
+{com}. 
+{txt}end of do-file
+
+{com}. exit, clear

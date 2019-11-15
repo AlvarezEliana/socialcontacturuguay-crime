@@ -1,0 +1,173 @@
+---
+title: Estimate causal effects and test hypotheses about the causal effects of the pharmacies on attitudes and perceptions
+author: Jake Bowers
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+fontsize: 11pt
+geometry: margin=1in
+graphics: yes
+indent: false
+bibliography:
+ - ../refs.bib
+biblio-style: authoryear-comp
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    latex_engine: xelatex
+    keep_tex: true
+    citation_package: biblatex
+    md_extensions: +raw_attribute
+---
+
+
+```{r echo=FALSE, include=FALSE, cache=FALSE}
+# Some customization.  You can alter or delete as desired (if you know what you are doing).
+# knitr settings to control how R chunks work.
+rm(list=ls())
+
+require(knitr)
+
+## This plus size="\\scriptsize" from https://stackoverflow.com/questions/26372138/beamer-presentation-rstudio-change-font-size-for-chunk
+
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+			      if (before){
+				      return(options$size)
+			      } else {
+				      return("\\normalsize")
+			      }
+
+})
+
+knit_hooks$set(plotdefault = function(before, options, envir) {
+		       if (before) par(mar = c(3, 3, .1, .1),oma=rep(0,4),mgp=c(1.5,.5,0))
+})
+
+opts_chunk$set(
+	       tidy='styler',     # display code as typed
+	       echo=TRUE,
+	       results='markup',
+	       strip.white=TRUE,
+	       fig.path='figs/fig',
+	       cache=FALSE,
+	       highlight=TRUE,
+	       width.cutoff=132,
+	       size='\\scriptsize',
+	       out.width='.8\\textwidth',
+	       fig.retina=FALSE,
+	       message=FALSE,
+	       comment=NA,
+	       mysize=TRUE,
+	       plotdefault=TRUE)
+
+options(digits=4,
+	scipen=8,
+	width=132
+)
+```
+
+
+```{r setup1, echo=FALSE}
+## Later make this installation to a local library
+### This next will not re-run if there has not been change in Github
+devtools::install_github("markmfredrickson/RItools") 
+library(RItools)
+library(optmatch)
+library(here)
+library(tidyverse)
+library(arm)
+library(estimatr)
+library(clubSandwich)
+```
+
+
+```{r makedirs, echo=FALSE, include=FALSE}
+if(!dir.exists('figs')) dir.create('figs')
+
+## Make a local library directory
+if(!dir.exists(here::here('libraries'))){
+        dir.create(here::here('libraries'))
+}
+```
+
+```{r loadmatchingresults}
+load("matchingresults.rda",verbose = TRUE)
+```
+
+This file asks whether and how the presence of a pharmacy might have had an
+effect on the perceptions and/or attitudes of neighbors.
+
+## Outcomes
+
+
+"ps1718" "st1718" "law1_i" "law2_i" "n_sec_i" "c_sec_i" "ph_impact_i" "ps_impact_i" "dt_impact_i" "if_impact_i" "rp_m2_i" "crime_t_i" "op4_m_i" "op5_m_i" "op6_m_i"
+
+Also an index of activities performed by neighbors in their neighborhood: "neigh2_i" "neigh3_i" "neigh4_i" "neigh5_i" "neigh6_i" "neigh7_i" "neigh8_i".
+
+And a social disorder index: "dis4_i" "dis5_i" "dis6_i".
+
+Outcomes
+ - Neighborhood insecurity perception: n_sec_i
+ - Country insecurity perception: c_sec_i
+ - Crime victimization: vic12
+ - Percieved impact on drug trafficking: dt_impact_i
+ - Percieved impact on public safety: ps_impact_i
+ - Presence of illegal selling ponits "bocas": boca1_i
+
+Covariates for covariance adjustment in addition to matching:
+ - Ideology: ideol_si_i
+ - Education: educ_i
+ - Sex: sex_i
+ - Age: age_i
+
+```{r}
+
+outcomes <- c("n_sec_i","c_sec_i","vic12","dt_impact_i","ps_impact_i","boca1_i")
+covariates <- c("ideol_si_i","educ_i","sex_i","age_i")
+
+allvars <- c(outcomes,covariates)
+
+summary(wrkdat2[,allvars])
+
+allvars[!(allvars %in% names(wrkdat2))]
+allvars[!(allvars %in% names(finaldat))]
+
+
+```
+
+
+## Design
+
+We created a matched design using an optimal, full matching algorithm.
+
+```{r}
+
+summary(fm2,min.controls=0,max.controls=Inf,data=datphm)
+
+```
+
+These designs compare favorably to what we would expect to see from an equivalent block-randomized experiment.
+
+```{r}
+
+xb2fm$overall[,]
+
+```
+
+## Analysis
+
+This study can be thought of as a block and cluster randomized experiment with
+neighborhoods as clusters assigned to a pharmacy within blocks defined by
+background covariates. The clusters are not all the same size, so we need to
+adjust for biases arising from this problem (Middleton and Aronow). And we need
+to be aware of problems of p-values as well.
+
+
+## Results
+
+Here we save results to be used in tables and figures and in the text itself.
+
+
+

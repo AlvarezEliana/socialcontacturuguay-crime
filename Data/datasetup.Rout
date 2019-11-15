@@ -1,0 +1,245 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> ##  Recode and impute and clean
+> 
+> library(here)
+here() starts at /Users/jwbowers/Documents/PROJECTS/socialcontacturuguay
+> library(optmatch)
+Loading required package: survival
+The optmatch package has an academic license. Enter relaxinfo() for more information.
+> library(tidyverse)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.2.1 ──
+✔ ggplot2 3.2.0     ✔ purrr   0.3.2
+✔ tibble  2.1.3     ✔ dplyr   0.8.3
+✔ tidyr   0.8.3     ✔ stringr 1.4.0
+✔ readr   1.3.1     ✔ forcats 0.4.0
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+> 
+> load(here::here("Data","finaldat.rda"))
+> ## Merge the new indices (Created in file Analysis/Factorial analisis_Modelo definitivo.do) onto the old baseline data
+> 
+> ## Notes on data coding
+> ## **88 and 99**
+> ## All "No sabe" were recode as 88
+> ## All "No responde" were recode as 99
+> ##
+> ## Exception: Vote (Q46) This one has been tricky because it´s in a string format (i don´t know why) and i´m having trouble to recode it. Working on it!
+> ##
+> ## **In the database** Always remember:
+> ## - variables ending in "i" means that they were asked in the Neighbors surey. "i" as individuals
+> ## - variables ending in "p" means that they were asked in the Employees survey. "p" as pharmacies
+> ##
+> 
+> ## names(dat)
+> stigmavars <- grep("Q31_[0-9]$|Q32_[0-9]$", names(finaldat), value = TRUE)
+> 
+> outcomes <- unique(c(stigmavars, "ps2017", "st2017", c("Q17i", "Q19i", "Q13i", "Q15i","Q32_1i",
++ 					      "Q32_2i","Q32_3i","Q32_4i","Q32_5i","Q32_6i",
++ 					      "ps2017","Q31_1i","Q31_2i","Q31_3i","Q31_4i",
++ 					      "Q31_5i","Q31_6i","Q31_7i","Q31_8i","st2017",
++ 					      "Q17i","Q19i","Q13i","Q15i","Q21i","Q22i",
++ 					      "Q23i","Q24i","Q26i","Q30_1i","Q30_2i","Q30_3i",
++ 					      "Q30_4i","Q33i","Q34i","Q35i","Q52_1","Q52_2",
++ 					      "Q52_3","Q52_4","Q52_5","Q52_6","Q52_7","Q55_1",
++ 					      "Q55_2","Q55_3","Q56_1","Q56_2","Q56_3","Q25_1i",
++ 					      "Q25_2i","Q25_3i","Q25_4i","Q25_5i","Q25_6i","Q67_1",
++ 					      "Q67_2","Q67_3","Q67_4")))
+> 
+> ## Stigmatization Index (I think marijuana users...)             Not well educated                                 Q32_1i
+> ##                                                                 Make me angry                                     Q32_2i
+> ##                                                                 Should go to prison                               Q32_3i
+> ##                                                                 Weakminded                                        Q32_4i
+> ##                                                                 Have no future                                    Q32_5i
+> ##                                                                 Are dishonest                                     Q32_6i
+> ##                                                                 Public Stigma Factor                              ps2017
+> ##   Public Stigma Index (Most people think marijuana users ...)   Not reliable                                      Q31_1i
+> ##                                                                 Dangerous                                         Q31_2i
+> ##                                                                 Personal failure                                  Q31_3i
+> ##                                                                 Not to hire                                       Q31_4i
+> ##                                                                 Treat like any other people                       Q31_5i
+> ##                                                                 Not taking their opinions into account            Q31_6i
+> ##                                                                 Underestimated                                    Q31_7i
+> ##                                                                 Not accepted as a teacher                         Q31_8i
+> ##                                                                 Stigmatization Factor                             st2017
+> ##   Approval                                                      of decriminalization and state regulation         Q17i
+> ##                                                                 Selling of recreational marijuana at pharmacies   Q19i
+> ##   Insecurity Perception                                         Of the country                                    Q13i
+> ##                                                                 Of the neighborhood                               Q15i
+> ##   Impact of the law on public health                                                                              Q21i
+> ##   Impact of the law on public security                                                                            Q22i
+> ##   Impact of the law on fighting drug trafficking                                                                  Q23i
+> ##   Impact of the law on individual rights                                                                          Q24i
+> ##   Impact on levels of marijuana use                                                                               Q26i
+> ##   Risk Perception                                               Alcohol -- Frequently                             Q30_1i
+> ##                                                                 Smoke -- Frequently                               Q30_2i
+> ##                                                                 Taste marijuana -- 1 or 2 times in a lifetime     Q30_3i
+> ##                                                                 Marijuana use - Occasional                        Q30_4i
+> ##   Victimization                                                 Last 12 months                                    Q33i
+> ##                                                                 Number of crimes                                  Q34i
+> ##                                                                 Type of crime                                     Q35i
+> ##   Activities in the neighborhood                                Talking to neighbors                              Q52_1
+> ##                                                                 to improve the neighborhood                       Q52_2
+> ##                                                                 Use of education services                         Q52_3
+> ##                                                                 Use of health services                            Q52_4
+> ##                                                                 Buy in stores                                     Q52_5
+> ##                                                                 Buy in pharmacies                                 Q52_6
+> ##                                                                 Recreational activities                           Q52_7
+> ##   Environmental disorder                                        Trash in the street                               Q55_1
+> ##                                                                 Pozos /baches                                     Q55_2
+> ##                                                                 Fences/barbed wires                               Q55_3
+> ##   Social disorder                                               Child and young people in the street              Q56_1
+> ##                                                                 Drunk people in the street                        Q56_2
+> ##                                                                 Fights in the street                              Q56_3
+> ##   Agree with                                                    Marijuana is bad for health                       Q25_1i
+> ##                                                                 Marijuana as gatedoor for other drugs             Q25_2i
+> ##                                                                 Legalization as a solution for social problems    Q25_3i
+> ##                                                                 Legalization avoids use of harder drugs           Q25_4i
+> ##                                                                 People will buy illegal marijuana anyway          Q25_5i
+> ##                                                                 Marijuana users are a threat for society          Q25_6i
+> ##   Pharmacies security measures                                  Alarm with response                               Q67_1
+> ##                                                                 222 service / security employees                  Q67_2
+> ##                                                                 Security camera                                   Q67_3
+> ##                                                                 Night security employees                          Q67_4
+> 
+> 
+> # **VARIABLE**               **CODE**
+> #   -------------------------- ----------
+> #   Sex                        Q38i
+> #   Age                        Q39i
+> #   Ideology                   Q44i
+> #   Educational level          Q40i
+> #   Lifetime Marijuana Use     Q27i
+> #   Marijuana users exposure   Q29i
+> #   Victimization              Q34i
+> 
+> 
+> covs <- c("Q34i", "Q38i", "Q39i", "Q44i", "Q40i", "Q27i", "Q29i","Montevideo_Interior")
+> 
+> 
+> ## **Matching variables**
+> ##
+> ##   **DIMENSION**           **VARIABLE**                                                   **CODE**
+> ##   ----------------------- -------------------------------------------------------------- ---------------------------
+> ##   Location                Neighbor or Locality                                           NL
+> ##                           Department                                                     Departament
+> ##   Sex of the population   Percentage of man in the population                            Men
+> ##                           Percentage of Women in the population                          Women
+> ##   Age                     Age average                                                    Age
+> ##   Education               Years of education average                                     Education
+> ##   Value of the land       Cadastral value - Uruguayan pesos 2017                         Catastro
+> ##                           Real value of the m2 of the segment (UY\$ 2017)                Value\_real
+> ##                           Value of the m2 used to tax calculation (UY\$ 2017)            Value\_tax
+> ##                           Value of rural areas of the segment (UY\$ 2017)                Value\_rur
+> ##                           Value of urban areas of the segment (UY\$ 2017)                Value\_urb
+> ##   Socio-economic status   Percentage of homeowners                                       Homeowners
+> ##                           Percentage of Cooperative Members                              Cooperative
+> ##                           Percentage of Renters                                          Renters
+> ##                           Percentage of Occupants                                        Occupants
+> ##                           Percentage of homes with water heaters                         Water\_heater\_yes
+> ##                           Percentage of homes without water heaters                      Water\_heater\_no
+> ##                           Percentage of homes with instant water heater                  Instant\_waterheater\_yes
+> ##                           Percentage of homes without instant water heater               Instant\_waterheater\_no
+> ##                           Percentage of homes with fridge                                Fridge\_yes
+> ##                           Percentage of homes without fridge                             Fridge\_no
+> ##                           Percentage of homes with drying machine                        Dryingmachine\_yes
+> ##                           Percentage of homes without drying machine                     Dryingmachine\_no
+> ##                           Percentage of homes with radio                                 Radio\_yes
+> ##                           Percentage of homes without radio                              Radio\_no
+> ##                           Percentage of homes with telephone                             Telephone\_yes
+> ##                           Percentage of homes without telephone                          Telephone\_no
+> ##                           Percentage of homes with mobile                                Mobile\_yes
+> ##                           Percentage of homes without mobile                             Mobile\_no
+> ##                           Percentage of homes with internet access                       Internet\_yes
+> ##                           Percentage of homes without internet access                    Internet\_no
+> ##                           Percentage of homes without UBN in Home Construction           UBN\_Construction\_no
+> ##                           Percentage of homes with UBN in Home Construction              UBN\_Construction\_yes
+> ##                           Percentage of homes without UBN in Overcrowding                UBN\_Overcrowding\_no
+> ##                           Percentage of homes with UBN in Overcrowding                   UBN\_Overcrowding\_yes
+> ##                           Percentage of homes without UBN in Habitable Space             UBN\_Space\_no
+> ##                           Percentage of homes with UBN in Habitable Space                UBN\_Space\_yes
+> ##                           Percentage of homes without UBN in Adequate Housing            UBN\_Housing\_no
+> ##                           Percentage of homes with UBN in Adequate Housing               UBN\_Housing\_yes
+> ##                           Percentage of homes without UBN in Water                       UBN\_Water\_no
+> ##                           Percentage of homes with UBN in Water                          UBN\_Water\_yes
+> ##                           Percentage of homes without UBN in Sewerage                    UBN\_Sewerage\_no
+> ##                           Percentage of homes with UBN in Sewerage                       UBN\_Sewerage\_yes
+> ##                           Percentage of homes without UBN in Electricity                 UBN\_Electricity\_no
+> ##                           Percentage of homes with UBN in Electricity                    UBN\_Electricity\_yes
+> ##                           Percentage of homes without UBN in Space Heating               UBN\_Heating\_no
+> ##                           Percentage of homes with UBN in Space Heating                  UBN\_Heating\_yes
+> ##                           Percentage of homes without UBN in Space cooling               UBN\_Cooling\_no
+> ##                           Percentage of homes without UBN in Space cooling               UBN\_Cooling\_yes
+> ##                           Percentage of homes without UBN in Hot water in the bathroom   UBN\_BathroomWater\_no
+> ##                           Percentage of homes with UBN in Hot water in the bathroom      UBN\_BathroomWater\_yes
+> ##                           Percentage of homes without UBN in comfort                     UBN\_Comfort\_no
+> ##                           Percentage of homes with UBN in comfort                        UBN\_Comfort\_yes
+> ##                           Percentage of homes without UBN in Education                   UBN\_Education\_no
+> ##                           Percentage of homes with UBN in Education                      UBN\_Education\_yes
+> ##                           Percentage of homes with NONE UBN                              NO\_UBN
+> ##                           Percentage of homes with ONE UBN                               ONE\_UBN
+> ##                           Percentage of homes with TWO UBNs                              TWO\_UBN
+> ##                           Percentage of homes with THREE OR MORE UBNs                    MORE\_UBN
+> ##   Demography              Total population of the segment                                Population
+> ##                           Population density of the segment                              Density
+> ##   Criminality rates       Number of violent robberies in 2016                            violentrobberies\_2016
+> ##                           Number of robberies 2016                                       robberies\_2016
+> ##                           Number of homicides in 2016 per neighborhood (only MVD)        Homicides\_MVD\_2016
+> ##                           Number of homicides per department in 2016                     Homicides\_DTPO\_2016
+> ##                           Number of homicides in 2017 per neighborhood (only MVD)        Homicides\_MVD\_2017
+> ##                           Number of homicides per department in 2017                     Homicides\_DTPO\_2017
+> ##   Electoral behavior      Percentage of votes to Frente Amplio (2014)                    FrenteAmplio
+> ##                           Percentage of votes to Partido Nacional (2014)                 PartidoNacional
+> ##                           Percentage of votes to Partido Colorado (2014)                 PartidoColorado
+> ##                           Percentage of votes to Partido Independiente (2014)            PartidoIndependiente
+> ##                           Percentage of votes to Asamblea Uruguay (2014)                 AsambleaPopular
+> ##                           Percentage of votes to PERI (2014)                             PERI
+> ##                           Percentage of votes to Partido de los Trabajadores (2014)      PartidoTrabajadores
+> 
+> 
+> ## I don't know why I had to split this up into three sections and then combine. Perhaps just a problem with vim.
+> nvars1 <- c( "NL", "Departament", "Men", "Women", "Age", "Education", "Catastro",
++ 	    "Value_real", "Value_tax", "Value_rur", "Value_urb", "Homeowners", "Cooperative",
++ 	    "Renters", "Occupants", "Water_heater_yes", "Water_heater_no", "Instant_waterheater_yes",
++ 	    "Instant_waterheater_no", "Fridge_yes", "Fridge_no",
++ 	    "Dryingmachine_yes", "Dryingmachine_no", "Radio_yes", "Radio_no", "Telephone_yes",
++ 	    "Telephone_no", "Mobile_yes", "Mobile_no", "Internet_yes", "Internet_no", "UBN_Construction_no",
++ 	    "UBN_Construction_yes", "UBN_Overcrowding_no", "UBN_Overcrowding_yes", "UBN_Space_no", "UBN_Space_yes",
++ 	    "UBN_Housing_no", "UBN_Housing_yes", "UBN_Water_no", "UBN_Water_yes", "UBN_Sewerage_no", "UBN_Sewerage_yes",
++ 	    "UBN_Electricity_no", "UBN_Electricity_yes", "UBN_Heating_no", "UBN_Heating_yes", 
++ 	    "UBN_Cooling_no", "UBN_Cooling_yes")
+> nvars2 <- c("UBN_BathroomWater_no", "UBN_BathroomWater_yes", "UBN_Confort_no", "UBN_Confort_yes", "UBN_Education_no",
++ 	    "UBN_Education_yes", "NO_UBN", "ONE_UBN", "TWO_UBN", "MORE_UBN", "Population", "Density",
++ 	    "violentrobberies_2016", "robberies_2016", "Homicides_MVD_2016", "Homicides_DTPO_2016")
+> nvars3 <- c("Homicides_MVD_2017", "Homicides_DTPO_2017", "FrenteAmplio", "PartidoNacional", "PartidoColorado",
++ 	    "PartidoIndependiente", "AsambleaPopular", "PERI", "PartidoTrabajadores",
++ 	    "lat","long")
+> 
+> nvars <- c(nvars1,nvars2,nvars3)
+> 
+> allvars <- c(outcomes, covs, nvars)
+> 
+> ## Stop if there is a mismatch of variables to the column names in the dataset
+> stopifnot(all(allvars %in% names(finaldat)))
+Error: all(allvars %in% names(finaldat)) is not TRUE
+Execution halted

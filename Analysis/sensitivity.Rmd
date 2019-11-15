@@ -1,0 +1,135 @@
+---
+title: Assess the sensitivity of the results to the as-if-randomized assumption
+author: Jake Bowers
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+fontsize: 11pt
+geometry: margin=1in
+graphics: yes
+indent: false
+bibliography:
+ - ../refs.bib
+biblio-style: authoryear-comp
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    latex_engine: xelatex
+    keep_tex: true
+    citation_package: biblatex
+    md_extensions: +raw_attribute
+---
+
+
+```{r echo=FALSE, include=FALSE, cache=FALSE}
+# Some customization.  You can alter or delete as desired (if you know what you are doing).
+# knitr settings to control how R chunks work.
+rm(list=ls())
+
+require(knitr)
+
+## This plus size="\\scriptsize" from https://stackoverflow.com/questions/26372138/beamer-presentation-rstudio-change-font-size-for-chunk
+
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+			      if (before){
+				      return(options$size)
+			      } else {
+				      return("\\normalsize")
+			      }
+
+})
+
+knit_hooks$set(plotdefault = function(before, options, envir) {
+		       if (before) par(mar = c(3, 3, .1, .1),oma=rep(0,4),mgp=c(1.5,.5,0))
+})
+
+opts_chunk$set(
+	       tidy='styler',     # display code as typed
+	       echo=TRUE,
+	       results='markup',
+	       strip.white=TRUE,
+	       fig.path='figs/fig',
+	       cache=FALSE,
+	       highlight=TRUE,
+	       width.cutoff=132,
+	       size='\\scriptsize',
+	       out.width='.8\\textwidth',
+	       fig.retina=FALSE,
+	       message=FALSE,
+	       comment=NA,
+	       mysize=TRUE,
+	       plotdefault=TRUE)
+
+options(digits=4,
+	scipen=8,
+	width=132
+)
+```
+
+
+```{r setup1, echo=FALSE}
+## Later make this installation to a local library
+### This next will not re-run if there has not been change in Github
+devtools::install_github("markmfredrickson/RItools") 
+library(RItools)
+library(optmatch)
+library(here)
+library(tidyverse)
+library(arm)
+library(estimatr)
+library(clubSandwich)
+library(sensitivityfull)
+```
+
+
+```{r makedirs, echo=FALSE, include=FALSE}
+if(!dir.exists('figs')) dir.create('figs')
+
+## Make a local library directory
+if(!dir.exists(here::here('libraries'))){
+        dir.create(here::here('libraries'))
+}
+```
+
+```{r loadmatchingresults}
+load("matchingresults.rda",verbose = TRUE)
+```
+
+## Design
+
+We created a matched design using an optimal, full matching algorithm.
+
+```{r}
+
+summary(fm2,min.controls=0,max.controls=Inf,data=datphm)
+
+```
+
+These designs compare favorably to what we would expect to see from an equivalent block-randomized experiment.
+
+```{r}
+
+xb2fm$overall[,]
+
+```
+
+## Analysis
+
+This study can be thought of as a block and cluster randomized experiment with
+neighborhoods as clusters assigned to a pharmacy within blocks defined by
+background covariates. The clusters are not all the same size, so we need to
+adjust for biases arising from this problem (Middleton and Aronow). And we need
+to be aware of problems of p-values as well.
+
+
+# Rosenbaum Style Sensitivity Analysis
+
+# Perhaps HHH Style Sensitivity Analysis
+
+# References
+
+
+
+

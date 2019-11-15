@@ -1,0 +1,466 @@
+---
+title: Setup  data for matching
+author: Jake Bowers
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+fontsize: 11pt
+geometry: margin=1in
+graphics: yes
+indent: false
+bibliography:
+ - ../refs.bib
+biblio-style: authoryear-comp
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    latex_engine: xelatex
+    keep_tex: true
+    citation_package: biblatex
+    md_extensions: +raw_attribute
+---
+
+
+This file records how we organized the baseline data from the initial surveys
+of neighbors around the 60 pharmacies selected for this study. The survey and
+sampling design is described in another document.
+
+```{r echo=FALSE, include=FALSE, cache=FALSE}
+library(here)
+source(here("Analysis","rmarkdownsetup.R"))
+```
+
+In other files we did the bulk of the recoding and merging between
+administrative data about the pharmacies and neighborhoods with the baseline
+survey responses. Here, we do some other assessments and recoding, focusing
+especially on missing data and on variables that have little variance --- and
+thus would not be worthwhile as drivers of matched design decisions: imagine,
+for example, a binary variable at the neighborhood level where only one
+neighborhood has a 1 and the rest have 0s. In such a case, we cannot create a
+design that balances that variable and we wouldn't want attempts to balance
+such a variable to drive our larger design decisions. So, we search for such
+variables and exclude them here, too.
+
+```{r loaddata}
+load(here::here("Data", "wrkdat.rda"))
+load(here::here("Data", "finaldat.rda"))
+dim(wrkdat)
+dim(finaldat)
+stopifnot(nrow(wrkdat)==nrow(finaldat))
+```
+
+To prepare data for matching, we do a series of checks to (1) impute missing data on covariates and create missing variables indicating which observations might  be missing; (2) remove columns with no variation (or very little variation, for example, when we have a variable with all 0s and one single 1); (3) remove columns correlated more than $r=.98$.
+
+We make those checks for (1) an individual level dataset using only baseline data; (2) a pharmacy level dataset using only baseline data; (3) an individual level dataset using only endline covariate data; (2) a pharmacy level dataset using only endline covariate data;
+
+
+## The datasets
+
+Only baseline data --- including baseline outcomes.
+
+```{r}
+wdat17i <- wrkdat %>% filter(ronda == 2017) %>% dplyr::select(-c("ronda"))
+```
+
+Only endline data:
+
+```{r}
+wdat18i <- wrkdat %>% filter(ronda == 2018)  %>% dplyr::select(c(covs,covsCensus,designvars)) %>% dplyr::select(-c("ronda"))
+```
+
+Pharmacy level:
+
+
+
+## Sparse or constant covariates
+
+Look for very sparse covariates. Should delete any variables with no variation (including covs with all missing values).
+
+```{r}
+allvars17 <- allvars[allvars!="ronda"]
+
+varcovs <- sapply(wdat17i[, allvars17], function(x) {
+  isTRUE(all.equal(sd(x, na.rm = TRUE), 0)) | all(is.na(x))
+})
+varcovs[varcovs]
+covs3 <- allcovs[!(allcovs %in% names(varcovs[varcovs]))]
+```
+
+### Data Checks: Look for more data issues
+
+Does each cluster have identical treatment assignment?
+
+```{r}
+treattab17 <- with(wdat17i, table(treat, Q56, exclude = c()))
+testassignment17 <- apply(treattab17, 2, function(x) {
+  sum(x == 0)
+})
+stopifnot(all(testassignment17 == 1))
+
+treattab18 <- with(wdat18i, table(treat, Q56, exclude = c()))
+testassignment18 <- apply(treattab18, 2, function(x) {
+  sum(x == 0)
+})
+stopifnot(all(testassignment18 == 1))
+```
+
+
+### Checking to ensure no missing data on covariates
+
+```{r}
+stopifnot(all(!sapply(wdat17i[, covs3], function(x) {
+  any(is.na(x))
+})))
+
+stopifnot(all(!sapply(wdat18i, function(x) {
+  any(is.na(x))
+})))
+
+```
+
+## Creating a neighborhood level dataset for matching
+
+We do the matching at the neighborhood level here, and plan to do an analysis
+that uses covariance adjustment at the individual level within small sets of
+neighborhoods that pass the tests like those above.
+
+The recent work by Zubizarreta, Pimental, Keele and their co-authors [@pimentel2018optimal;zubizarreta2017optimal]
+suggests a different approach in which all possible pair-wise matches of
+individuals across pairs of neighborhoods are considered, and then pairs of
+neighborhoods are created among the best individual level matched designs. We
+do not follow that work here mostly because we have few registered
+pharmacies and almost 3 times as many control units --- restricting ourselves
+to pairs would cost a lot in terms of statistical power (especially because,
+at baseline, we have no comparison/control pharmacies that are so different
+from the others that they should be excluded from the research design).
+Further, our main research questions ask about norms in neighborhoods rather
+than about individuals --- so, the paired research designs created by the
+multilevel matching approaches referenced above which aim to learn about
+individual level math scores based on school level interventions appear, prima
+facie, to have other ends. Finally, we focus on neighborhood level matching
+for the design because this is quick and easy for us to do compared with the
+task of extending the pairwise matching approaches to the full matching
+situation (where we do not want to exclude any control units).
+
+### Collapse individual level and neighborhood level data to neighborhood level
+
+Here we collapse the data using both means but also quantiles (such as
+medians) so that we are matching not only on mean age, for example, but also
+on the median age. Below I leave in code in which I also generated age at the
+80th percentile and 20th percentile, but I removed this code because, with
+only 60 neighborhoods and relatively sparse variables, this step created
+variables that were just too sparse to match on.
+
+First, examine variation in cluster size. We may want to match on cluster size
+if it varies. Notice that we add 4 more pharmacies in 2018.
+
+```{r}
+npharm17 <- wdat17i %>% group_by(Q56) %>% summarize(npharm=n())
+stopifnot(all(npharm17$npharm==10)) ## no need to match on cluster size, all equal.
+unique(npharm17$Q56)
+
+npharm18 <- wdat18i %>% group_by(Q56) %>% summarize(npharm=n())
+## using only the year 18 data, we see variation but it is fairly small.
+summary(npharm18$npharm)
+unique(npharm18$Q56)
+```
+
+
+```{r}
+quantilesForNonBinary <- function(x, prob) {
+  if (length(unique(x)) <= 3) {
+    return(NA)
+  } else {
+    return(quantile(x, prob, na.rm = TRUE))
+  }
+}
+
+wdat17p <- wdat17i %>%
+  dplyr::select(c("treat", "ph_type", "Q56", covs3)) %>%
+  group_by(Q56) %>%
+  summarise_all(funs(loq=quantilesForNonBinary(.,.2),
+    mean = mean,
+    median = quantilesForNonBinary(., .5)
+  ))
+
+dim(wdat17p)
+
+wdat18p <- wdat18i %>%
+  dplyr::select(-c("id")) %>%
+  group_by(Q56) %>%
+  summarise_all(funs(loq=quantilesForNonBinary(.,.2),
+    mean = mean,
+    median = quantilesForNonBinary(., .5)
+  ))
+
+dim(wdat18p)
+
+
+## Cleanup:
+### Remove duplicated columns (keep only one)
+wdat17p <- as_tibble(unique(as.matrix(wdat17p), MARGIN = 2))
+dim(wdat17p)
+stopifnot(length(grep("loq", names(dplyr::select(wdat17p, contains("NA"))))) == 0)
+stopifnot(length(grep("hiq", names(dplyr::select(wdat17p, contains("NA"))))) == 0)
+## Some very sparse variables. Need to clean these up.
+stopifnot(all(unique(wdat17p$mvd_int_mean) %in% c(1, 0)))
+stopifnot(all(unique(wdat17p$treat_mean) %in% c(1, 0)))
+wdat17p$treat <- wdat17p$treat_mean
+wdat17p$treat_mean <- NULL
+wdat17p$treat_median <- NULL
+wdat17p$treat_loq <- NULL
+## We should not have more than one treat labeled variable
+stopifnot(grep("treat", names(wdat17p), value = TRUE) == "treat")
+wdat17p$ph_type <- wdat17p$ph_type_mean
+wdat17p$ph_type_mean <- NULL
+wdat17p$ph_type_median <- NULL
+wdat17p$ph_type_loq <- NULL
+## We should not have more than one ph_type labeled variable
+stopifnot(grep("ph_type", names(wdat17p), value = TRUE) == "ph_type")
+
+
+wdat18p <- as_tibble(unique(as.matrix(wdat18p), MARGIN = 2))
+dim(wdat18p)
+stopifnot(length(grep("loq", names(dplyr::select(wdat18p, contains("NA"))))) == 0)
+stopifnot(length(grep("hiq", names(dplyr::select(wdat18p, contains("NA"))))) == 0)
+## Some very sparse variables. Need to clean these up.
+stopifnot(all(unique(wdat18p$mvd_int_mean) %in% c(1, 0)))
+stopifnot(all(unique(wdat18p$treat_mean) %in% c(1, 0)))
+wdat18p$treat <- wdat18p$treat_mean
+wdat18p$treat_mean <- NULL
+wdat18p$treat_median <- NULL
+wdat18p$treat_loq <- NULL
+## We should not have more than one treat labeled variable
+stopifnot(grep("treat", names(wdat18p), value = TRUE) == "treat")
+wdat18p$ph_type <- wdat18p$ph_type_mean
+wdat18p$ph_type_mean <- NULL
+wdat18p$ph_type_median <- NULL
+wdat18p$ph_type_loq <- NULL
+## We should not have more than one ph_type labeled variable
+stopifnot(grep("ph_type", names(wdat18p), value = TRUE) == "ph_type")
+
+```
+
+Now, again, remove columns that have no variance after the aggregation and summarization.
+
+```{r}
+issingleton <- function(x) {
+  ## Find binary variables with only one observation having one of the two
+  ## values.
+  isbinary <- length(unique(x)) == 2
+  israre <- min(table(x)) <= 1
+  return(isbinary & israre)
+}
+
+find_singleton <-  function(x){
+ allna <- all(is.na(x))
+  constant <- length(unique(x)) == 1
+  if (allna | constant) {
+    return(TRUE)
+  } else {
+    singleton <- issingleton(x)
+    return(singleton)
+  }
+}
+
+novar17 <- sapply(wdat17p, function(x) { find_singleton(x) })
+table(novar17, exclude = c())
+which(novar17)
+wdat17p[, novar17]
+wdat17p <- wdat17p[, !novar17]
+
+novar17_i <- sapply(wdat17i, function(x) { find_singleton(x) })
+table(novar17_i, exclude = c())
+which(novar17_i)
+head(wdat17i[, novar17_i])
+wdat17i <- wdat17i  %>% dplyr::select(which(!novar17_i))
+
+
+novar18 <- sapply(wdat18p, function(x) { find_singleton(x) })
+table(novar18, exclude = c())
+which(novar18)
+wdat18p[, novar18]
+wdat18p <- wdat18p[, !novar18]
+
+novar18_i <- sapply(wdat18i, function(x) { find_singleton(x) })
+table(novar18_i, exclude = c())
+which(novar18_i)
+head(wdat18i[, novar18_i])
+wdat18i <- wdat18i  %>% dplyr::select(which(!novar18_i))
+
+```
+
+Remove variables where some quantiles cannot be calculated. The means are
+still there.
+
+```{r}
+anymissing17 <- sapply(wdat17p, function(x) {
+  any(is.na(x))
+})
+anymissing17[anymissing17]
+wdat17p <- wdat17p[, !anymissing17]
+
+anymissing18 <- sapply(wdat18p, function(x) {
+  any(is.na(x))
+})
+anymissing18[anymissing18]
+wdat18p <- wdat18p[, !anymissing18]
+
+```
+
+Assess strong collinearity which might make logit unhappy and also make
+matching hard --- if you have two variables correlated at .99 then it makes
+more sense to just match on one of them than on both. After removing the sparse
+variables, we had no problems of this type. Leaving the code in as a check.
+
+```{r}
+cors17 <- cor(wdat17p)
+diag(cors17) <- 0
+hicors17 <- which(abs(cors17) >= .95, arr.ind = TRUE)
+hicors17
+stopifnot(nrow(hicors17)==0)
+
+cors18 <- cor(wdat18p)
+diag(cors18) <- 0
+hicors18 <- which(abs(cors18) >= .95, arr.ind = TRUE)
+hicors18
+stopifnot(nrow(hicors18)==0)
+```
+
+We have no highly collinear columns, so we skip this  next step. We leave the
+code in case we change something earlier in the workflow --- and we add a
+couple of unit tests.
+
+```{r eval=FALSE}
+probnms <- unique(row.names(hicors17))
+blah[probnms, probnms]
+
+removevars <- c("vic12_i_mean", "vic12_n_i.NA_mean")
+
+wdat17p <- wdat17p %>% dplyr::select(-removevars)
+
+cor(wdat17i[,gsub("_mean","",probnms)])
+
+removevars_i <-  gsub("_mean","",removevars)
+wdat17i  <- wdat17i %>% dplyr::select(-removevars_i)
+```
+
+
+## Setup comparisons
+
+
+We have a few comparisons:
+
+
+Categories are: 1 "Control", 2 "Wholetime" (pharmacies that sold during the entire research), 3 "Drop out" (pharmacies that drop out the sale, 4 "Newcomers", 5 "Placebo".
+
+
+
+ 1. 20 pharmacies having sold marijuana at some point in the year versus 42
+    using census data and endline the comparison.
+
+```{r}
+
+wdat18i <- wdat18i %>% mutate(soldvsnot18=case_when(ph_type %in% c(2,3,4) ~ 1, ph_type == 1 ~ 0, ph_type==5 ~ NA_real_))
+with(wdat18i,table(ph_type,soldvsnot18,exclude=c()))
+
+
+wdat18p <- wdat18p %>% mutate(soldvsnot18=case_when(ph_type %in% c(2,3,4) ~ 1, ph_type == 1 ~ 0, ph_type==5 ~ NA_real_))
+with(wdat18p,table(ph_type,soldvsnot18,exclude=c()))
+
+stopifnot(sum(wdat18p$soldvsnot18,na.rm=TRUE)==20)
+```
+
+ 2. 16 pharmacies having sold marijuana from the beginning versus 42 using
+    both baseline data and census data for the comparison. (No post-treatment
+bias because creating the sets using only attributes measured before marijuana
+selling began.)
+
+```{r}
+## The type 4 pharmacies were the newcomers --- no baseline data
+stopifnot(!all(wdat17p$ph_type==4))
+stopifnot(!all(wdat17i$ph_type==4))
+
+wdat17i <- wdat17i %>% mutate(soldvsnot17=case_when(ph_type %in% c(2,3) ~ 1, ph_type == 1 ~ 0, ph_type==5 ~ NA_real_))
+with(wdat17i,table(ph_type,soldvsnot17,exclude=c()))
+
+
+wdat17p <- wdat17p %>% mutate(soldvsnot17=case_when(ph_type %in% c(2,3) ~ 1, ph_type == 1 ~ 0, ph_type==5 ~ NA_real_))
+with(wdat17p,table(ph_type,soldvsnot17,exclude=c()))
+
+stopifnot(sum(wdat17p$soldvsnot17,na.rm=TRUE)==16)
+```
+
+ 3. 2 vs 20 (Placebo versus Active) (Census and Endline Data Comparison for
+    Design.) ( expect effect if the effect is about selling)
+
+```{r}
+wdat17i <- wdat17i %>% mutate(placebovsactive=case_when(ph_type %in% c(2,3) ~ 0, ph_type == 1 ~ NA_real_, ph_type==5 ~ 1))
+with(wdat17i,table(ph_type,placebovsactive,exclude=c()))
+
+
+wdat17p <- wdat17p %>% mutate(placebovsactive=case_when(ph_type %in% c(2,3) ~ 0, ph_type == 1 ~ NA_real_, ph_type==5 ~ 1))
+with(wdat17p,table(ph_type,placebovsactive,exclude=c()))
+
+stopifnot(sum(wdat17p$placebovsactive,na.rm=TRUE)==2)
+```
+
+ 4. 2 vs 42 (Placebo versus Control) (expect no effect if the effect is about
+    selling)
+
+
+```{r}
+wdat17i <- wdat17i %>% mutate(placebovscontrol=case_when(ph_type %in% c(2,3) ~ NA_real_ , ph_type == 1 ~ 0, ph_type==5 ~ 1))
+with(wdat17i,table(ph_type,placebovscontrol,exclude=c()))
+
+
+wdat17p <- wdat17p %>% mutate(placebovscontrol=case_when(ph_type %in% c(2,3) ~ NA_real_, ph_type == 1 ~ 0, ph_type==5 ~ 1))
+with(wdat17p,table(ph_type,placebovscontrol,exclude=c()))
+
+stopifnot(sum(wdat17p$placebovscontrol,na.rm=TRUE)==2)
+```
+
+
+
+ 5. 10 (whole time) versus 10 (part of the time --- either stopped or started).
+    (expect larger effects on the 10 selling the whole time)
+
+
+
+```{r}
+wdat18i <- wdat18i %>% mutate(wholevspart=case_when(ph_type %in% c(3,4) ~ 0 , ph_type == 2 ~ 1, ph_type %in% c(1,5) ~ NA_real_))
+with(wdat18i,table(ph_type,wholevspart,exclude=c()))
+
+wdat18p <- wdat18p %>% mutate(wholevspart=case_when(ph_type %in% c(3,4) ~ 0 , ph_type == 2 ~ 1, ph_type %in% c(1,5) ~ NA_real_))
+with(wdat18p,table(ph_type,wholevspart,exclude=c()))
+
+stopifnot(sum(wdat18p$wholevspart,na.rm=TRUE)==10)
+```
+
+```{r}
+designvars <- unique(c(designvars,c("wholevspart","placebovsactive","placebovscontrol","soldvsnot17","soldvsnot18")))
+
+```
+
+
+## Save products
+
+```{r}
+
+
+## Indiv level pscore
+wdat17i$Q56F <- factor(wdat17i$Q56)
+wdat18i$Q56F <- factor(wdat18i$Q56)
+
+```
+
+
+```{r}
+save(wdat17p, wdat17i, wdat18p, wdat18i, covs3, allcovs, outcomes, designvars, covsCensus,covs,  file = "match_data_prep.rda")
+
+```
+
+
+# References

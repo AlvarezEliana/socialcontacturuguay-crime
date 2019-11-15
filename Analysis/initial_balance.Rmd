@@ -1,0 +1,163 @@
+---
+title: Initial Balance Assessment before Matching
+author: Jake Bowers
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+fontsize: 11pt
+geometry: margin=1in
+graphics: yes
+indent: false
+bibliography:
+ - ../refs.bib
+biblio-style: authoryear-comp
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    latex_engine: xelatex
+    keep_tex: true
+    citation_package: biblatex
+    md_extensions: +raw_attribute
+---
+
+```{r echo=FALSE, include=FALSE, cache=FALSE}
+source("rmarkdownsetup.R")
+```
+
+
+```{r setup1, echo=FALSE}
+## Later make this installation to a local library
+### This next will not re-run if there has not been change in Github
+devtools::install_github("markmfredrickson/RItools")
+library(RItools)
+library(optmatch)
+library(here)
+library(tidyverse)
+library(arm)
+```
+
+
+```{r}
+load(here::here("Analysis","match_data_prep.rda"))
+```
+
+### Look at baseline imbalance before matching
+
+The following analysis shows that the neighborhoods with and without marijuana
+selling pharmacies are quite similar on the covariates listed below. Below we
+show the standardized differences (differences in means in standard deviation
+units) and $p$-values for a test of the null of no difference in means between
+the registered pharmacies and the non-registered pharmacies.
+
+
+First, drop the observations for the placebo pharmacies
+```{r}
+dat17i <- wdat17i %>% filter(!is.na(soldvsnot17))
+table(dat17i$soldvsnot17,exclude=c())
+
+```
+
+
+```{r}
+### Looking at baseline (im)balance on individual level outcomes and covariates
+baselineFmla <- reformulate(covs3, response = "soldvsnot17")
+baselineFmlaCluster <- update(baselineFmla, . ~ . + cluster(Q56))
+xb0i <- balanceTest(baselineFmlaCluster, data = dat17i, report = "all", p.adjust.method = "none")
+xb0i$overall[, ]
+xb0ionebyone <- data.frame(xb0i$results[,,])
+xb0ionebyone$varnm <- row.names(xb0ionebyone)
+xb0ionebyone <- xb0ionebyone %>% arrange(desc(abs(std.diff)))
+xb0ionebyone
+## head(xb0ionebyone,n=20) ## Worst balanced
+## Number of small p-values
+numsmallp1 <- sum(xb0ionebyone[, "p"] <= .05)
+
+##xb0itest <- balanceTest(baselineFmla, data = wdat17, report = "all", p.adjust.method = "none")
+##xb0itest$overall[,]
+```
+
+```{r}
+
+summary(xb0ionebyone$std.diff)
+
+adjps <- p.adjust(xb0ionebyone$p,method="holm")
+```
+
+
+
+```{r}
+xb0ionebyone$thevar <- 1:nrow(xb0ionebyone)
+
+pdf(file="initial_balance_plot.pdf")
+par(oma=rep(0,4)+.01,mar=c(3,8,0,0),mgp=c(1,.5,0))
+with(xb0ionebyone,{
+	     plot(abs(std.diff),thevar,
+		       pch=21,
+		       xlab="Absolute Std. Diff of Means",ylab="",
+		       bg=c("white","black")[as.numeric(xb0ionebyone$p<=.05)+1],
+		       axes=FALSE)
+axis(1)
+axis(2,at=thevar,labels=varnm,las=2,tick=FALSE)
+segments(rep(0,nrow(xb0ionebyone)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
+}
+)
+
+dev.off()
+
+
+```
+
+
+Relationship between pharmacies and baseline perception of risk:
+
+```{r}
+table(dat17i$treat, dat17i$n_sec_i, exclude = c())
+```
+
+```{r}
+boxplot(n_sec_i ~ treat, data = dat17i)
+stripchart(n_sec_i ~ treat, data = dat17i, vertical = TRUE, add = TRUE)
+```
+
+
+@hansen2008cbs suggested that an observational study could be judged, in part,
+by comparing it to a randomized experimental study of the same covariates and
+design. The preceding test makes this comparison. If we had randomly assigned
+pharmacies to register to sell marijuana and we had assessed treatment versus
+control mean differences in 100 variables, we would have expected 5 variables
+to have $p$ less than .05 **just through chance**.  That is, 5 small p-values
+out of 100 would not impugn the design of an experiment --- in fact it would be
+expected. In this case, we see `r numsmallp1` such small $p$-values ---
+suggesting an overall inconsistency with the experimental standard (not
+surprising since this is observational data). The omnibus or overall $p$ above
+attempts to direct attention away from the individual p-values and to focus on
+the collection of differences. And, we could also have used a multiple testing
+adjustment for the p-values (which would show no statistically significant
+differences).
+
+We can also show that, using unadjusted p-values, that these
+covariates-to-marijuana selling relationships depart somewhat from the patterns
+of a randomized design by just counting up the number of significant p-values
+and comparing that number to the expected number under a randomized design.
+
+
+```{r}
+## It looks pretty balanced at least on means!
+## Recall the number of p-values less than .05 that we'd expect by chance:
+nrow(xb0ionebyone) * .05
+sum(xb0ionebyone[, "p"] <= .05)
+## So perhaps some imbalance but not a lot.
+```
+
+Save products
+
+```{r}
+
+save(xb0i, baselineFmla, baselineFmlaCluster, file="initial_balance.rda")
+
+```
+
+
+## References

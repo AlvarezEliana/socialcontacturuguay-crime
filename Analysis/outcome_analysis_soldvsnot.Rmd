@@ -1,0 +1,242 @@
+---
+title: Outcome Analysis of the SoldVsNot Design
+author: Jake Bowers
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+fontsize: 11pt
+geometry: margin=1in
+graphics: yes
+indent: false
+bibliography:
+ - ../refs.bib
+biblio-style: authoryear-comp
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_caption: yes
+    fig_height: 4
+    fig_width: 4
+    latex_engine: xelatex
+    keep_tex: true
+    citation_package: biblatex
+    md_extensions: +raw_attribute
+---
+
+
+
+
+```{r echo=FALSE, include=FALSE, cache=FALSE}
+library(here)
+source(here::here("Analysis","rmarkdownsetup.R"))
+```
+
+```{r setup1, echo=FALSE}
+## Later make this installation to a local library
+### This next will not re-run if there has not been change in Github
+devtools::install_github("markmfredrickson/RItools")
+library(RItools)
+library(optmatch)
+library(here)
+library(tidyverse)
+library(arm)
+library(DeclareDesign)
+```
+
+
+```{r}
+load(here::here("Data","finaldat.rda"),verbose=TRUE)
+load(here::here("Data","wrkdat.rda"),verbose=TRUE)
+load(here::here("Analysis","match_data_prep.rda"),verbose=TRUE)
+load(here::here("Analysis","design_soldvsnot.rda"),verbose=TRUE)
+```
+
+# Analyses Registered
+
+We registered the following analyses in <https://osf.io/aey7w/registrations>
+
+## Data Setup  for the Analyses
+
+Not all outcome variables are available in endline survey.
+
+```{r}
+regoutcomes <- c("n_sec_i","c_sec_i","vic12_i","dt_impact_i","ps_impact_i","boca1_i","social_dis","activities_index")
+regcovs <- c("ideol_si_i","educ_i","sex_i","age_i")
+regdesignvars <- c("id","Q56", "treat", "ronda", "ph_type")
+```
+
+We want the versions of the variable without imputation for missing values
+
+```{r}
+outdat2 <- finaldat %>% dplyr::select(c(regdesignvars,regoutcomes,regcovs)) %>% filter(ronda==2018)
+
+outdat2 <- outdat2 %>% mutate_if(is.character, as.numeric)
+
+replace_NA_0 <- function(x) {
+  ifelse(x %in% c(88, 99), NA, x)
+}
+
+## Make all 88 and 99 responses into NA
+outdat3 <- outdat2 %>% dplyr::select(-c("id","age_i")) %>% mutate_all(replace_NA_0)
+stopifnot(sum(is.na(outdat3$boca1_i))==288) ## make sure to preserve missings
+outdat3$id <- outdat2$id
+outdat3$age_i <- outdat2$age_i
+## How much missing data is there?
+outdat3 %>% summarise_all(~sum(is.na(.)))
+```
+
+Now merge the pharmacy level design onto the individual level data
+
+```{r}
+designdat <- dat17p %>% dplyr::select(c("Q56","fm2","soldvsnot17","ph_type","pscore1","pscore2"))
+
+## Two pharmacies (the placebos) were dropped
+stopifnot(length(unique(designdat$Q56))==58)
+stopifnot(unique(designdat$ph_type)!=5)
+
+outdat4 <- inner_join(outdat3,designdat)
+stopifnot(isTRUE(all.equal(sort(unique(designdat$Q56)),sort(unique(outdat4$Q56)))))
+
+outdat4 %>% summarise_all(~sum(is.na(.)))
+dim(outdat4)
+
+## Remove non-selling pharmacies dropped during the design-search process
+outdat5 <- outdat4 %>% filter(!is.na(fm2)) %>% ungroup()
+dim(outdat5)
+
+## ## block center the covariates
+## block_center <- function(x){
+## 	x - mean(x)
+## }
+## covdat <- optmatch::fill.NAs(outdat5[,c("fm2",regcovs)])
+## covdat <- covdat %>% group_by(fm2) %>% mutate_all(block_center)
+## outdat6 <- outdat5 %>% dplyr::select(-regcovs)
+## outdat7 <- bind_cols(outdat6,covdat)
+## regcovs2 <- names(covdat)
+```
+
+A quick check 
+
+```{r}
+## Do we need  to worry about means (maybe)
+outdat5 %>% dplyr::select(regoutcomes) %>% summarize_all(~length(unique(.)))
+outdat5 %>% dplyr::select(regcovs) %>% summarize_all(~length(unique(.)))
+
+```
+
+
+## Testing hypotheses of no effects
+
+Comparing a few approaches here (as preregistered) because of concerns about the small number of clusters. Later we will mount a small simulation to assess the false positive rate of the tests done here.
+
+Doing the tests without covariance  adjustment first.
+
+
+
+### Tests of of the weak null combined with estimates of the ATE
+
+First, we do the simple thing --- estimate the ATE and test the weak null of no effects under asymptotic assumptions. If we define the ATE conditional on the non-missing outcomes (necessary if we are going to use simulations to assess operating characteristics of our estimators and tests), then we neeed to recalculate the block-size weights for each outcome.
+
+```{r}
+
+center_covs <- function(dat,covnms,blocks){
+	block_center <- function(x){
+		x - mean(x)
+	}
+	covdat <- optmatch::fill.NAs(dat[,c(blocks,covnms)])
+	covdat <- covdat %>% group_by(!! rlang::sym(blocks)) %>%
+		mutate_at(vars(-group_cols()),block_center)
+	return(covdat)
+}
+
+## Next works thanks to https://thisisnic.github.io/2018/03/27/using-tidy-eval-with-dplyr-filter/
+est1fn <- function(ynm,covnms=NULL,dat,blocks,clusters,weights=NULL,...){
+	## for now weights must be nbwt or hbwt
+	stopifnot( is.null(weights) | weights %in% c("nbwt","hbwt"))
+	dat <- dat %>% filter(!is.na(!! rlang::sym(ynm))) %>% group_by(!! rlang::sym(blocks)) %>%
+		mutate(pib=mean(soldvsnot17),
+		       nbwt=( soldvsnot17/pib ) + ( (1-soldvsnot17)/(1-pib) ),
+		       hbwt =  nbwt * ( pib * (1 - pib) ))
+	## Some blocks have no treated or no controls after dumping missing data
+	dat <- dat %>% filter(pib!=0 & pib!=1)
+	if(!is.null(covnms)){
+		covdat <- center_covs(dat,covnms,blocks)
+		dat <- dplyr::select(dat,-covnms)
+		dat <- bind_cols(dat,covdat)
+		covnms <- names(covdat)[names(covdat)!=blocks]
+	}
+	rhs <- unique(c("soldvsnot17",covnms))
+	fmla <- reformulate(rhs,response = ynm)
+	##  Adjust for differential cluster size (middleton and aronow)
+	dat <- dat %>% group_by(!! rlang::sym(clusters)) %>% mutate(nclus=n())
+	fmla <- update(fmla,.~.+nclus)
+	if(!is.null(weights)){
+		obj <- lm_robust(fmla,clusters=!!rlang::sym(clusters),data=dat,
+				 weights=!!rlang::sym(weights),...)
+	} else {
+		obj <- lm_robust(fmla,clusters=!!rlang::sym(clusters),data=dat,...)
+	}
+	res <- tidy(obj) %>% filter(term=="soldvsnot17")
+	return(res)
+}
+
+## Test the function.
+est1fn("dt_impact_i",dat=outdat5,blocks="fm2",clusters="Q56",weights="nbwt")
+est1fn("dt_impact_i",covnms=regcovs,blocks="fm2",dat=outdat5,clusters="Q56",weights="nbwt")
+## Next two are precision weights.
+est1fn("dt_impact_i",dat=outdat5,blocks="fm2",clusters="Q56",weights="hbwt")
+est1fn("dt_impact_i",dat=outdat5,blocks="fm2",clusters="Q56",fixed_effects=~fm2)
+est1fn("dt_impact_i",covnms=regcovs,dat=outdat5,blocks="fm2",clusters="Q56",weights="hbwt")
+est1fn("dt_impact_i",covnms=regcovs,dat=outdat5,blocks="fm2",clusters="Q56",fixed_effects=~fm2)
+
+## Compare to the following test
+test1 <- balanceTest(soldvsnot17~dt_impact_i+strata(fm2)+cluster(Q56),data=outdat5,report="all")
+test1$results[,,"fm2"]
+test1rank <- balanceTest(soldvsnot17~dt_impact_i+strata(fm2)+cluster(Q56),data=outdat5,report="all",post.alignment.transform=rank)
+test1rank$results[,,"fm2"]
+
+## Getting missingness warnings
+est1fn("boca1_i",dat=outdat5,blocks="fm2",clusters="Q56",weights="nbwt")
+
+```
+
+Do the basic analyses. For now, and for speed, only using block-size weights.
+Obviously, more power is available  with precision weights. Prefer the
+confidence intervals and $p$-value from the precision weights.
+
+
+```{r}
+
+#options(warn=1)
+res1 <- lapply(regoutcomes,function(ynm){
+		       message(ynm)
+		       unadj <- est1fn(ynm,dat=outdat5,blocks="fm2",clusters="Q56",weights="nbwt")
+		       covadj <- est1fn(ynm,covnms=regcovs,blocks="fm2",dat=outdat5,clusters="Q56",weights="nbwt")
+		       tmp <- bind_cols(unadj,covadj)
+				 })
+
+resdt <- bind_rows(res1)
+
+resdt
+
+kable(resdt)
+
+```
+
+## Compare to rank based tests
+
+## Check performance of the estimator and tests 
+
+## Do direct permutation based tests
+
+
+
+## Does treatment assignment relate to missingness?
+
+
+
+
+
+
+
+
+

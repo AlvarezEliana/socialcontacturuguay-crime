@@ -1,0 +1,80 @@
+
+
+# Try to match within pharmacy set:
+
+This next doesn't work because we assume, in `balanceTest` that clusters are assigned treatment **within strata**. Here, we are creating strata within cluster even if we want to do the statistical inference on the basis of cluster.
+
+```{r eval=FALSE}
+
+##dat17ifm2 <- dat17i %>% filter(!is.na(fm2))
+
+pdist_i <- match_on(bglm2,data=dat17i,within = exactMatch(soldvsnot17~fm2,data=dat17i))
+summary(pdist_i)
+
+mhdist_i <- match_on(update(formula(bglm2),.~.-Q56F),data=dat17i,
+		      within = exactMatch(soldvsnot17~fm2,data=dat17i), method="rank_mahalanobis")
+summary(mhdist_i)
+
+quantile(as.vector(pdist_i), seq(.9, 1, .01))
+quantile(as.vector(mhdist_i), seq(.9, 1, .01))
+
+newdist_i <- pdist_i + caliper(mhdist_i,200)
+summary(newdist_i)
+
+fm2_i <- fullmatch(newdist_i,min.controls=0,max.controls=2, data=dat17i, tol=.000001)
+summary(fm2_i, min.controls = 0, max.controls = Inf  )
+dat17i$fm2_i <- factor(fm2_i)
+xb3_i <- balanceTest(update(matchfmla_iCluster, . ~ . + strata(fm2_i)), data = dat17i, report = "all",p.adjust.method="holm")
+xb3$overall[,]
+
+## Worse balance
+xb3vars <- as_tibble(xb3$results[,,"fm2_i"],rownames="vars")
+xb3vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
+ydiffs1 <- unlist(matched.distances(fm2_i, distance = nsecdist))
+summary(ydiffs1)
+
+pm3_i <- pairmatch(newdist_i,data=dat17i, tol=.000001, remove.unmatchables=TRUE)
+summary(pm3_i, min.controls = 0, max.controls = Inf  )
+dat17i$pm3_i <- factor(pm3_i)
+
+blah  <- lapply(split(dat17i,dat17i$pm3_i),function(dat){ unique(dat$Q56) })
+table(sapply(blah,length))
+
+xb4_i <- balanceTest(update(matchfmla_iCluster, . ~ . + strata(pm3_i)), data = dat17i, report = "all",p.adjust.method="holm")
+xb4$overall[,]
+
+```
+
+Trying another approach --- pairs of neighborhoods. This next doesn't improve substantially on the above.
+
+```{r eval=FALSE}
+library(matchMulti)
+
+stud.vars <- all.vars(matchfmla_i)[-1]
+
+mm <- matchMulti(data=dat17i,
+		 treatment='soldvsnot17',
+		 school.id='Q56',
+		 match.students=TRUE,
+		 student.vars=stud.vars)
+
+str(mm,max.level=1)
+mm$school.match
+str(mm$student.matches,max.level=1)
+str(mm$student.matches$student.matches,max.level=1)
+
+mm_bal <- balanceMulti(mm,student.cov=stud.vars)
+str(mm_bal,max.level=1)
+
+head(mm_bal$students)
+
+mm_dat <- mm$matched
+
+xbMM <-  balanceTest(update(matchfmla_iCluster,.~.+strata(pair.id)),data=mm_dat,report="all")
+xbMM$overall[,]
+
+with(mm_dat, table(pair.id,Q56,exclude=c()))
+
+```
+
+
