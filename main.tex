@@ -57,6 +57,10 @@
 
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 }
+
+\usepackage{xcolor}
+\usepackage{soul}
+
 \usepackage{hyperref}
 \hypersetup{
             pdfborder={0 0 0},
@@ -216,7 +220,7 @@ The implementation of the selling of marijuana at pharmacies occurred in stages.
 
 In terms of infrastructure both selling and non-selling pharmacies are quite similar:  described in most cases as "family business", with an average of five employees, and around 40 years established in the neighborhood. They are also similar regarding security measures, insecurity perceptions and crime victimization, which goes against the idea that pharmacies that sell marijuana did so because they are better equipped in terms of security protection and placed in safer neighborhoods. Despite the rate of non-selling pharmacies that were victims of a crime in the last 12 months is somewhat higher than the rate of selling pharmacies, more representatives of selling pharmacies reported the existence of illegal drugs selling points in the pharmacy' area. 
 
-The important distinction among sellers and non-sellers is concerning opinions towards the public policy, the substance and its users. Owners and representatives of pharmacies that decided to sell are consistently more in favor of the regulation and anticipate it would have more positive impacts, and have less negative opinions towards marijuana users and the substance than non-sellers (see Table \ref{tab:pharmaciesperceptions}in Appendix A). 
+The important distinction among sellers and non-sellers is concerning opinions towards the public policy, the substance and its users. Owners and representatives of pharmacies that decided to sell are consistently more in favor of the regulation and anticipate it would have more positive impacts, and have less negative opinions towards marijuana users and the substance than non-sellers (see Table \ref{tab:pharmaciesperceptions} in Appendix A). 
 
 \subsection{Baseline and Outcome Data Collection: The Pharmacy Neighbors Survey}
 
@@ -300,20 +304,20 @@ In addition, and in order to provide robustness to the analysis, we compare ``pl
 Finally, we will compare pharmacies depending on the time they have been selling: neighbors of ``wholetime'' pharmacies (n=207) that were exposed to the selling during the entire period of analysis versus neighbors of pharmacies that, either because they dropped out or because they join later, did not sale the whole time of this study (n=166), ``dropouts'' and ``newcomers'' together that we named them ``part-time.'' We expect larger effects on the 10 selling that have been selling the whole time.
 
 \subsection{Preliminary Results before Stratification and Covariance Adjustment}
-In this version of the paper we show the results of the second proposed comparison between neighbors of pharmacies that sold marijuana at the beginning of the implementation of the policy, which includes ``wholetime'' and ``dropouts'', with neighbors of non-selling pharmacies. Below we present the results of the difference in differences model for the eight outcomes related to crime victimization, public security, and perceived law impacts.
+\hl{In this version of the paper we show the results of the second proposed comparison between neighbors of pharmacies that sold marijuana at the beginning of the implementation of the policy, which includes ``wholetime'' and ``dropouts'', with neighbors of non-selling pharmacies. Below we present the results of the ATE model for the eight outcomes related to crime victimization, public security, and perceived law impacts.
 
 Having a marijuana selling pharmacy in the neighborhood does not have an impact on crime victimization, as it was expected. Neither there is an effect on country or neighborhood public insecurity perceptions. Neighborhood pharmacies selling marijuana do not change the perceived impact of the law on public security, and they do not alter citizens insertion in the neighborhood. In that sense, after the implementation of marijuana selling at pharmacies, neighbors of those dispensaries behave in the same way that other Uruguayans do in their daily routines and activities (see Table ~\ref{tab:regtab}). Despite the long lines of people outside pharmacies waiting to buy marijuana that became part of the urban scene since 2017, neighbors of those pharmacies do not feel more insecure or change their daily behaviors in the geographical where their live.
 
-Another outcome that we thought might change due to the existence of a marijuana selling pharmacy is the perceived existence of "bocas" in the neighborhood. The argument is that due to the existence of a legal selling point, "bocas" would dissapear from the neighborhood, probable reallocating in another area. This preliminary analysis show that having a marijuana selling pharmacy close by did not have an impact on the perception of the existence of a "boca" in the neighborhood. At least from the citizens' perception, nothing change on that respect.
+Another outcome that we thought might change due to the existence of a marijuana selling pharmacy is the perceived existence of "bocas" in the neighborhood. The argument is that due to the existence of a legal selling point, "bocas" would dissapear from the neighborhood, probable reallocating in another area. This preliminary analysis show that having a marijuana selling pharmacy close by did not have an impact on the perception of the existence of a "boca" in the neighborhood. At least from the citizens' perception, nothing change on that respect.}
 
-\begin{scriptsize}
-        \begin{table}[H]
-        \tiny
+\begin{table}[H]
         \centering
+        \footnotesize
         \caption{Differences in differences estimation for outcome variables}
     \label{tab:regtab}
     \begin{tabular}{lccccc}
- & \textbf{N} & \textbf{Coeff.}	&	\textbf{Robust Stand.Error}	&	\textbf{P value}	&	\textbf{CI 95\% } 		\\	\hline
+ & \textbf{N} & \textbf{Coeff.}	&	\textbf{Robust Stand.}	&	\textbf{P value}	&	\textbf{CI 95\% } 		\\	
+ &  & 	&	\textbf{Error}	&		&		\\	\hline
 Country insecurity  perception	&	1215	&	-.0791165	&	.1030153	&	0.443	&	-.2812253    	.1229923	\\	
 Neighborhood insecurity perception	&	1212	&	-.0469921	&	.1071544	&	0.661	&	-.257222    	.1632379	\\
 Crime victimization in the last 12 months	&	1217	&	-.041347	&	.0446088	&	0.354	&	-.1288663  	 .0461723	\\	
@@ -327,11 +331,12 @@ Citizens insertion in their neighborhood	&	1131	&	.0104118	&	.0271764	&	0.702	&	
 ***Significant at 99\% \\~\\
         \end{tabular}
         \end{table}
-    \end{scriptsize}
 
-In this preliminary analysis, perceptions that the law has an impact on drug trafficking and social disorder index are the only two outcomes on which marijuana selling pharmacies has a significant effect. Uruguayans perceptions about the impact that the law has to fight drug traffic positively changed when they have  a marijuana selling pharmacy in their neighborhood. That might be because they see users buying marijuana at the pharmacy and make the deductive reasoning that those are not buying in the illegal market, and as such, this might undermine drug traffic. In the case of social disorder, the evidence goes against the expectation. We hypothesize that having a marijuana selling pharmacy in the neighborhood might generate a higher level of social disorder. That expectation took into account the inconveniences that long lines with users outside the pharmacies could imply for neighbors. But the preliminary evidence indicates that selling pharmacies do not generate more social disorder. At least, this was not registered by interviewers while measuring it in the survey.
+\hl{We include socio-demographic covarietes (sex, age, education and ideology). Perceptions that the law has an impact on drug trafficking and social disorder index are the only two outcomes on which marijuana selling pharmacies has a significant effect. Uruguayans perceptions about the impact that the law has to fight drug traffic positively changed when they have  a marijuana selling pharmacy in their neighborhood. That might be because they see users buying marijuana at the pharmacy and make the deductive reasoning that those are not buying in the illegal market, and as such, this might undermine drug traffic. 
 
-Our design makes possible to compare perceptions towards insecurity, either in the country or the neighborhood, through time. The effect of time have worsen both outcomes in the last twelve months. However, this deterioration has nothing to do with marijuana selling pharmacies, and it is consistent with  the national trends.\footnote{According with data form the LAPOP Project, the percentage of people who declares feeling “very safe” in their neighborhood drops between 2010 and 2014. On the contrary, people that feels “very unsafe” grow in the same period.}
+In the case of social disorder, the evidence goes against the expectation. We hypothesize that having a marijuana selling pharmacy in the neighborhood might generate a higher level of social disorder. That expectation took into account the inconveniences that long lines with users outside the pharmacies could imply for neighbors. But the preliminary evidence indicates that selling pharmacies do not generate more social disorder. At least, this was not registered by interviewers while measuring it in the survey.
+
+Our design makes possible to compare perceptions towards insecurity, either in the country or the neighborhood, through time. The effect of time have worsen both outcomes in the last twelve months. However, this deterioration has nothing to do with marijuana selling pharmacies, and it is consistent with  the national trends.}\footnote{According with data form the LAPOP Project, the percentage of people who declares feeling “very safe” in their neighborhood drops between 2010 and 2014. On the contrary, people that feels “very unsafe” grow in the same period.}
 
 \section{Sensitivity to unobserved confounds} \label{sec:sensitivity}
 
@@ -344,15 +349,15 @@ This paper has a twofold purpose. On one side, it wants to contribute to the lit
 
 Our evidence shows no impact of marijuana selling at pharmacies on crime victimization. Following the evidence of \cite{dragone2019crime} and the previous research mentioned above, it was plausible to expect that more dispensaries generate lower crime victimization. It is also truth that, considering the small participation of the marijuana trade in the illegal drug market, the effect of marijuana legalization should be moderate. In Caulkins et al.words: ``Where the problem is already modest, the potential changes are also necessarily modest'' (\citet[154]{caulkins2015considering}).
 
-As we already posed, in the Uruguayan context, where the national crime rates had steadily growth in the last years, we could expect that crime victimization goes upwards both among neighbors of marijuana selling pharmacies and also among others citizens that do not live close by a marijuana dispensary, but it might be a smaller growth among the former. Regarding crime victimization, the preliminary evidence presented in the article does not show that effect.
+\hl{As we already posed, in the Uruguayan context, where the national crime rates had steadily growth in the last years, we could expect that crime victimization goes upwards both among neighbors of marijuana selling pharmacies and also among others citizens that do not live close by a marijuana dispensary, but it might be a smaller growth among the former. Regarding crime victimization, the preliminary evidence presented in the article does not show that effect.}
 
-Which are the mechanisms that we believe are behind the link between the legalization of marijuana and crime? More specifically, why would the introduction of legal marijuana dispensaries cause a decrease in crime victimization and the other outcomes associated with public security? The causal mechanisms behind this process might be in line with Dragone's work: moving retail cannabis deals from degraded streets to safe, legal shops most likely played a role as it is posed by Becker and Murphy (2013) in Dragone´s work. Following this argument, if the illegal expenditure points (``bocas'') have less ground to move next to the legal dispensaries, maybe we could be attending to an slipping of the ``bocas'' to neighbors where no legal marijuana dispensaries are located. We found no significant difference on the identification of ``bocas'' made by neighbors before and after the pharmacies started to sell marijuana, and neither between neighbors that live close to a selling pharmacy and those that do not. However, selling pharmacies owners and employees state that ``bocas'' have diminished in the neighborhood. We surveyed all the owners of marijuana selling pharmacies before and after they started to sell marijuana. In 2017, 69\% said they knew there was a ``boca'' in the neighborhood, and in 2018 that percentage diminished to 24\%. Among owners of non- selling pharmacies, owners did not recognize any change (44\% in 2017 and 45\% in 2018)
+\hl{Which are the mechanisms that we believe are behind the link between the legalization of marijuana and crime? More specifically, why would the introduction of legal marijuana dispensaries cause a decrease in crime victimization and the other outcomes associated with public security? The causal mechanisms behind this process might be in line with Dragone's work: moving retail cannabis deals from degraded streets to safe, legal shops most likely played a role as it is posed by Becker and Murphy (2013). Following this argument, if the illegal expenditure points (``bocas'') have less ground to move next to the legal dispensaries, maybe we could be attending to an slipping of the ``bocas'' to neighbors where no legal marijuana dispensaries are located. We found no significant difference on the identification of ``bocas'' made by neighbors before and after the pharmacies started to sell marijuana, and neither between neighbors that live close to a selling pharmacy and those that do not. However, selling pharmacies owners and employees state that ``bocas'' have diminished in the neighborhood. We surveyed all the owners of marijuana selling pharmacies before and after they started to sell marijuana. In 2017, 84,6\% said they knew there was a ``boca'' in the neighborhood, and in 2018 that percentage diminished to 46,1\%. Among owners of non- selling pharmacies, owners did not recognize any change (63,3\% in 2017 and 62,9\% in 2018).}
 
-In the case of insecurity perceptions, estimations do not show any statistically significant effect between neighbors, meaning that living closed to a selling pharmacies does not modify insecurity perceptions. Perceived impact of the regulation on public security does not present statistically significant differences neither. People not only feel just as insecure in one group or the other, but also they do not visualize the policy as a potential instrument to improve public insecurity, and this does not change when they are directly in contact with the policy. This finding is interesting considering how this policy emerged, the initial frame that the government used to present the bill, and its specific aims regarding public security. Apparently the link between drugs regulation and crime is not so obvious for treated neighbors either.
+\hl{In the case of insecurity perceptions, estimations do not show any statistically significant effect between neighbors, meaning that living closed to a selling pharmacies does not modify insecurity perceptions. Perceived impact of the regulation on public security does not present statistically significant differences neither. People not only feel just as insecure in one group or the other, but also they do not visualize the policy as a potential instrument to improve public insecurity, and this does not change when they are directly in contact with the policy. This finding is interesting considering how this policy emerged, the initial frame that the government used to present the bill, and its specific aims regarding public security. Apparently the link between drugs regulation and crime is not so obvious for treated neighbors either.}
 
-On the contrary, people who live near a selling pharmacy believe that the regulation is improving the fight against drug trafficking, in contrast with people who does not live near one. Although we do not have much information on the casual mechanisms behind this perception, it might be that regular contact with consumers persuade people to consider that the sale at pharmacies it is actually a way of reducing illegal drug markets, not forcing ordinary people to be in contact with dealers or in the illegal expenditures points. In other words, being in straight contact with the policy improves the perceived impact against the illegal market. An unexpected result is that marijuana selling pharmacies reduce social disorder in the neighborhood. This preliminary finding goes against our expectation and needs further research.
+\hl{On the contrary, people who live near a selling pharmacy believe that the regulation is improving the fight against drug trafficking, in contrast with people who does not live near one. Although we do not have much information on the casual mechanisms behind this perception, it might be that regular contact with consumers persuade people to consider that the sale at pharmacies it is actually a way of reducing illegal drug markets, not forcing ordinary people to be in contact with dealers or in the illegal expenditures points. In other words, being in straight contact with the policy improves the perceived impact against the illegal market. An unexpected result is that marijuana selling pharmacies reduce social disorder in the neighborhood. This preliminary finding goes against our expectation and needs further research.}
 
-As it was stated at the beginning, the purpose of this paper is to make a contribution to the public policy discussion on whether marijuana legalization produce social goods or not. Uruguay was the first country to fully regulate the marijuana market, Canada the second in 2018, and it is probable that more countries would follow the same path. As a result, it is extremely relevant to understand the effects of those legalizations on different social, economic and political outcomes. In particular it looks at a series of outcomes that were key in the Uruguayan legalization policy process: crime and public insecurity perception. The data analysis presented in this version is a first cut. We need to perform a computational matching to analyze the results by clusters of similar pharmacies, in order to compare selling and non-selling pharmacies in a way that comes close to a hypothetical block-randomized experiment, despite we know that there might be always unobserved variables that might have an effect on our outcomes of interest.
+\hl{As it was stated at the beginning, the purpose of this paper is to make a contribution to the public policy discussion on whether marijuana legalization produce social goods or not. Uruguay was the first country to fully regulate the marijuana market, Canada the second in 2018, and it is probable that more countries would follow the same path. As a result, it is extremely relevant to understand the effects of those legalizations on different social, economic and political outcomes. In particular it looks at a series of outcomes that were key in the Uruguayan legalization policy process: crime and public insecurity perception. The data analysis presented in this version is a first cut. We need to perform a computational matching to analyze the results by clusters of similar pharmacies, in order to compare selling and non-selling pharmacies in a way that comes close to a hypothetical block-randomized experiment, despite we know that there might be always unobserved variables that might have an effect on our outcomes of interest.}
 
 
 \printbibliography[title={8 References}]
@@ -394,7 +399,7 @@ No security measures at the door	&	21	&	51,2\%	&	9	&	56,2\%	\\	\hline
 \textbf{Insecurity perceptions and crime}	&		&		&		&		\\	\hline
 Crime victimization 	&	15	&	25,7\%	&	3	&	17,65	\\	
 Perceptions of "Somewhat unsafe" and "Very unsafe"	&	15	&	51,7\%	&	10	&	62,5\%	\\	
-Reported existence of "bocas"	&	19	&	36,7\%	&	11	&	84,6\%	\\	
+Reported existence of "bocas"	&	19	&	63,3\%	&	11	&	84,6\%	\\	
 Trust in people of the neighborhood	&		&		&		&		\\	
 ("Very trustworthy" and "Somewhat trustworthy")	&	36	&	92,3	&	17	&	100	\\	\hline
 \textbf{Opinions about the policy}	&		&		&		&		\\	\hline
@@ -513,94 +518,70 @@ Source: Own elaboration. *Population data from National Census (2011). **Income 
 \begin{tiny}
 \begin{tabular}{lllcc}
 \textbf{Variable }	&	\textbf{Survey question} 	&	\textbf{Scale}	&	\textbf{Min.}	&	\textbf{Max.}		\\	\hline
-\hline
-Country insecurity  perception	&	In general, in your country, do you feel very safe	&	1. Very safe 	&	1	&	4		\\
-	&	somewhat unsafe or very unsafe?	&	2. Somewhat safe 	&		&			\\
-	&		&	3. Somewhat unsafe 	&		&			\\
-	&		&	4. Very unsafe 	&		&			\\
-	&		&	88 - Don\'t know 	&		&			\\
-	&		&	99 - No answer	&		&			\\\hline
-Neighborhood 	&	And in the neighborhood where you live, 	&	1. Very safe 	&	1	&	4		\\
-insecurity perception	&	do you feel very safe, somewhat safe,	&	2. Somewhat safe 	&		&			\\
-	&	somewhat unsafe or very unsafe?	&	3. Somewhat unsafe 	&		&			\\
-	&		&	4. Very unsafe 	&		&			\\
-	&		&	88 - Don\'t know 	&		&			\\
-	&		&	99 - No answer	&		&			\\\hline
-Crime victimization in the last 	&	Now, changing the subject, have you been a victim of 	&	1. Yes	&	1	&	2		\\
-12 months	&	any type of crime in the past 12 months? That is, have	&	2. No 	&		&			\\
-	&	you been a victim of robbery, burglary, assault, fraud,	&	88 - Don\'t know	&		&			\\
-	&	blackmail, extortion, violent threats or any other type	&	99 - No answer	&		&			\\
-	&	of crime in the past 12 months?	&		&		&			\\\hline
-Perceived impact on public security	&	Now regarding to public safety, because of this law, do	&	1. Yes	&	1	&	3		\\
-	&	you think the country will be better, will remain the	&	2. No 	&		&			\\
-	&	same or will be worst?	&	88 - Don\'t know	&		&			\\
-	&		&	99 - No answer	&		&			\\\hline
-Perceived impact on public security	&	Now regarding to public safety, because of this law, do	&	1. Better (is already better)	&	1	&	3		\\
-	&	you think the country will be better, will remain the	&	2. Same	&		&			\\
-	&	same or will be worst?	&	3.  Worst (is already worst)	&		&			\\
-	&		&	88 - Don\'t know	&		&			\\
-	&		&	99 - No answer	&		&			\\\hline
-Reported existence of bocas	&	Based on what you know or hear, there is a any boca	&	1. Better (is already better)	&	1	&	3		\\
-	&	in this area?	&	2. Same	&		&			\\
-	&		&	3.  Worst (is already worst)	&		&			\\
-	&		&	88 - Don\'t know	&		&			\\
-	&		&	99 - No answer	&		&			\\\hline
-Social disorder index	&	Built with the folllowing questions:	&	1. Nothing	&	1	&	4		\\
-	&		&	2. A little	&		&			\\
-	&		&	3. Something	&		&			\\
-	&		&	4. A lot	&		&			\\
-Presence of young people or children 	&	Observational	&	1. Nothing	&	1	&	4		\\
-in the streets without doing	&		&	2. A little	&		&			\\
- anything, who are wandering	&		&	3. Something	&		&			\\
-	&		&	4. A lot	&		&			\\
-Presence of   people drunk or 	&	Observational	&	1. Nothing	&	1	&	4		\\
-stoned in the streets	&		&	2. A little	&		&			\\
-	&		&	3. Something	&		&			\\
-	&		&	4. A lot	&		&			\\
-Presence of people discussing in 	&	Observational	&	1. Nothing	&	1	&	4		\\
-aggressive or violent (speaking in 	&		&	2. A little	&		&			\\
-a tone of voice very high, 	&		&	3. Something	&		&			\\
-with anger)	&		&	4. A lot	&		&			\\\hline
-Citizens insertion in 	&	Built with the folllowing questions:	&		&		&			\\
-neighborhood	&		&	-	&	0	&	1		\\\hline
-Talk with your neighbors	&	Finally, thinking about the activities you do in 	&	1. Once a week	&		&			\\
-	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a week	&	4	&	1		\\
-	&	talk with your neighbors	&	3. Once or twice a year	&		&			\\
-	&		&	4. Never	&		&			\\
-	&		&	88. Don\'t know 	&		&			\\
-	&		&	99. No answer	&		&			\\
-Organize meetings with the 	&	Finally, thinking about the activities you do in 	&	1. Once a week	&		&			\\
-neighbors to improve 	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a week	&	4	&	1		\\
-the neighborhood	&	organize meetings with the 	&	3. Once or twice a year	&		&			\\
-	&	neighbors to improve 	&	4. Never	&		&			\\
-	&	the neighborhood	&	88. Don\'t know 	&		&			\\
-	&		&	99. No answer	&		&			\\
-Use educational services 	&	Finally, thinking about the activities you do in 	&	1. Once a week	&		&			\\
-(kindergarten, school, high school)	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a week	&	4	&	1		\\
- in the neighborhood	&	use educational services (kindergarten, school, 	&	3. Once or twice a year	&		&			\\
-	&	high school) in the neighborhood	&	4. Never	&		&			\\
-	&		&	88. Don\'t know 	&		&			\\
-	&		&	99. No answer	&		&			\\
-Use health services 	&	Finally, thinking about the activities you do in 	&	1. Once a week	&		&			\\
-(doctor, hospital) of the	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a week	&	4	&	1		\\
-neighborhood	&	use health services (doctor, hospital) of the	&	3. Once or twice a year	&		&			\\
-	&	neighborhood	&	4. Never	&		&			\\
-	&		&	88. Don\'t know 	&		&			\\
-	&		&	99. No answer	&		&			\\
-Buy at the shops in the 	&	Finally, thinking about the activities you do in 	&	1. Once a week	&		&			\\
-neighborhood	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a week	&	4	&	1		\\
-	&	buy at the shops in the neighborhood	&	3. Once or twice a year	&		&			\\
-	&		&	4. Never	&		&			\\
-	&		&	88. Don\'t know 	&		&			\\
-	&		&	99. No answer	&		&			\\
-Do recreational activities 	&	Finally, thinking about the activities you do in 	&	1. Once a week	&		&			\\
-in the neighborhood	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a week	&	4	&	1		\\
-	&	do recreational activities in the neighborhood	&	3. Once or twice a year	&		&			\\
-	&		&	4. Never	&		&			\\
-	&		&	88. Don\'t know 	&		&			\\
-	&		&	99. No answer	&		&			\\\hline
-
-
+Country insecurity  perception	&	In general, in your country, do you feel very safe	&	1. Very unsafe 	&	1	&	4	\\
+	&	somewhat unsafe or very unsafe?	&	2. Somewhat unsafe 	&		&		\\
+	&		&	3. Somewhat safe 	&		&		\\
+	&		&	4. Very safe 	&		&		\\\hline
+Neighborhood 	&	And in the neighborhood where you live, 	&	1. Very unsafe 	&	1	&	4	\\
+insecurity perception	&	do you feel very safe, somewhat safe,	&	2. Somewhat unsafe 	&		&		\\
+	&	somewhat unsafe or very unsafe?	&	3. Somewhat safe 	&		&		\\
+	&		&	4. Very safe 	&		&		\\\hline
+Crime victimization in the last 	&	Now, changing the subject, have you been a victim of 	&	0. Yes	&	0	&	1	\\
+12 months	&	any type of crime in the past 12 months? That is, have	&	1. No 	&		&		\\
+	&	you been a victim of robbery, burglary, assault, fraud,	&		&		&		\\
+	&	blackmail, extortion, violent threats or any other type	&		&		&		\\
+	&	of crime in the past 12 months?	&		&		&		\\\hline
+Perceived impact on public security	&	Now regarding to public safaty, because of this law,	&	1.  Worst (is already worst)	&	1	&	3	\\
+	&	 do you think the country will be better, will 	&	2. Same	&		&		\\
+	&	remain the same or will be worst?	&	3. Better (is already better)	&		&		\\\hline
+Perceived impact on drug trafficking	&	Now regarding to drug trafficking, because of this law,	&	1.  Worst (is already worst)	&	1	&	3	\\
+	&	 do you think the country will be better, will 	&	2. Same	&		&		\\
+	&	remain the same or will be worst?	&	3. Better (is already better)	&		&		\\\hline
+Reported existence of bocas	&	Based on what you know or hear, there is a any boca	&	0. Yes	&	0	&	1	\\
+	&	in this area?	&	1. No 	&		&		\\\hline
+Social disorder index	&	Built with the folllowing questions:	&	1. Very much	&	1	&	4	\\
+	&		&	2. Somewhat	&		&		\\
+	&		&	3. Llittle	&		&		\\
+	&		&	4. Not at all	&		&		\\
+Presence of young people or children 	&	Observational	&	1. Very much	&	1	&	4	\\
+in the streets without doing	&		&	2. Somewhat	&		&		\\
+ anything, who are wandering	&		&	3. Llittle	&		&		\\
+	&		&	4. Not at all	&		&		\\
+Presence of   people drunk or 	&	Observational	&	1. Very much	&	1	&	4	\\
+stoned in the streets	&		&	2. Somewhat	&		&		\\
+	&		&	3. Llittle	&		&		\\
+	&		&	4. Not at all	&		&		\\
+Presence of people discussing in 	&	Observational	&	1. Very much	&	1	&	4	\\
+aggressive or violent (speaking in 	&		&	2. Somewhat	&		&		\\
+a tone of voice very high, 	&		&	3. Llittle	&		&		\\
+with anger)	&		&	4. Not at all	&		&		\\\hline
+Citizens insertion in 	&	Built with the folllowing questions:	&		&		&		\\
+neighborhood*	&		&	-	&	0	&	1	\\
+Talk with your neighbors	&	Finally, thinking about the activities you do in 	&	1. Never	&		&		\\
+	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&	1	&	4	\\
+	&	talk with your neighbors	&	3. Once or twice a month	&		&		\\
+	&		&	4. Once a week	&		&		\\
+Organize meetings with the 	&	Finally, thinking about the activities you do in 	&	1. Never	&		&		\\
+neighbors to improve 	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&	1	&	4	\\
+the neighborhood	&	organize meetings with the 	&	3. Once or twice a month	&		&		\\
+	&	neighbors to improve the neighborhood	&	4. Once a week	&		&		\\
+Use educational services 	&	Finally, thinking about the activities you do in 	&	1. Never	&	1	&	4	\\
+(kindergarten, school, high school)	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&		&		\\
+ in the neighborhood	&	use educational services (kindergarten, school, 	&	3. Once or twice a month	&		&		\\
+	&	high school) in the neighborhood	&	4. Once a week	&		&		\\
+Use health services 	&	Finally, thinking about the activities you do in 	&	1. Never	&		&		\\
+(doctor, hospital) of the	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&	1	&	4	\\
+neighborhood	&	use health services (doctor, hospital) of the	&	3. Once or twice a month	&		&		\\
+	&	neighborhood	&	4. Once a week	&		&		\\
+Buy at the shops in the 	&	Finally, thinking about the activities you do in 	&	1. Never	&		&		\\
+neighborhood	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&	1	&	4	\\
+	&	buy at the shops in the neighborhood	&	3. Once or twice a month	&		&		\\
+	&		&	4. Once a week	&		&		\\
+Do recreational activities 	&	Finally, thinking about the activities you do in 	&	1. Never	&		&		\\
+in the neighborhood	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&	1	&	4	\\
+	&	do recreational activities in the neighborhood	&	3. Once or twice a week	&		&		\\
+	&		&	4. Once a week	&		&		\\\hline
+*Standarized
 \end{tabular}
 \end{tiny}
 
@@ -608,12 +589,11 @@ in the neighborhood	&	this neighborhood, please tell me how many times you:	&	2.
 \restoregeometry
 
 
-\newpage The social disorder index was built using three variables: presence of young people loitering, presence of drunk or stoned people in the streets, and presence of people arguing with each other. Each of these variables have the following values: 1 (Not at all), 2 (Little), 3 (Somewhat), and 4 (Very much). In order to construct the index we assume intermediate substitutability among variables and assign the mean value \citep{goertz2006social}.
+\newpage The social disorder index was built using three variables: presence of young people loitering, presence of drunk or stoned people in the streets, and presence of people arguing with each other. Each of these variables have the following values: 1 (Very much), 2 (Somewhat), 3 (Little), and 4 (Not at all). In order to construct the index we assume intermediate substitutability among variables and assign the mean value \citep{goertz2006social}.
 
-Citizens' Insertion on their Neighborhood is an index constructed with eight variables grouped in four dimensions. The dimensions are: use of services (education and health) in the neighborhood, contact among neighbors (chat and/or meet for collective action activities), perform recreational activities in the neighborhood, and shopping in the neighborhood. We assume intermediate substitutability among dimensions and assign the mean value. The use of services dimension has two indicators: use of educational services (kindergarten, school,high school) in the neighborhood and use of health services (doctor, hospital) in the neighborhood. We assume total substitutability among the two indicators and assign the maximum value  \citep{goertz2006social}.Contact among neighbors dimension also has two indicators: talk with your neighbors and meets/ organizes with the neighbors for any improvement activity for the neighborhood. We also assume total substitutability among the two indicators and assign the maximum value. Perform recreational activities in the neighborhood is measured by the question: do you perform any recreational activities in the neighborhood? Finally, shopping in the neighborhood is measured by the question: do you purchase in warehouses or stores in the neighborhood?
+Citizens' Insertion on their Neighborhood is an index constructed with eight variables grouped in four dimensions. The dimensions are: use of services (education and health) in the neighborhood, contact among neighbors (chat and/or meet for collective action activities), perform recreational activities in the neighborhood, and shopping in the neighborhood. We assume intermediate substitutability among dimensions and assign the mean value. The use of services dimension has two indicators: use of educational services (kindergarten, school,high school) in the neighborhood and use of health services (doctor, hospital) in the neighborhood. We assume total substitutability among the two indicators and assign the maximum value  \citep{goertz2006social}.Contact among neighbors dimension also has two indicators: talk with your neighbors and meets/ organizes with the neighbors for any improvement activity for the neighborhood. We also assume total substitutability among the two indicators and assign the maximum value. Perform recreational activities in the neighborhood is measured by the question: do you perform any recreational activities in the neighborhood? Finally, shopping in the neighborhood is measured by the question: do you purchase in warehouses or stores in the neighborhood? Each indicator is measured using the same scale:1 (Never), 2 (Once or twice a year), 3 (Once or twice a month), and 4 (Once a week).  Citizens' insertion is an index standardized, values go from 0 to 1.
 
 \section{Details of the search for stratification}
-
 Here we will describe in more detail how we used a full optimal matching algorithm \citep{hansen:2004} to find a stratified comparison between selling and non-selling pharmacies that met the standard of comparing favorably with a hypothetical block-randomized experiment.
 
 \section{Threats to Inference: Attrition and Spillovers}
