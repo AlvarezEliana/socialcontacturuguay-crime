@@ -27,18 +27,6 @@ output:
 source("rmarkdownsetup.R")
 ```
 
-```{r setup1, echo=FALSE}
-## Later make this installation to a local library
-### This next will not re-run if there has not been change in Github
-devtools::install_github("markmfredrickson/RItools")
-library(RItools)
-library(optmatch)
-library(here)
-library(tidyverse)
-library(arm)
-```
-
-
 ```{r}
 load(here::here("Analysis","match_data_prep.rda"),verbose=TRUE)
 load(here::here("Analysis","initial_balance.rda"),verbose=TRUE)
