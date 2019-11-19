@@ -50,7 +50,7 @@ xb_i2vars <- xb_i2vars %>% arrange(desc(abs(std.diff)))
 
 xb_i2vars$thevar <- 1:nrow(xb_i2vars)
 
-pdf(file="fm2_balance_plot.pdf")
+pdf(file=here::here("media","fm2_balance_plot.pdf"))
 par(oma=rep(0,4)+.01,mar=c(3,8,0,1),mgp=c(1.5,.5,0))
 with(xb_i2vars,{
 	     plot(abs(std.diff),thevar,
