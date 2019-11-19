@@ -26,19 +26,6 @@ output:
 source("rmarkdownsetup.R")
 ```
 
-
-```{r setup1, echo=FALSE}
-## Later make this installation to a local library
-### This next will not re-run if there has not been change in Github
-devtools::install_github("markmfredrickson/RItools")
-library(RItools)
-library(optmatch)
-library(here)
-library(tidyverse)
-library(arm)
-```
-
-
 ```{r}
 load(here::here("Analysis","match_data_prep.rda"))
 ```
@@ -58,12 +45,18 @@ dat17i <- wdat17i %>% filter(!is.na(soldvsnot17))
 table(dat17i$soldvsnot17,exclude=c())
 
 ```
-
+Looking at baseline (im)balance on individual level outcomes and covariates
 
 ```{r}
-### Looking at baseline (im)balance on individual level outcomes and covariates
 baselineFmla <- reformulate(covs3, response = "soldvsnot17")
 baselineFmlaCluster <- update(baselineFmla, . ~ . + cluster(Q56))
+
+tmp  <-  model.matrix(update(baselineFmlaCluster,.~.-1),data=dat17i)
+uniqX <-  sort(apply(tmp,2,function(x){ length(unique(x)) }))
+uniqX[1:10]
+anyNA <-  apply(tmp,2,function(x){  any(is.na(x)|is.nan(x)) })
+table(anyNA)
+
 xb0i <- balanceTest(baselineFmlaCluster, data = dat17i, report = "all", p.adjust.method = "none")
 xb0i$overall[, ]
 xb0ionebyone <- data.frame(xb0i$results[,,])
@@ -79,18 +72,15 @@ numsmallp1 <- sum(xb0ionebyone[, "p"] <= .05)
 ```
 
 ```{r}
-
 summary(xb0ionebyone$std.diff)
 
 adjps <- p.adjust(xb0ionebyone$p,method="holm")
 ```
 
-
-
 ```{r}
 xb0ionebyone$thevar <- 1:nrow(xb0ionebyone)
 
-pdf(file="initial_balance_plot.pdf")
+pdf(file=here::here("media","initial_balance_plot.pdf"))
 par(oma=rep(0,4)+.01,mar=c(3,8,0,0),mgp=c(1,.5,0))
 with(xb0ionebyone,{
 	     plot(abs(std.diff),thevar,
@@ -103,7 +93,6 @@ axis(2,at=thevar,labels=varnm,las=2,tick=FALSE)
 segments(rep(0,nrow(xb0ionebyone)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
 }
 )
-
 dev.off()
 
 
