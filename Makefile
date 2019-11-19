@@ -15,22 +15,20 @@ all: main.pdf
 ## Paper
 
 main.pdf: main.tex  \
-	Analysis/initial_balance_plot.pdf \
-	Analysis/fm2_balance_plot.pdf \
-	Analysi/outcome_analysis_soldvsnot.pdf
+	media/initial_balance_plot.pdf \
+	media/fm2_balance_plot.pdf \
+	Analysis/outcome_analysis_soldvsnot.pdf
 	latexmk -pdf main.tex
 
 ## Analysis
 
-
 Analysis/outcome_analysis_soldvsnot.pdf: Analysis/outcome_analysis_soldvsnot.Rmd Analysis/design_soldvsnot.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis_soldvsnot.Rmd')"
-
 
 Analysis/describe_design_soldvsnot.pdf: Analysis/describe_design_soldvsnot.Rmd Analysis/design_soldvsnot.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('describe_design_soldvsnot.Rmd')"
 
-Analysis/fm2_balance_plot.pdf: Analysis/describe_design_soldvsnot.pdf
+media/fm2_balance_plot.pdf: Analysis/describe_design_soldvsnot.pdf
 
 Analysis/design_soldvsnot.rda: Analysis/design_soldvsnot.Rmd Analysis/match_data_prep.rda \
 	Analysis/initial_balance.rda
@@ -41,7 +39,7 @@ Analysis/design_soldvsnot.pdf: Analysis/design_soldvsnot.rda
 Analysis/initial_balance.rda: Analysis/initial_balance.Rmd Analysis/match_data_prep.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('initial_balance.Rmd')"
 
-Analysis/initial_balance_plot.pdf: Analysis/initial_balance.rda
+media/initial_balance_plot.pdf: Analysis/initial_balance.rda
 
 Analysis/matchingresults.rda: Analysis/balanceAndMatching.Rmd Data/wrkdat.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('balanceAndMatching.Rmd')"
@@ -59,7 +57,7 @@ Analysis/match_data_prep.rda: Analysis/match_data_prep.Rmd Data/wrkdat.rda Data/
 Data/finaldat.rda : Data/stata2R.R Data/basefinal1718.dta
 	cd Data && R --vanilla --file=stata2R.R
 
-Data/wrkdat.rda : Data/finaldat.rda Data/datasetup.R
+Data/wrkdat.rda : Data/finaldat.rda Data/datasetup.R libraries/librarysetup_done.txt
 	cd Data && R --vanilla --file=datasetup.R
 
 Data/basefinal1718.dta:
@@ -73,6 +71,11 @@ Data/basefinal1718.dta:
 ## 	Data/base\ vecinos\ con\ factores\ PUBLICS\ y\ STIGM.dta \
 ## 	Data/base\ farmacias.dta
 ## 	cd Data && R CMD BATCH Data/Mergescript.R
+
+## Local libraries
+
+libraries/librarysetup_done.txt: librarysetup.R
+	R --vanilla --file=librarysetup.R
 
 ## Other tasks
 
