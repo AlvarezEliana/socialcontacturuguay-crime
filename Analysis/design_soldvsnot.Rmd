@@ -70,6 +70,7 @@ matchfmla
 ## with such a small data set and so many covariates
 ## glm1 <- glm(matchfmla,data=dat17p,family=binomial())
 bglm1 <- bayesglm(matchfmla, data = dat17p, family = binomial(link = "logit"))
+glm1 <- glm(matchfmla, data = dat17p, family = binomial(link = "logit"))
 bglm1mat <- summary(bglm1)$coef
 stopifnot(min(abs(bglm1mat))>0)
 dat17p$pscore1 <- predict(bglm1)
@@ -94,19 +95,21 @@ dat17pSimp <- dat17pSimp %>%  mutate_at(changevars,as.logical)
 
 dat17p$pscore2 <- predict(bglm2,newdata = dat17pSimp )
 
+## Also perhaps just predict at individual level and average to farmacia
+
 ## Combine the two bayesian propensity scores in a mahalanobis distance
 ## pdist <- match_on(soldvsnot17~pscore1+pscore2,data=dat17p,method="rank_mahalanobis")
 pdist <- match_on(soldvsnot17 ~ pscore1+pscore2, data = dat17p) ## want  pscore2 to play a bigger role, method = "rank_mahalanobis")
 ## Example few entries from the distance matrix
-## as.matrix(pdist)[1:10,1:5]
+as.matrix(pdist)[1:10,1:5]
 
-### Absolute differences on a scalar (robb_2016_mean chosen only for example):
+### Absolute differences on a scalar: neighborhood insecurity perception
 ##summary(dat17p$robb_2016_mean)
 ##robbdist <- match_on(soldvsnot17 ~ robb_2016_mean, data = dat17p, method = "rank_mahalanobis")
 ##robbdist[1:5, 1:5]
 summary(dat17p$n_sec_i_mean)
-nsecdist <- match_on(soldvsnot17 ~ n_sec_i_mean, data = dat17p)
-nsecdist[1:5, 1:5]
+crimedist <- match_on(soldvsnot17 ~ n_sec_i_mean + vrobb_2016_mean + robb_2016_mean , data = dat17p, method="rank_mahalanobis")
+crimedist[1:5, 1:5]
 
 ### Match on covariate distances alone, trying to soldvsnot17 each covariate equally
 ### using the rank based mahalanobis distance: See Rosenbaum 2010, Chap 8
@@ -123,16 +126,16 @@ to avoid such matches.
 ```{r}
 quantile(as.vector(pdist), seq(.9, 1, .01))
 quantile(as.vector(mhdist), seq(.9, 1, .01))
-quantile(as.vector(nsecdist), seq(.9, 1, .01))
+quantile(as.vector(crimedist), seq(.9, 1, .01))
 
 pcal <- quantile(as.vector(pdist), .95)
 mcal <- quantile(as.vector(mhdist), .95)
-acal <- quantile(as.vector(nsecdist), .95)
+crimecal <- quantile(as.vector(crimedist), .95)
 
 ## The maximum distances for use in penalties
 maxmh <- max(mhdist)
 maxps <- max(pdist)
-maxyd <- max(nsecdist)
+maxyd <- max(crimedist)
 ```
 
 # Create a matched design
@@ -143,8 +146,8 @@ We don't want to exclude control neighborhoods here, so we use a penalty
 rather than a caliper
 
 ```{r penalizedistmats}
-mhdistPen <- mhdist + (pdist > pcal) * maxmh + (mhdist > mcal) * maxmh ## Penalty like Rosenbaum
-psdistPen <- pdist + (pdist > pcal) * maxps + (mhdist > mcal) * maxps ## Penalty like Rosenbaum
+mhdistPen <- mhdist + (pdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*maxmh## Penalty like Rosenbaum
+psdistPen <- pdist + (pdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*maxps ## Penalty like Rosenbaum
 
 summary(mhdist)
 ## summary(mhdistPen)
@@ -174,28 +177,28 @@ source(here::here("Analysis","utilityfns.R"))
 # Test the function.
 
 find_design(
-  x = c(0, max(mhdist), max(pdist2)),
+  x = c(0, max(mhdistPen), max(psdistPen)),
   thebalfmla_b = matchfmla,
   thebalfmla_i=matchfmla_iCluster,
   themhdist = mhdist,
   thepsdist = pdist2,
-  ydist = nsecdist,
+  ydist = crimedist,
   datb = dat17p,
   dati = dat17i
 )
 
 search_space <- as.matrix(expand.grid(
   mix = seq(0, 1, length.out = 10),
-  mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
-  pscal = quantile(pdist2, seq(.5, 1, length.out = 40))
+  mhcal = quantile(mhdistPen, seq(.5, 1, length.out = 40)),
+  pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
 ))
 
 find_design(x=search_space[1,],
 	    thebalfmla_b = matchfmla,
   thebalfmla_i=matchfmla_iCluster,
-  themhdist = mhdist,
-  thepsdist = pdist2,
-  ydist = nsecdist,
+  themhdist = mhdistPen,
+  thepsdist = psdistPen,
+  ydist = crimedist,
   datb = dat17p,
   dati = dat17i)
 
@@ -203,9 +206,9 @@ set.seed(12345)
 find_design(x=search_space[sample(1:nrow(search_space),1),],
 	      thebalfmla_b = matchfmla,
   thebalfmla_i=matchfmla_iCluster,
-  themhdist = mhdist,
-  thepsdist = pdist2,
-  ydist = nsecdist,
+  themhdist = mhdistPen,
+  thepsdist = psdistPen,
+  ydist = crimedist,
   datb = dat17p,
   dati = dat17i)
 
@@ -226,9 +229,9 @@ tryCatch(load(here::here("Analysis", "design_soldvsnot_search_res.rda")),
           find_design(x = c(x1, x2, x3),
 		      thebalfmla_b = matchfmla,
 		      thebalfmla_i=matchfmla_iCluster,
-		      themhdist = mhdist,
-		      thepsdist = pdist2,
-		      ydist = nsecdist,
+		      themhdist = mhdistPen,
+		      thepsdist = psdistPen,
+		      ydist = crimedist,
 		      datb = dat17p,
 		      dati = dat17i)
 	},
@@ -274,7 +277,7 @@ print(gp3)
 
 ```
 
-Use three possible solutions: (1) overall balancing effective sample size while dropping few control obs, (2) simply maximizing comparison  with  a block randomized experiment, (3) not dropping any obs.
+Use three possible solutions: (1) overall balance plus maximimum effective sample size while dropping few control obs, (2) simply maximizing comparison  with  a block randomized experiment, (3) not dropping any obs.
 
 ```{r}
 
@@ -328,7 +331,7 @@ xb1$overall[,]
 ## Worse balance
 xb1vars <- as_tibble(xb1$results[,,"fm1"],rownames="vars")
 xb1vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm1, distance = nsecdist))
+ydiffs1 <- unlist(matched.distances(fm1, distance = crimedist))
 summary(ydiffs1)
 ## Do individual level balance test
 ndati1 <-  nrow(dat17i)
@@ -350,7 +353,7 @@ xb2$overall[,]
 ## Worse balance
 xb2vars <- as_tibble(xb2$results[,,"fm2"],rownames="vars")
 xb2vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm2, distance = nsecdist))
+ydiffs1 <- unlist(matched.distances(fm2, distance = crimedist))
 summary(ydiffs1)
 ## Do individual level balance test
 ndati1 <-  nrow(dat17i)
@@ -372,8 +375,8 @@ xb3$overall[,]
 ## Worse balance
 xb3vars <- as_tibble(xb3$results[,,"fm3"],rownames="vars")
 xb3vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm3, distance = nsecdist))
-summary(ydiffs1)
+ydiffs3 <- unlist(matched.distances(fm3, distance = crimedist))
+summary(ydiffs3)
 ## Do individual level balance test
 ndati1 <-  nrow(dat17i)
 dat17i$fm3 <- NULL
@@ -486,7 +489,7 @@ meandiff <- function(v, z = soldvsnot17) {
   mean(v[z == 1]) - mean(v[z == 0])
 }
 
-setstats <- dat17i %>%
+setstats2 <- dat17i %>%
 	filter(!is.na(fm2)) %>%
   group_by(fm2) %>%
   summarize(
@@ -500,7 +503,25 @@ setstats <- dat17i %>%
     setsize = n(),
     Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
   )
-setstats
+setstats2
+
+
+setstats3 <- dat17i %>%
+	filter(!is.na(fm3)) %>%
+  group_by(fm3) %>%
+  summarize(
+    age_diffmean = meandiff(age_i,z=soldvsnot17),
+    n_sec_diffmean=meandiff(n_sec_i,z=soldvsnot17),
+    #ps2017_mean = meandiff(ps2017_mean, z = soldvsnot17),
+    #ps2017_median = meandiff(ps2017_median, z = soldvsnot17),
+    #st2017_mean = meandiff(st2017_mean, z = soldvsnot17),
+    vrobb_2016_diffmean = meandiff(vrobb_2016, z = soldvsnot17),
+    robb_2016_diffmean = meandiff(robb_2016, z = soldvsnot17),
+    setsize = n(),
+    Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
+  )
+setstats3
+
 ```
 
 ## Save products
