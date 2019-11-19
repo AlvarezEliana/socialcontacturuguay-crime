@@ -46,16 +46,15 @@ options(
 
 ## Later make this installation to a local library
 ### This next will not re-run if there has not been change in Github
-devtools::install_github("markmfredrickson/RItools")
-library(RItools)
-library(optmatch)
+
+
+## see librarysetup.R
+##devtools::install_github("markmfredrickson/RItools",lib="libraries")
+library(RItools,lib.loc=here::here("libraries"))
+library(optmatch,lib.loc=here::here("libraries"))
 library(here)
 library(tidyverse)
 library(arm)
 
 if (!dir.exists("figs")) dir.create("figs")
 
-## Make a local library directory
-if (!dir.exists(here::here("libraries"))) {
-  dir.create(here::here("libraries"))
-}
