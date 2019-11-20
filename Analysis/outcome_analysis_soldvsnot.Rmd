@@ -28,20 +28,8 @@ NOTE: Adjust  for  baseline  crime covariates within  set because of  large vari
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
 library(here)
 source(here::here("Analysis","rmarkdownsetup.R"))
+library(estimatr)
 ```
-
-```{r setup1, echo=FALSE}
-## Later make this installation to a local library
-### This next will not re-run if there has not been change in Github
-devtools::install_github("markmfredrickson/RItools")
-library(RItools)
-library(optmatch)
-library(here)
-library(tidyverse)
-library(arm)
-library(DeclareDesign)
-```
-
 
 ```{r}
 load(here::here("Data","finaldat.rda"),verbose=TRUE)
@@ -60,16 +48,15 @@ Not all outcome variables are available in endline survey.
 
 ```{r}
 regoutcomes <- c("n_sec_i","c_sec_i","vic12_i","dt_impact_i","ps_impact_i","boca1_i","social_dis","activities_index")
-regcovs <- c("ideol_si_i","educ_i","sex_i","age_i")
+regcovs <- c("ideol_si_i","educ_i","sex_i","age_i","robb_2016","vrobb_2016","n_sec_i")
 regdesignvars <- c("id","Q56", "treat", "ronda", "ph_type")
 ```
 
 We want the versions of the variable without imputation for missing values
 
 ```{r}
-outdat2 <- finaldat %>% dplyr::select(c(regdesignvars,regoutcomes,regcovs)) %>% filter(ronda==2018)
-
-outdat2 <- outdat2 %>% mutate_if(is.character, as.numeric)
+outdat2 <- finaldat %>% dplyr::select(c(regdesignvars,regoutcomes,regcovs)) %>%
+	filter(ronda==2018) %>% mutate_if(is.character, as.numeric)
 
 replace_NA_0 <- function(x) {
   ifelse(x %in% c(88, 99), NA, x)
@@ -87,7 +74,7 @@ outdat3 %>% summarise_all(~sum(is.na(.)))
 Now merge the pharmacy level design onto the individual level data
 
 ```{r}
-designdat <- dat17p %>% dplyr::select(c("Q56","fm2","soldvsnot17","ph_type","pscore1","pscore2"))
+designdat <- dat17p %>% dplyr::select(c("Q56","fm3","soldvsnot17","ph_type","pscore1","pscore2"))
 
 ## Two pharmacies (the placebos) were dropped
 stopifnot(length(unique(designdat$Q56))==58)
@@ -100,21 +87,21 @@ outdat4 %>% summarise_all(~sum(is.na(.)))
 dim(outdat4)
 
 ## Remove non-selling pharmacies dropped during the design-search process
-outdat5 <- outdat4 %>% filter(!is.na(fm2)) %>% ungroup()
+outdat5 <- outdat4 %>% filter(!is.na(fm3)) %>% ungroup()
 dim(outdat5)
 
 ## ## block center the covariates
 ## block_center <- function(x){
 ## 	x - mean(x)
 ## }
-## covdat <- optmatch::fill.NAs(outdat5[,c("fm2",regcovs)])
-## covdat <- covdat %>% group_by(fm2) %>% mutate_all(block_center)
+## covdat <- optmatch::fill.NAs(outdat5[,c("fm3",regcovs)])
+## covdat <- covdat %>% group_by(fm3) %>% mutate_all(block_center)
 ## outdat6 <- outdat5 %>% dplyr::select(-regcovs)
 ## outdat7 <- bind_cols(outdat6,covdat)
 ## regcovs2 <- names(covdat)
 ```
 
-A quick check 
+A quick check
 
 ```{r}
 ## Do we need  to worry about means (maybe)
@@ -180,22 +167,22 @@ est1fn <- function(ynm,covnms=NULL,dat,blocks,clusters,weights=NULL,...){
 }
 
 ## Test the function.
-est1fn("dt_impact_i",dat=outdat5,blocks="fm2",clusters="Q56",weights="nbwt")
-est1fn("dt_impact_i",covnms=regcovs,blocks="fm2",dat=outdat5,clusters="Q56",weights="nbwt")
+est1fn("dt_impact_i",dat=outdat5,blocks="fm3",clusters="Q56",weights="nbwt")
+est1fn("dt_impact_i",covnms=regcovs,blocks="fm3",dat=outdat5,clusters="Q56",weights="nbwt")
 ## Next two are precision weights.
-est1fn("dt_impact_i",dat=outdat5,blocks="fm2",clusters="Q56",weights="hbwt")
-est1fn("dt_impact_i",dat=outdat5,blocks="fm2",clusters="Q56",fixed_effects=~fm2)
-est1fn("dt_impact_i",covnms=regcovs,dat=outdat5,blocks="fm2",clusters="Q56",weights="hbwt")
-est1fn("dt_impact_i",covnms=regcovs,dat=outdat5,blocks="fm2",clusters="Q56",fixed_effects=~fm2)
+est1fn("dt_impact_i",dat=outdat5,blocks="fm3",clusters="Q56",weights="hbwt")
+est1fn("dt_impact_i",dat=outdat5,blocks="fm3",clusters="Q56",fixed_effects=~fm3)
+est1fn("dt_impact_i",covnms=regcovs,dat=outdat5,blocks="fm3",clusters="Q56",weights="hbwt")
+est1fn("dt_impact_i",covnms=regcovs,dat=outdat5,blocks="fm3",clusters="Q56",fixed_effects=~fm3)
 
 ## Compare to the following test
-test1 <- balanceTest(soldvsnot17~dt_impact_i+strata(fm2)+cluster(Q56),data=outdat5,report="all")
-test1$results[,,"fm2"]
-test1rank <- balanceTest(soldvsnot17~dt_impact_i+strata(fm2)+cluster(Q56),data=outdat5,report="all",post.alignment.transform=rank)
-test1rank$results[,,"fm2"]
+test1 <- balanceTest(soldvsnot17~dt_impact_i+strata(fm3)+cluster(Q56),data=outdat5,report="all")
+test1$results[,,"fm3"]
+test1rank <- balanceTest(soldvsnot17~dt_impact_i+strata(fm3)+cluster(Q56),data=outdat5,report="all",post.alignment.transform=rank)
+test1rank$results[,,"fm3"]
 
 ## Getting missingness warnings
-est1fn("boca1_i",dat=outdat5,blocks="fm2",clusters="Q56",weights="nbwt")
+est1fn("boca1_i",dat=outdat5,blocks="fm3",clusters="Q56",weights="nbwt")
 
 ```
 
@@ -205,13 +192,12 @@ confidence intervals and $p$-value from the precision weights.
 
 
 ```{r}
-
 #options(warn=1)
 res1 <- lapply(regoutcomes,function(ynm){
 		       message(ynm)
-		       unadj <- est1fn(ynm,dat=outdat5,blocks="fm2",clusters="Q56",weights="nbwt")
-		       covadj <- est1fn(ynm,covnms=regcovs,blocks="fm2",dat=outdat5,clusters="Q56",weights="nbwt")
-		       tmp <- bind_cols(unadj,covadj)
+		       unadj <- est1fn(ynm,dat=outdat5,blocks="fm3",clusters="Q56",weights="nbwt")
+		       covadj <- est1fn(ynm,covnms=regcovs,blocks="fm3",dat=outdat5,clusters="Q56",weights="nbwt")
+		       tmp <- bind_cols(unadj=unadj,covadj=covadj)
 				 })
 
 resdt <- bind_rows(res1)

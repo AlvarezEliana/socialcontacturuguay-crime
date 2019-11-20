@@ -31,10 +31,12 @@ Analysis/describe_design_soldvsnot.pdf: Analysis/describe_design_soldvsnot.Rmd A
 media/fm2_balance_plot.pdf: Analysis/describe_design_soldvsnot.pdf
 
 Analysis/design_soldvsnot.rda: Analysis/design_soldvsnot.Rmd Analysis/match_data_prep.rda \
-	Analysis/initial_balance.rda
+	Analysis/initial_balance.rda Analysis/design_soldvsnot_search_res.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('design_soldvsnot.Rmd')"
 
-Analysis/design_soldvsnot.pdf: Analysis/design_soldvsnot.rda
+Analysis/design_soldvsnot_search_res.rda: Analysis/designsearch_soldvsnot.R Analysis/match_data_prep.rda \
+	Analysis/initial_balance.rda
+	cd Analysis  && R --vanilla  --file=designsearch_soldvsnot.R
 
 Analysis/initial_balance.rda: Analysis/initial_balance.Rmd Analysis/match_data_prep.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('initial_balance.Rmd')"
@@ -47,21 +49,19 @@ Analysis/matchingresults.rda: Analysis/balanceAndMatching.Rmd Data/wrkdat.rda
 Analysis/outcomeresults.rda: Analysis/outcome_analysis.Rmd Analysis/matchingresults.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis.Rmd')"
 
-
 ### Data
 
 Analysis/match_data_prep.rda: Analysis/match_data_prep.Rmd Data/wrkdat.rda Data/finaldat.rda \
 	Analysis/rmarkdownsetup.R
 	cd Analysis && Rscript -e "library(rmarkdown);render('match_data_prep.Rmd')"
 
-Data/finaldat.rda : Data/stata2R.R Data/basefinal1718.dta
+Data/finaldat.rda : Data/stata2R.R Data/wd_basefinal1718.dta
 	cd Data && R --vanilla --file=stata2R.R
 
 Data/wrkdat.rda : Data/finaldat.rda Data/datasetup.R libraries/librarysetup_done.txt
 	cd Data && R --vanilla --file=datasetup.R
 
-Data/basefinal1718.dta:
-
+wd_basefinal1718.dta:
 
 ## Data/basefinal1718.rda : Data/basefinal1718.dta Data/basefinal1718toR.R
 ##	cd Data && R --vanilla --file=basefinal1718toR.R
