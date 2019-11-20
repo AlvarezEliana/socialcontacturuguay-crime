@@ -98,10 +98,10 @@ dat17p$pscore2 <- predict(bglm2,newdata = dat17pSimp )
 ## Also perhaps just predict at individual level and average to farmacia
 
 ## Combine the two bayesian propensity scores in a mahalanobis distance
-## pdist <- match_on(soldvsnot17~pscore1+pscore2,data=dat17p,method="rank_mahalanobis")
-pdist <- match_on(soldvsnot17 ~ pscore1+pscore2, data = dat17p) ## want  pscore2 to play a bigger role, method = "rank_mahalanobis")
+## psdist <- match_on(soldvsnot17~pscore1+pscore2,data=dat17p,method="rank_mahalanobis")
+psdist <- match_on(soldvsnot17 ~ pscore1+pscore2, data = dat17p) ## want  pscore2 to play a bigger role, method = "rank_mahalanobis")
 ## Example few entries from the distance matrix
-as.matrix(pdist)[1:10,1:5]
+as.matrix(psdist)[1:10,1:5]
 
 ### Absolute differences on a scalar: neighborhood insecurity perception
 ##summary(dat17p$robb_2016_mean)
@@ -124,17 +124,17 @@ to avoid such matches.
 
 
 ```{r}
-quantile(as.vector(pdist), seq(.9, 1, .01))
+quantile(as.vector(psdist), seq(.9, 1, .01))
 quantile(as.vector(mhdist), seq(.9, 1, .01))
 quantile(as.vector(crimedist), seq(.9, 1, .01))
 
-pcal <- quantile(as.vector(pdist), .95)
+pcal <- quantile(as.vector(psdist), .95)
 mcal <- quantile(as.vector(mhdist), .95)
 crimecal <- quantile(as.vector(crimedist), .95)
 
 ## The maximum distances for use in penalties
 maxmh <- max(mhdist)
-maxps <- max(pdist)
+maxps <- max(psdist)
 maxyd <- max(crimedist)
 ```
 
@@ -146,8 +146,9 @@ We don't want to exclude control neighborhoods here, so we use a penalty
 rather than a caliper
 
 ```{r penalizedistmats}
-mhdistPen <- mhdist + (pdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*100*maxmh ## Penalty like Rosenbaum
-psdistPen <- pdist + (pdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*100*maxps ## Penalty like Rosenbaum
+mhdistPen <- mhdist + (psdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*100*maxmh ## Penalty like Rosenbaum
+psdistPen <- psdist + (psdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*100*maxps ## Penalty like Rosenbaum
+crimedistPen <- crimedist + (psdist > pcal) * maxyd + (mhdist > mcal) * maxyd + (crimedist >  crimecal)*maxyd ## Penalty like Rosenbaum
 
 summary(mhdist)
 ## summary(mhdistPen)
@@ -159,8 +160,8 @@ summary(as.vector(mhdistPen))
 psdistPen <- psdistPen * (1 / (max(psdistPen) / max(mhdistPen)))
 summary(as.vector(psdistPen))
 
-pdist2 <- pdist * (1 / (max(pdist) / max(mhdist)))
-summary(as.vector(pdist2))
+psdist2 <- psdist * (1 / (max(psdist) / max(mhdist)))
+summary(as.vector(psdist2))
 summary(as.vector(mhdist))
 
 matchfmla_iCluster <-  update(matchfmla_i,.~.+cluster(Q56))
@@ -181,16 +182,31 @@ find_design(
   thebalfmla_b = matchfmla,
   thebalfmla_i=matchfmla_iCluster,
   themhdist = mhdist,
-  thepsdist = pdist2,
+  thepsdist = psdist2,
   ydist = crimedist,
   datb = dat17p,
   dati = dat17i
 )
 
+
+find_design(
+  x = c(0, max(mhdist), max(psdist2)),
+  thebalfmla_b = matchfmla,
+  thebalfmla_i=matchfmla_iCluster,
+  matchdist=crimedistPen,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  ydist = crimedist,
+  datb = dat17p,
+  dati = dat17i
+)
+
+
 search_space <- as.matrix(expand.grid(
-  mix = seq(0, 1, length.out = 10),
-  mhcal = quantile(mhdistPen, seq(.5, 1, length.out = 40)),
-  pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
+  mix = 1, ##seq(0, 1, length.out = 10),
+  mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
+  ## pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
+  pscal = quantile(psdist2, seq(.5, 1, length.out = 40))
 ))
 
 ## ensure that it runs on a small subset of the search_space
@@ -199,8 +215,9 @@ search_space <- as.matrix(expand.grid(
 find_design(x=search_space[1,],
 	    thebalfmla_b = matchfmla,
   thebalfmla_i=matchfmla_iCluster,
-  themhdist = mhdistPen,
-  thepsdist = psdistPen,
+  matchdist=crimedistPen,
+  themhdist = mhdist,
+  thepsdist = psdist2,
   ydist = crimedist,
   datb = dat17p,
   dati = dat17i)
@@ -233,8 +250,9 @@ tryCatch(load(here::here("Analysis", "design_soldvsnot_search_res.rda")),
           find_design(x = c(x1, x2, x3),
 		      thebalfmla_b = matchfmla,
 		      thebalfmla_i=matchfmla_iCluster,
-		      themhdist = mhdistPen,
-		      thepsdist = psdistPen,
+		      matchdist = crimedistPen,
+		      themhdist = mhdist,
+		      thepsdist = psdist2,
 		      ydist = crimedist,
 		      datb = dat17p,
 		      dati = dat17i)
@@ -362,7 +380,7 @@ xb_i1vars <- as_tibble(xb_i1$results[,,"fm1"],rownames="vars")
 xb_i1vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
 
 ## Match 2:
-fm2 <- fullmatch(newdist2, data = dat17p, tol = .00001, min.controls = 1)
+fm2 <- fullmatch(newdist2, data = dat17p, tol = .00001, min.controls = 1) #, mean.controls=2) #ctrl_trt_ratio2)
 summary(fm2, min.controls = 0, max.controls = Inf)
 dat17p$fm2 <- factor(fm2)
 xb2 <- balanceTest(update(matchfmla, . ~ . + strata(fm2)), data = dat17p, report = "all",subset=!is.na(fm2),p.adjust.method="holm")
@@ -520,7 +538,7 @@ setstats2 <- dat17i %>%
     setsize = n(),
     Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
   )
-setstats2
+setstats2 %>% arrange(robb_2016_diffmean)
 
 
 setstats3 <- dat17i %>%

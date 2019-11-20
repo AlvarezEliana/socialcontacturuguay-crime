@@ -22,7 +22,7 @@ output:
     md_extensions: +raw_attribute
 ---
 
-
+NOTE: Adjust  for  baseline  crime covariates within  set because of  large variability  across pharmacies  in baseline  crime.
 
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}

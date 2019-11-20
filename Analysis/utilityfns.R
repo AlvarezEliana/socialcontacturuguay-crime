@@ -1,9 +1,13 @@
 ## Functions for the paper
 
 
-find_design <- function(x, thebalfmla_b, thebalfmla_i, thepsdist, themhdist, ydist, datb,dati) {
+find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist=NULL,  thepsdist, themhdist, ydist, datb,dati) {
   ## message(paste(x,collapse=" "))
-  newdist <- (thepsdist * x[1] + themhdist * (1 - x[1])) + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
+	if(is.null(matchdist)){
+		newdist <- (thepsdist * x[1] + themhdist * (1 - x[1])) + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
+	} else  {
+		newdist  <-  matchdist + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
+	}
   sum_newdist <- summary(newdist)
   if (sum_newdist$total$matchable == 0) {
     return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
