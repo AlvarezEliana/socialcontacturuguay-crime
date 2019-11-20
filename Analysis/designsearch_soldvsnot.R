@@ -200,8 +200,6 @@ find_design(x=search_space[sample(1:nrow(search_space),1),],
   datb = dat17p,
   dati = dat17i)
 
-
-
 ## ----matchsearch, cache=FALSE--------------------------------------------
 ncores <- parallel::detectCores()
 

@@ -1,4 +1,4 @@
---
+---
 title: Compare pharmacies who sold starting at the beginning (16) to those never selling (42).
 author: Jake Bowers
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
@@ -210,7 +210,7 @@ Use three possible solutions: (1) overall balance plus maximimum effective sampl
 ```{r}
 
 ## Choose a design that is pretty balanced but also considers sample size
-cut1 <- resdf %>% dplyr::filter(d2p >= .7 & d2p_i >= .7)
+cut1 <- resdf %>% dplyr::filter(d2p >= .6 & d2p_i >= .6)
 apply(cut1, 2, summary)
 
 parms1 <- cut1 %>% filter(effn==max(effn)) %>% filter(d2p==max(d2p)) %>% filter(d2p_i==max(d2p_i)) %>% filter(x2==max(x2))
@@ -221,18 +221,14 @@ parms2 <- resdf  %>% filter(d2p>quantile(d2p,.95)) %>% filter(d2p_i>quantile(d2p
 	filter(x2==max(x2) & x3==max(x3)) %>% unique
 parms2
 
-## Now almost max d2p_i (turns out no dropping obs in this design)
-parms3 <- resdf  %>% filter(d2p_i>.5) %>% filter(d2p==max(d2p)) %>% filter(x3==max(x3) & x1==max(x1) & x2==max(x2))
+### Now focus  on  d2p_i (turns out no dropping obs in this design)
+#parms3 <- resdf  %>% filter(d2p_i>.5) %>% filter(d2p==max(d2p)) %>% filter(x3==max(x3) & x1==max(x1) & x2==max(x2))
+#apply(parms3,2,summary)
+#parms3
+
+parms3 <- resdf  %>% filter(maxydiff < 30) %>% filter(d2p>.5 & d2p_i>.5) %>% filter(effn==max(effn)) %>% filter(x2==max(x2))
 apply(parms3,2,summary)
 parms3
-
-parms4 <- resdf  %>% filter(maxydiff < 30) %>% filter(d2p>.5 & d2p_i>.5) %>% filter(effn==max(effn)) %>% filter(x2==max(x2))
-apply(parms4,2,summary)
-parms4
-
-## making parms3 == parms4 for now for ease below
-parms3 <- parms4
-
 
 ```
 
@@ -294,8 +290,9 @@ xb1$overall[,]
 ## Worse balance
 xb1vars <- as_tibble(xb1$results[,,"fm1"],rownames="vars")
 xb1vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm1, distance = crimedist))
+ydiffs1 <- unlist(matched.distances(fm1, distance = robbdist))
 summary(ydiffs1)
+quantile(ydiffs1,seq(0,1,.1))
 ## Do individual level balance test
 ndati1 <-  nrow(dat17i)
 dat17i$fm1 <- NULL
@@ -316,8 +313,9 @@ xb2$overall[,]
 ## Worse balance
 xb2vars <- as_tibble(xb2$results[,,"fm2"],rownames="vars")
 xb2vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm2, distance = crimedist))
+ydiffs1 <- unlist(matched.distances(fm2, distance = robbdist))
 summary(ydiffs1)
+quantile(ydiffs1,seq(0,1,.1))
 ## Do individual level balance test
 ndati1 <-  nrow(dat17i)
 dat17i$fm2 <- NULL
@@ -338,8 +336,9 @@ xb3$overall[,]
 ## Worse balance
 xb3vars <- as_tibble(xb3$results[,,"fm3"],rownames="vars")
 xb3vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs3 <- unlist(matched.distances(fm3, distance = crimedist))
+ydiffs3 <- unlist(matched.distances(fm3, distance = robbdist))
 summary(ydiffs3)
+quantile(ydiffs3,seq(0,1,.1))
 ## Do individual level balance test
 ndati1 <-  nrow(dat17i)
 dat17i$fm3 <- NULL
@@ -501,10 +500,15 @@ setstats3 <- dat17i %>%
   )
 setstats3   %>% arrange(robb_2016_diffmean)
 
+summary(setstats1$robb_2016_diffmean)
+summary(setstats2$robb_2016_diffmean)
+summary(setstats3$robb_2016_diffmean)
 
 ```
 
 ## Save products
+
+Using `parms3` as our chosen one.
 
 ```{r}
 save(fm1, fm2, fm3,
@@ -512,7 +516,9 @@ save(fm1, fm2, fm3,
      xb1vars, xb2vars, xb3vars,
      xb_i1, xb_i2, xb_i3,
      xb_i1vars, xb_i2vars, xb_i3vars,
-     parms1, parms2, parms3, xbi, xb123, dat17i, dat17p, file = here::here("Analysis","design_soldvsnot.rda"))
+     parms1, parms2, parms3, xbi, xb123, dat17i, dat17p,
+     setstats1, setstats2, setstats3,
+     file = here::here("Analysis","design_soldvsnot.rda"))
 
 ```
 
