@@ -1,6 +1,3 @@
-\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
-\PassOptionsToPackage{hyphens}{url}
-
 \documentclass[11pt]{article}
 
 % Any additional packages needed should be included after obs_study_style.
@@ -29,11 +26,21 @@
 \usepackage{ifxetex,ifluatex}
 \usepackage{multirow}
 \usepackage{multicol}
+
+%  https://tex.stackexchange.com/questions/49788/hyperref-url-long-url-with-dashes-wont-break
+\PassOptionsToPackage{hyphens}{url}
 \usepackage[colorlinks  = true,
             linkcolor   = blue,
             urlcolor    = blue,
             citecolor   = blue,
-            anchorcolor = white]{hyperref}
+            anchorcolor = white,
+	    unicode = true,
+	    %pdfborder = {0 0 0},
+	    %breaklinks = true
+	    ]{hyperref}
+\usepackage[hyphens]{url}
+\urlstyle{same}  % don't use monospace font for urls
+
 %\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
@@ -61,11 +68,6 @@
 \usepackage{xcolor}
 \usepackage{soul}
 
-\usepackage{hyperref}
-\hypersetup{
-            pdfborder={0 0 0},
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
 \usepackage{longtable,booktabs}
 \usepackage{pdflscape}
 \usepackage{lscape}
@@ -73,14 +75,14 @@
 % Fix footnotes in tables (requires footnote package)
 \IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{longtable}}{}
 \usepackage{graphicx,grffile}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
+%\makeatletter
+%\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+%\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+%\makeatother
 % Scale images if necessary, so that they will not overflow the page
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+%\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -96,9 +98,9 @@
 \fi
 
 % set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
+%\makeatletter
+%\def\fps@figure{htbp}
+%\makeatother
 
 
 \newcommand{\dataset}{{\cal D}}
@@ -129,6 +131,7 @@
 \begin{abstract}
 
 TO BE REVISED AFTER FINISHING Do drugs' legalization have an impact on crime and public security? This paper presents the results of an observational design that evaluates the impact that recreational marijuana sale at pharmacies had on insecurity perceptions and crime victimization in Uruguay. Evidence about the impact of legal marijuana dispensaries on crime is mixed. Furthermore, Uruguay´s crime rates are consistently increasing in the last five years, which is an important difference with main evidence coming from studies carried out in the United States, where national crime rates have the opposite trend. Less is known about how this kind of policies affect people´s perceived public insecurity. We performed two surveys, one before and one after the implementation of the selling at pharmacies started. The sample is composed by 1.298 neighbors of 64 pharmacies in all the territory, 10 or more neighbors per pharmacy in each round. These outcomes included country’s insecurity perception, neighborhood’s insecurity perception, crime victimization in the last twelve months, perceived impact on public insecurity, perceived impact on drug trafficking, reported existence of ``bocas'', insertion in the neighborhood and social disorder. \hl{Data is analyzed by differences in differences (DD) to estimate the causal effect before and after the implementation of the marijuana regulation. We found no significant impact of closeness to dispensaries on crime victimization}. Neither on public insecurity. This result add to part of the research done on the impact of marijuana legalization in several US states. We do find an impact on the perception of drug trafficking: neighbors of marijuana selling pharmacies consider that the legalization had a positive impact on traffic. While we cannot pin down the mechanisms behind this effect, we believe that seeing users buying legal marijuana might lead citizens to think that illegal deals have diminished.
+
 \end{abstract}
 %\begin{keywords}
 % Crime, Legal Marijuana dispensaries, Natural experiment, insecurity perception
@@ -138,12 +141,12 @@ TO BE REVISED AFTER FINISHING Do drugs' legalization have an impact on crime and
 
 In 2013, Uruguay became the first country in the world to fully regulate the production, distribution and commercialization of marijuana. The December 2013 law fully implemented in 2017 had three main objectives via  regulation of marijuana:  users' decriminalization, reduce public insecurity and drug-trafficking related violence, and increase public health through education and risk reduction and prevention campaigns now made easy to implement because of their reference to a legal substance \citep{arraras2014inventando, pardo2014cannabis, queirolo2019uruguay}. Although access to marijuana was regulated via cannabis club memberships and self-cultivation before July 2017, on July 19, 2017 the public was first allowed to buy marijuana at licensed pharmacies. Much of the Uruguayan public opposed the legalization of in general and the normalization of marijuana usage via the sale of marijuana at pharmacies in particular: only 16 out of more than 1000 pharmacies registered to sell marijuana by the July 2017 date. \hl{This paper focuses on pharmacies because the sale of marijuana by a pharmacy has the potential to bring non-marijuana users in the neighborhood into daily and ordinary contact with people buying and using marijuana in public. The other changes created by the law tended to either improve the private use of marijuana by people already using it or created some legal conditions for farmers newly cultivating the plant or those previously distributing marijuana illegally. Thus, a pharmacy-level change is, in the context of pharmacies and neighborhoods in Uruguay, a neighborhood level change}: would daily contact with a marijuana selling pharmacy and its users have an impact on public insecurity perceptions and crime victimization? To learn about the dynamics of this process and to document them, our research team fielded in-person interviews of roughly 10 neighbors of each of the 16 registered pharmacies as well as with 10 neighbors living near 42 pharmacies chosen to be similar to the 16 registered pharmacies but which had not registered to sell marijuana during the month before sale of marijuana was made legal. We also re-surveyed those neighborhoods (and some  of the same neighbors in a small panel) one year later, in August of 2018.
 
-\paragraph{Why document the effect of the sale of marijuana on attitudes?}\\
+\paragraph{Why document the effect of the sale of marijuana on attitudes?}
 A government aiming to achieve positive policy objectives like less violence and better health opposed by a public with negative stereotypes and norms is not unique to the Uruguayan case. The desegregation of schools in the USA, the legalization of same-sex marriage in the USA and elsewhere, the legalization of divorce and abortion in predominantly Catholic countries, laws against underage marriage in Muslim countries, and laws facilitating women participation in public office in India, are all examples of law running ahead of norms. The law changes before norms, in part, because elites aim to use law and regulation to change norms themselves \citep{beaman2009powerful,Tankard:2016, Tankard:2017}. In Uruguay, for example, one of the mechanisms by which the legal change would produce positive effects is if marijuana users no longer need to hide their behavior for  fear of social sanction.
 
-We hope to contribute to the public policy discussion in Uruguay and elsewhere on whether, on balance, legalization of marijuana has produced social goods or not. In particular, this paper analyze the impact of marijuana legalization in one of the law objectives: reduce public insecurity and crimes.Research has found mixed results about the relationship between legalization and crime in general. For example, \cite{braakmann2014cannabis} and \cite{chu2019joint} at national level find no significant relationship between medical marijuana laws and crime. In Denver, Colorado, two articles find contradictory evidence: while \citep {freisthler2016micro} show that the impact of availability of marijuana dispensaries on crime does not occur where the outlets are located, and it might occur in adjacent areas; \citep {brinkman2019not} finds that an additional dispensary has a significant impact on reducing on crime on the neighborhood with no spillover effects to adjacent areas. Evidence from experimental or quasi-experimental research has shown a decrease in some types of crimes \citep{dragone2019crime, gavrilova2014legal, hao2017cross, Indigo:2016} --- in the context of a  sustained downward trend in national crime rates in the USA \citep{gramlich5facts}. In Uruguay, the situation is the opposite: national crime trends show a significant increase in last years \citep{paternain2008panorama}, so we should not expect that legalization would have the same effect than in contexts where crime has been diminishing \citep {eisner2016achieving}.
+We hope to contribute to the public policy discussion in Uruguay and elsewhere on whether, on balance, legalization of marijuana has produced social goods or not. In particular, this paper analyze the impact of marijuana legalization in one of the law objectives: reduce public insecurity and crimes.Research has found mixed results about the relationship between legalization and crime in general. For example, \cite{braakmann2014cannabis} and \cite{chu2019joint} at national level find no significant relationship between medical marijuana laws and crime. In Denver, Colorado, two articles find contradictory evidence: while \citep {freisthler2016micro} show that the impact of availability of marijuana dispensaries on crime does not occur where the outlets are located, and it might occur in adjacent areas; \citep {brinkman2019not} finds that an additional dispensary has a significant impact on reducing on crime on the neighborhood with no spillover effects to adjacent areas. Evidence from experimental or quasi-experimental research has shown a decrease in some types of crimes \citep{dragone2019crime, gavrilova2014legal, hao2017cross, Indigo:2016} --- in the context of a  sustained downward trend in national crime rates in the USA \citep{gramlich5facts}. In Uruguay, the situation is the opposite: national crime trends show a significant increase in last years \citep{paternain2008panorama}, so we should not expect that legalization would have the same effect than in contexts where crime has been diminishing \citep{eisner2016achieving}.
 
-There is less evidence about the direct impact of legalization on insecurity perceptions, although we imagine that changes in actual crime rates and victimization might matter for perceptions. We know that simple perceptions of demographics of neighborhoods often diverge from census reported figures (\citep{wong2012bringing}, and we also know that fear of crime does not necessarily reflect the prevalence of crime or the probability of crime (\citep{wong2012bringing}. This fact, that the picture of crime in the head of a person may not be the picture shared by a local police department or criminologist, means that we do not have strong priors about how a pharmacy may change such perceptions by our survey sample: if perceptions are malleable, then perhaps a new pharmacy might lead to quick change; if, on the other hand, people ignore their surroundings and/or only perceive that which fits in which their previous beliefs, then perhaps the pharmacies may have no effects.
+There is less evidence about the direct impact of legalization on insecurity perceptions, although we imagine that changes in actual crime rates and victimization might matter for perceptions. We know that simple perceptions of demographics of neighborhoods often diverge from census reported figures \citep{wong2012bringing}, and we also know that fear of crime does not necessarily reflect the prevalence of crime or the probability of crime. This fact, that the picture of crime in the head of a person may not be the picture shared by a local police department or criminologist, means that we do not have strong priors about how a pharmacy may change such perceptions by our survey sample: if perceptions are malleable, then perhaps a new pharmacy might lead to quick change; if, on the other hand, people ignore their surroundings and/or only perceive that which fits in which their previous beliefs, then perhaps the pharmacies may have no effects.
 
 The rest of the paper is structured as follow. Section two describes the context, in particularly, the way in which the public security argument was introduced in the implementation of marijuana selling at pharmacies and how the selling currently works. The third section summarizes the evidence about the relationship between marijuana legalization and crime, describes the main outcomes we are looking at,  and states our main hypotheses. Fourth, we explain our research design. In the fifth section, results are presented; and in the sixth section we discuss how well or bad our design deals with unobserved confounds. Finally, we end up with a discussion section.
 
@@ -169,18 +172,16 @@ Drugs may cause crime, in theory, either because of ‘psychopharmacological vio
 
 Cannabis use occupies a particular place in the drug/violence nexus discussion because most studies have concluded that marijuana consumption tends to inhibit violent behavior in the short term, disqualifying the psychopharmacological argument \citep{white2000dynamics}.\footnote{Although a review by the National Research Council concluded that long-term cannabis use can affect the nervous system prompting violence behavior \citep{national1994understanding}.} By the same reasoning, marijuana use rarely generates economic violence as it does not produce the compulsive need to generate income to fund consumption since marijuana is relatively cheap \citep{caulkins2016marijuana}. Finally, given the low profitability of marijuana markets in comparison with other drugs, such as cocaine and heroin, observers believe that marijuana use does not play a significant part in the systemic type of violence \citep{pacula2003marijuana, caulkins2015considering}. Thus, the legalization of marijuana should not have large short term effects on violence unless the removal of marijuana from the portfolios of illegal dealers somehow increases violence and competition in the cocaine and other drug markets.
 
-Despite these reasons, recent evidence for the US states that have legalized marijuana shows that these laws have an effect on the reduction of violent crimes and property crimes \citep{dragone2019crime, Indigo:2016, gavrilova2014legal, huber2016cannabis,brinkman2019not, hao2017cross}. The causal mechanisms behind these relationships are still unclear. They might be: 1) that the psychotropic effect of consuming marijuana is sedative, which decreases the chances of getting involved in violent crimes \citep{no2001health, green2003being}; or 2) that users of alcohol and other drugs are substituting their consumption with marijuana which is a less violent drug \citep{anderson2014legalization, kelly2014policing} ; or 3) that the decrease in crime rate is an effect of the reallocation of police efforts which after the legalization does not need to prosecute marijuana consumption \citep{adda2014crime}; or 4) that by withdrawing the sale of marijuana from unsafe places and placing it in legal and secure contexts, criminal gangs, intermediaries and dealers become weaker \citep{becker2013have, becker1968crime}. This evidence comes from the USA where trends in crime show a drop in time \citep{gramlich5facts, james2018recent}. This is not the case in Uruguay, where reports of homicides, robberies and assaults rates have been increasing at least since 2012, as we can see on Figure~\ref{fig:homrap19802017}.
+Despite these reasons, recent evidence for the US states that have legalized marijuana shows that these laws have an effect on the reduction of violent crimes and property crimes \citep{dragone2019crime, Indigo:2016, gavrilova2014legal, huber2016cannabis,brinkman2019not, hao2017cross}. The causal mechanisms behind these relationships are still unclear. They might be: 1) that the psychotropic effect of consuming marijuana is sedative, which decreases the chances of getting involved in violent crimes \citep{no2001health, green2003being}; or 2) that users of alcohol and other drugs are substituting their consumption with marijuana which is a less violent drug \citep{anderson2014legalization, kelly2014policing} ; or 3) that the decrease in crime rate is an effect of the reallocation of police efforts which after the legalization does not need to prosecute marijuana consumption \citep{adda2014crime}; or 4) that by withdrawing the sale of marijuana from unsafe places and placing it in legal and secure contexts, criminal gangs, intermediaries and dealers become weaker \citep{becker2013have, becker1968crime}. This evidence comes from the USA where trends in crime show a drop in time \citep{gramlich5facts, james2018recent}. This is not the case in Uruguay, where reports of homicides, robberies and assaults rates have been increasing at least since 2012, as we can see on Figure. %~\ref{fig:homrap19802017}.
+
 
 \begin{figure}[H]
-\begin{center}
-    \caption{Number of homicides and assaults in Uruguay. 1980 - 2018.}
-        \label{fig:homrap19802017}
-    \includegraphics{evo_delitos.pdf}
-    \footnotesize{Source: Observatorio de Violencia y Criminalidad del Ministerio del Interior. For years 1993 and 1994 annual data was not publish.}
-\end{center}
+	\centering
+	\includegraphics[width=.75\textwidth]{evo_delitos.pdf}
+	\caption{Number of homicides and assaults in Uruguay. 1980 -- 2018. Source: Observatorio de Violencia y Criminalidad del Ministerio del Interior. For years 1993 and 1994 annual data was not publish. } \label{fig:homrap19802017}
 \end{figure}
 
-Not only crime has been increasing in Uruguay, also public concern towards insecurity. Public opinion studies show that public insecurity is one of the most important problems for Uruguayans: 61\% of Uruguayans considered "Insecurity" as the main problem of the country, even though 51\% of them never experienced a crime \footnote{CIFRA (July 2018) http://www.cifra.com.uy/index.php/2018/08/20/inseguridad-el-problema-mas-grave-que-afecta-mas-a-jovenes-y-mujeres/}. This proportion has been increasing since 2007, even before the crime rate peaked.
+Not only crime has been increasing in Uruguay, also public concern towards insecurity. Public opinion studies show that public insecurity is one of the most important problems for Uruguayans: 61\% of Uruguayans considered "Insecurity" as the main problem of the country, even though 51\% of them never experienced a crime \footnote{CIFRA (July 2018) \url{http://www.cifra.com.uy/index.php/2018/08/20/inseguridad-el-problema-mas-grave-que-afecta-mas-a-jovenes-y-mujeres/}}. This proportion has been increasing since 2007, even before the crime rate peaked.
 
 It has been well established that personal crime experiences -victimization- are one of the most important predictors of insecurity perceptions \citep{cruz2009public}. This means that people who were victimized by crime tend to feel more insecure than those who did not, even if they live in the same area. But, as we mentioned, fear of crime does not necessarily correspond to actual crime rates and their trends \citep{wong2012bringing}; other elements influence peoples' perceptions regarding public safety and the possibility of experience a crime. Neighborhood´s social daily dynamics, infrastructure and general environment, also play a role in insecurity perceptions. Social conditions of neighborhoods can influence how people feels in terms of safety \citep{cruz2009public, brunton2011neighborhoods, valera2014perceived}. Studies have named these conditions as \textit{social disorder} or \textit{incivilities}. Situations like loitering, people drinking on the streets, gangs' presence, street harassment, etc. \citep{bennett1994determinants, valera2014perceived} are usually used to illustrate signs of social disorder. As more common or frequent these situations become, more unsafe people feel, generating a direct relation between social disorder and fear of crime.
 
