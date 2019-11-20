@@ -111,6 +111,16 @@ summary(dat17p$n_sec_i_mean)
 crimedist <- match_on(soldvsnot17 ~ n_sec_i_mean + vrobb_2016_mean + robb_2016_mean , data = dat17p, method="rank_mahalanobis")
 crimedist[1:5, 1:5]
 
+## Make distances  on raw  crime
+tmp_robb <- dat17p$robb_2016_mean
+names(tmp_robb) <- rownames(dat17p)
+robbdist <- match_on(tmp_robb, z = dat17p$soldvsnot17)
+
+tmp_vrobb <- dat17p$vrobb_2016_mean
+names(tmp_vrobb) <- rownames(dat17p)
+vrobbdist <- match_on(tmp_vrobb, z = dat17p$soldvsnot17)
+
+
 ### Match on covariate distances alone, trying to soldvsnot17 each covariate equally
 ### using the rank based mahalanobis distance: See Rosenbaum 2010, Chap 8
 mhdist <- match_on(matchfmla, data = dat17p, method = "rank_mahalanobis")
@@ -128,9 +138,9 @@ quantile(as.vector(psdist), seq(.9, 1, .01))
 quantile(as.vector(mhdist), seq(.9, 1, .01))
 quantile(as.vector(crimedist), seq(.9, 1, .01))
 
-pcal <- quantile(as.vector(psdist), .95)
-mcal <- quantile(as.vector(mhdist), .95)
-crimecal <- quantile(as.vector(crimedist), .95)
+pcal <- quantile(as.vector(psdist), .98)
+mcal <- quantile(as.vector(mhdist), .98)
+crimecal <- quantile(as.vector(crimedist), .98)
 
 ## The maximum distances for use in penalties
 maxmh <- max(mhdist)
@@ -148,7 +158,7 @@ rather than a caliper
 ```{r penalizedistmats}
 mhdistPen <- mhdist + (psdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*100*maxmh ## Penalty like Rosenbaum
 psdistPen <- psdist + (psdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*100*maxps ## Penalty like Rosenbaum
-crimedistPen <- crimedist + (psdist > pcal) * maxyd + (mhdist > mcal) * maxyd + (crimedist >  crimecal)*maxyd ## Penalty like Rosenbaum
+crimedistPen <- crimedist + (psdist > pcal) * maxyd + (mhdist > mcal) * maxyd  ## Penalty like Rosenbaum
 
 summary(mhdist)
 ## summary(mhdistPen)
@@ -170,107 +180,8 @@ matchfmla_iCluster <-  update(matchfmla_i,.~.+cluster(Q56))
 ## Search for a good matched design
 
 ```{r}
-source(here::here("Analysis","utilityfns.R"))
+load(here::here("Analysis", "design_soldvsnot_search_res.rda"))
 ```
-
-
-```{r setupdesignfinding}
-# Test the function.
-
-find_design(
-  x = c(0, max(mhdistPen), max(psdistPen)),
-  thebalfmla_b = matchfmla,
-  thebalfmla_i=matchfmla_iCluster,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i
-)
-
-
-find_design(
-  x = c(0, max(mhdist), max(psdist2)),
-  thebalfmla_b = matchfmla,
-  thebalfmla_i=matchfmla_iCluster,
-  matchdist=crimedistPen,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i
-)
-
-
-search_space <- as.matrix(expand.grid(
-  mix = 1, ##seq(0, 1, length.out = 10),
-  mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
-  ## pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
-  pscal = quantile(psdist2, seq(.5, 1, length.out = 40))
-))
-
-## ensure that it runs on a small subset of the search_space
-##search_space <- search_space[sample(1:nrow(search_space),10),]
-
-find_design(x=search_space[1,],
-	    thebalfmla_b = matchfmla,
-  thebalfmla_i=matchfmla_iCluster,
-  matchdist=crimedistPen,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i)
-
-set.seed(12345)
-find_design(x=search_space[sample(1:nrow(search_space),1),],
-	      thebalfmla_b = matchfmla,
-  thebalfmla_i=matchfmla_iCluster,
-  themhdist = mhdistPen,
-  thepsdist = psdistPen,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i)
-
-```
-
-
-```{r matchsearch, cache=FALSE}
-ncores <- parallel::detectCores()
-
-options(future.globals.maxSize = +Inf)
-tryCatch(load(here::here("Analysis", "design_soldvsnot_search_res.rda")),
-  error = function(e) {
-    ## This should work on all platforms.
-    library(future.apply)
-    plan(multiprocess, workers = ncores)
-    system.time(
-      results <- future_mapply(
-        function(x1, x2, x3) {
-          find_design(x = c(x1, x2, x3),
-		      thebalfmla_b = matchfmla,
-		      thebalfmla_i=matchfmla_iCluster,
-		      matchdist = crimedistPen,
-		      themhdist = mhdist,
-		      thepsdist = psdist2,
-		      ydist = crimedist,
-		      datb = dat17p,
-		      dati = dat17i)
-	},
-        x1 = search_space[, 1],
-        x2 = search_space[, 2],
-        x3 = search_space[, 3]
-      )
-    )
-    plan(sequential)
-    save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res.rda"))
-  },
-  finally = {
-    load(here::here("Analysis", "design_soldvsnot_search_res.rda"))
-  }
-)
-```
-
 
 ```{r}
 resdf <- data.frame(t(results))
@@ -287,21 +198,11 @@ with(resdf[resdf$d2p>.6,], text(d2p,effn,labels = n,offset=.2,pos=2,cex=.7))
 ```
 
 ```{r}
-gp1 <-  ggplot(data=resdf,aes(x=x2,y=x3,color=d2p)) +
-	geom_point()
-print(gp1)
-```
-
-```{r}
-gp2 <-  ggplot(data=resdf,aes(x=x2,y=x3,color=d2p_i)) +
-	geom_point()
-print(gp2)
-```
-
-```{r}
+pdf(file="designps.pdf")
 gp3 <-  ggplot(data=resdf,aes(x=d2p,y=d2p_i,color=effn)) +
 	geom_point()
 print(gp3)
+dev.off()
 ```
 
 Use three possible solutions: (1) overall balance plus maximimum effective sample size while dropping few control obs, (2) simply maximizing comparison  with  a block randomized experiment, (3) not dropping any obs.
@@ -309,7 +210,7 @@ Use three possible solutions: (1) overall balance plus maximimum effective sampl
 ```{r}
 
 ## Choose a design that is pretty balanced but also considers sample size
-cut1 <- resdf %>% dplyr::filter(d2p >= .7 & d2p_i >= .6)
+cut1 <- resdf %>% dplyr::filter(d2p >= .7 & d2p_i >= .7)
 apply(cut1, 2, summary)
 
 parms1 <- cut1 %>% filter(effn==max(effn)) %>% filter(d2p==max(d2p)) %>% filter(d2p_i==max(d2p_i)) %>% filter(x2==max(x2))
@@ -317,13 +218,21 @@ parms1
 
 ## Now max d2p (may need to match again at indiv level here)
 parms2 <- resdf  %>% filter(d2p>quantile(d2p,.95)) %>% filter(d2p_i>quantile(d2p_i,.9)) %>% filter(effn==max(effn)) %>%
-	filter(x2==max(x2)) %>% unique
+	filter(x2==max(x2) & x3==max(x3)) %>% unique
 parms2
 
 ## Now almost max d2p_i (turns out no dropping obs in this design)
-parms3 <- resdf  %>% filter(d2p_i>.7) %>% filter(d2p==max(d2p)) %>% filter(x3==max(x3) & x1==max(x1) & x2==max(x2))
+parms3 <- resdf  %>% filter(d2p_i>.5) %>% filter(d2p==max(d2p)) %>% filter(x3==max(x3) & x1==max(x1) & x2==max(x2))
 apply(parms3,2,summary)
 parms3
+
+parms4 <- resdf  %>% filter(maxydiff < 30) %>% filter(d2p>.5 & d2p_i>.5) %>% filter(effn==max(effn)) %>% filter(x2==max(x2))
+apply(parms4,2,summary)
+parms4
+
+## making parms3 == parms4 for now for ease below
+parms3 <- parms4
+
 
 ```
 
@@ -338,20 +247,39 @@ parms3
 
 ```{r}
 
-newdist1 <- (psdistPen * parms1[[1]] + mhdistPen * (1 - parms1[[1]])) + caliper(mhdistPen, parms1[[2]]) + caliper(psdistPen, parms1[[3]])
+newdist_old1 <- (psdistPen * parms1[[1]] + mhdistPen * (1 - parms1[[1]])) + caliper(mhdistPen, parms1[[2]]) + caliper(psdistPen, parms1[[3]])
+sum_newdist_old1 <- summary(newdist_old1)
+ctrl_trt_ratio1 <- length(sum_newdist_old1$matchable$control)/length(sum_newdist_old1$matchable$treatment)
+sum_newdist_old1
+
+newdist_old2 <- (psdistPen * parms2[[1]] + mhdistPen * (1 - parms2[[1]])) + caliper(mhdistPen, parms2[[2]]) + caliper(psdistPen, parms2[[3]])
+sum_newdist_old2 <- summary(newdist_old2)
+ctrl_trt_ratio2 <- length(sum_newdist_old2$matchable$control)/length(sum_newdist_old2$matchable$treatment)
+sum_newdist_old2
+
+newdist_old3 <- (psdistPen * parms3[[1]] + mhdistPen * (1 - parms3[[1]])) + caliper(mhdistPen, parms3[[2]]) + caliper(psdistPen, parms3[[3]])
+sum_newdist_old3 <- summary(newdist_old3)
+ctrl_trt_ratio3 <- length(sum_newdist_old3$matchable$control)/length(sum_newdist_old3$matchable$treatment)
+sum_newdist_old3
+
+
+newdist1 <- crimedist  + caliper(mhdist, parms1[[2]]) + caliper(psdist2, parms1[[3]]) + caliper(robbdist,parms1[[4]]) + caliper(vrobbdist,parms1[[5]])
 sum_newdist1 <- summary(newdist1)
 ctrl_trt_ratio1 <- length(sum_newdist1$matchable$control)/length(sum_newdist1$matchable$treatment)
 sum_newdist1
 
-newdist2 <- (psdistPen * parms2[[1]] + mhdistPen * (1 - parms2[[1]])) + caliper(mhdistPen, parms2[[2]]) + caliper(psdistPen, parms2[[3]])
+newdist2 <- crimedist + caliper(mhdist, parms2[[2]]) + caliper(psdist2, parms2[[3]]) + caliper(robbdist,parms2[[4]]) + caliper(vrobbdist,parms2[[5]])
 sum_newdist2 <- summary(newdist2)
 ctrl_trt_ratio2 <- length(sum_newdist2$matchable$control)/length(sum_newdist2$matchable$treatment)
 sum_newdist2
 
-newdist3 <- (psdistPen * parms3[[1]] + mhdistPen * (1 - parms3[[1]])) + caliper(mhdistPen, parms3[[2]]) + caliper(psdistPen, parms3[[3]])
+newdist3 <- crimedist + caliper(mhdist, parms3[[2]]) + caliper(psdist2, parms3[[3]]) +  caliper(robbdist,parms3[[4]]) + caliper(vrobbdist,parms3[[5]])
 sum_newdist3 <- summary(newdist3)
 ctrl_trt_ratio3 <- length(sum_newdist3$matchable$control)/length(sum_newdist3$matchable$treatment)
 sum_newdist3
+
+
+
 ```
 
 Now, do the matchings found above.
@@ -512,6 +440,10 @@ mypairfn <- function(x,y,...){
 pairs(xbivars[,c("fm1","fm2","fm3","raw")],lower.panel=mypairfn,upper.panel=mypairfn)
 ```
 
+```{r}
+with(dat17i,plot(vrobb_2016,robb_2016,col=c("black","red")[soldvsnot17+1]))
+```
+
 
 Which sets appear worst --- with pharmacies that seem most different from each
 other on a few key variables. Just choosing one variable for now for example.
@@ -524,17 +456,32 @@ meandiff <- function(v, z = soldvsnot17) {
   mean(v[z == 1]) - mean(v[z == 0])
 }
 
+absmeandiff <- function(v, z = soldvsnot17) {
+  force(z)
+  abs(mean(v[z == 1]) - mean(v[z == 0]))
+}
+
+setstats1 <- dat17i %>%
+	filter(!is.na(fm1)) %>%
+  group_by(fm1) %>%
+  summarize(
+    age_diffmean = absmeandiff(age_i,z=soldvsnot17),
+    n_sec_diffmean=absmeandiff(n_sec_i,z=soldvsnot17),
+    vrobb_2016_diffmean = absmeandiff(vrobb_2016, z = soldvsnot17),
+    robb_2016_diffmean = absmeandiff(robb_2016, z = soldvsnot17),
+    setsize = n(),
+    Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
+  )
+setstats1 %>% arrange(robb_2016_diffmean)
+
 setstats2 <- dat17i %>%
 	filter(!is.na(fm2)) %>%
   group_by(fm2) %>%
   summarize(
-    age_diffmean = meandiff(age_i,z=soldvsnot17),
-    n_sec_diffmean=meandiff(n_sec_i,z=soldvsnot17),
-    #ps2017_mean = meandiff(ps2017_mean, z = soldvsnot17),
-    #ps2017_median = meandiff(ps2017_median, z = soldvsnot17),
-    #st2017_mean = meandiff(st2017_mean, z = soldvsnot17),
-    vrobb_2016_diffmean = meandiff(vrobb_2016, z = soldvsnot17),
-    robb_2016_diffmean = meandiff(robb_2016, z = soldvsnot17),
+    age_diffmean = absmeandiff(age_i,z=soldvsnot17),
+    n_sec_diffmean=absmeandiff(n_sec_i,z=soldvsnot17),
+    vrobb_2016_diffmean = absmeandiff(vrobb_2016, z = soldvsnot17),
+    robb_2016_diffmean = absmeandiff(robb_2016, z = soldvsnot17),
     setsize = n(),
     Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
   )
@@ -545,17 +492,15 @@ setstats3 <- dat17i %>%
 	filter(!is.na(fm3)) %>%
   group_by(fm3) %>%
   summarize(
-    age_diffmean = meandiff(age_i,z=soldvsnot17),
-    n_sec_diffmean=meandiff(n_sec_i,z=soldvsnot17),
-    #ps2017_mean = meandiff(ps2017_mean, z = soldvsnot17),
-    #ps2017_median = meandiff(ps2017_median, z = soldvsnot17),
-    #st2017_mean = meandiff(st2017_mean, z = soldvsnot17),
-    vrobb_2016_diffmean = meandiff(vrobb_2016, z = soldvsnot17),
-    robb_2016_diffmean = meandiff(robb_2016, z = soldvsnot17),
+    age_diffmean = absmeandiff(age_i,z=soldvsnot17),
+    n_sec_diffmean=absmeandiff(n_sec_i,z=soldvsnot17),
+    vrobb_2016_diffmean = absmeandiff(vrobb_2016, z = soldvsnot17),
+    robb_2016_diffmean = absmeandiff(robb_2016, z = soldvsnot17),
     setsize = n(),
     Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
   )
-setstats3
+setstats3   %>% arrange(robb_2016_diffmean)
+
 
 ```
 
