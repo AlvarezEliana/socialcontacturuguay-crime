@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=fdrpower
+#SBATCH --job-name=find_design_soldvsnot
 #SBATCH --partition=node
 #SBATCH --ntasks-per-node=24
 #SBATCH --nodes=1
