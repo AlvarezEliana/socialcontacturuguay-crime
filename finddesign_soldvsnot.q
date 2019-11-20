@@ -23,5 +23,6 @@ export CORES=24
 export R_LIBS=/data/keeling/a/jwbowers/R/x86_64-redhat-linux-gnu-library/3.5
 export HOME=/data/keeling/a/jwbowers
 
-mpirun -n 1 -x HOME  -x LD_LIBRARY_PATH -x CLUSTER -x CORES -x R_LIBS Rscript -e "library(rmarkdown);render('design_soldvsnot.Rmd',quiet=FALSE)"
+##mpirun -n 1 -x HOME  -x LD_LIBRARY_PATH -x CLUSTER -x CORES -x R_LIBS Rscript -e "library(rmarkdown);render('design_soldvsnot.Rmd',quiet=FALSE)"
+mpirun -n 1 -x HOME  -x LD_LIBRARY_PATH -x CLUSTER -x CORES -x R_LIBS R --vanilla --file=designsearch_soldvsnot.R
 
