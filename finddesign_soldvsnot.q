@@ -20,8 +20,8 @@ cd /data/keeling/a/jwbowers/Documents/PROJECTS/socialcontacturuguay-crime/Analys
 ##export CLUSTER="keeling-future"
 export CLUSTER=""
 export CORES=24
-export R_LIBS=/data/a/keeling/jwbowers/R/x86_64-redhat-linux-gnu-library/3.5
-export HOME=/data/a/keeling/jwbowers
+export R_LIBS=/data/keeling/a/jwbowers/R/x86_64-redhat-linux-gnu-library/3.5
+export HOME=/data/keeling/a/jwbowers
 
-mpirun -n 1 -x HOME  -x LD_LIBRARY_PATH -x CLUSTER -x CORES -x R_LIBS Rscript -e "library(here,lib.loc='../libraries');library(rmarkdown,lib.loc=here::here('libraries'));render(here::here('Analysis','design_soldvsnot.Rmd'))"
+mpirun -n 1 -x HOME  -x LD_LIBRARY_PATH -x CLUSTER -x CORES -x R_LIBS Rscript -e "library(rmarkdown);render('design_soldvsnot.Rmd',quiet=FALSE)"
 
