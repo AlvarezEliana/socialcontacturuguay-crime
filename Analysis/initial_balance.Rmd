@@ -51,12 +51,6 @@ Looking at baseline (im)balance on individual level outcomes and covariates
 baselineFmla <- reformulate(covs3, response = "soldvsnot17")
 baselineFmlaCluster <- update(baselineFmla, . ~ . + cluster(Q56))
 
-tmp  <-  model.matrix(update(baselineFmlaCluster,.~.-1),data=dat17i)
-uniqX <-  sort(apply(tmp,2,function(x){ length(unique(x)) }))
-uniqX[1:10]
-anyNA <-  apply(tmp,2,function(x){  any(is.na(x)|is.nan(x)) })
-table(anyNA)
-
 xb0i <- balanceTest(baselineFmlaCluster, data = dat17i, report = "all", p.adjust.method = "none")
 xb0i$overall[, ]
 xb0ionebyone <- data.frame(xb0i$results[,,])

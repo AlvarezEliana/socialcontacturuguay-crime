@@ -146,8 +146,8 @@ We don't want to exclude control neighborhoods here, so we use a penalty
 rather than a caliper
 
 ```{r penalizedistmats}
-mhdistPen <- mhdist + (pdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*maxmh## Penalty like Rosenbaum
-psdistPen <- pdist + (pdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*maxps ## Penalty like Rosenbaum
+mhdistPen <- mhdist + (pdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*100*maxmh ## Penalty like Rosenbaum
+psdistPen <- pdist + (pdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*100*maxps ## Penalty like Rosenbaum
 
 summary(mhdist)
 ## summary(mhdistPen)
@@ -266,19 +266,24 @@ par(mfrow=c(1,1))
 ## Lighter are lower differences in the key baseline outcome
 with(resdf, plot(d2p, effn, pch = 21, bg = gray(maxydiff / max(maxydiff),alpha=.7),cex=.7))
 with(resdf[resdf$d2p>.6,], text(d2p,effn,labels = n,offset=.2,pos=2,cex=.7))
+```
 
+```{r}
 gp1 <-  ggplot(data=resdf,aes(x=x2,y=x3,color=d2p)) +
 	geom_point()
 print(gp1)
+```
 
+```{r}
 gp2 <-  ggplot(data=resdf,aes(x=x2,y=x3,color=d2p_i)) +
 	geom_point()
 print(gp2)
+```
 
+```{r}
 gp3 <-  ggplot(data=resdf,aes(x=d2p,y=d2p_i,color=effn)) +
 	geom_point()
 print(gp3)
-
 ```
 
 Use three possible solutions: (1) overall balance plus maximimum effective sample size while dropping few control obs, (2) simply maximizing comparison  with  a block randomized experiment, (3) not dropping any obs.
@@ -286,7 +291,7 @@ Use three possible solutions: (1) overall balance plus maximimum effective sampl
 ```{r}
 
 ## Choose a design that is pretty balanced but also considers sample size
-cut1 <- resdf %>% dplyr::filter(d2p >= .7 & d2p_i >= .7)
+cut1 <- resdf %>% dplyr::filter(d2p >= .7 & d2p_i >= .6)
 apply(cut1, 2, summary)
 
 parms1 <- cut1 %>% filter(effn==max(effn)) %>% filter(d2p==max(d2p)) %>% filter(d2p_i==max(d2p_i)) %>% filter(x2==max(x2))
@@ -304,20 +309,28 @@ parms3
 
 ```
 
+The summary of  the three candidates.
+
+```{r}
+parms1
+parms2
+parms3
+```
+
 
 ```{r}
 
-newdist1 <- (pdist2 * parms1[[1]] + mhdist * (1 - parms1[[1]])) + caliper(mhdist, parms1[[2]]) + caliper(pdist2, parms1[[3]])
+newdist1 <- (psdistPen * parms1[[1]] + mhdistPen * (1 - parms1[[1]])) + caliper(mhdistPen, parms1[[2]]) + caliper(psdistPen, parms1[[3]])
 sum_newdist1 <- summary(newdist1)
 ctrl_trt_ratio1 <- length(sum_newdist1$matchable$control)/length(sum_newdist1$matchable$treatment)
 sum_newdist1
 
-newdist2 <- (pdist2 * parms2[[1]] + mhdist * (1 - parms2[[1]])) + caliper(mhdist, parms2[[2]]) + caliper(pdist2, parms2[[3]])
+newdist2 <- (psdistPen * parms2[[1]] + mhdistPen * (1 - parms2[[1]])) + caliper(mhdistPen, parms2[[2]]) + caliper(psdistPen, parms2[[3]])
 sum_newdist2 <- summary(newdist2)
 ctrl_trt_ratio2 <- length(sum_newdist2$matchable$control)/length(sum_newdist2$matchable$treatment)
 sum_newdist2
 
-newdist3 <- (pdist2 * parms3[[1]] + mhdist * (1 - parms3[[1]])) + caliper(mhdist, parms3[[2]]) + caliper(pdist2, parms3[[3]])
+newdist3 <- (psdistPen * parms3[[1]] + mhdistPen * (1 - parms3[[1]])) + caliper(mhdistPen, parms3[[2]]) + caliper(psdistPen, parms3[[3]])
 sum_newdist3 <- summary(newdist3)
 ctrl_trt_ratio3 <- length(sum_newdist3$matchable$control)/length(sum_newdist3$matchable$treatment)
 sum_newdist3
@@ -462,7 +475,7 @@ print(gfms2)
 
 ```
 
-Also look at MSEs: fm2 marginally better
+Also look at MSEs:
 
 ```{r}
 
