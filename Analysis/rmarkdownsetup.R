@@ -50,9 +50,10 @@ options(
 
 ## see librarysetup.R
 ##devtools::install_github("markmfredrickson/RItools",lib="libraries")
-library(RItools,lib.loc=here::here("libraries"))
-library(optmatch,lib.loc=here::here("libraries"))
 library(here)
+library(RItools,lib.loc=here::here("libraries"))
+library(optmatch)
+library(stringr)
 library(tidyverse)
 library(arm)
 

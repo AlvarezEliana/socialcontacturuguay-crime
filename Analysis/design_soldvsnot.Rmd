@@ -193,6 +193,9 @@ search_space <- as.matrix(expand.grid(
   pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
 ))
 
+## ensure that it runs on a small subset of the search_space
+##search_space <- search_space[sample(1:nrow(search_space),10),]
+
 find_design(x=search_space[1,],
 	    thebalfmla_b = matchfmla,
   thebalfmla_i=matchfmla_iCluster,
@@ -218,6 +221,7 @@ find_design(x=search_space[sample(1:nrow(search_space),1),],
 ```{r matchsearch, cache=FALSE}
 ncores <- parallel::detectCores()
 
+options(future.globals.maxSize = +Inf)
 tryCatch(load(here::here("Analysis", "design_soldvsnot_search_res.rda")),
   error = function(e) {
     ## This should work on all platforms.
