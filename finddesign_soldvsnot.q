@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#SBATCH --job-name=fdrpower
+#SBATCH --partition=node
+#SBATCH --ntasks-per-node=24
+#SBATCH --nodes=1
+#SBATCH --time=168:00:00
+#SBATCH --mem-per-cpu=8048
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=END
+#SBATCH --mail-user=jwbowers@illinois.edu
+#SBATCH --export=PATH,R_LIBS,CLUSTER,CORES,LD_LIBRARY_PATH
+
+set InputDir=/data/keeling/a/jwbowers/Documents/PROJECTS/socialcontacturuguay-crime/Analysis
+set RunDir=/data/keeling/a/jwbowers/Documents/PROJECTS/socialcontacturuguay-crime/Analysis
+
+cd /data/keeling/a/jwbowers/Documents/PROJECTS/socialcontacturuguay-crime/Analysis
+
+## For now, just use one node and multicore. Having trouble with the alternative
+##export CLUSTER="keeling-future"
+export CLUSTER=""
+export CORES=24
+export R_LIBS=/data/a/keeling/jwbowers/R/x86_64-redhat-linux-gnu-library/3.5
+export HOME=/data/a/keeling/jwbowers
+
+mpirun -n 1 -x HOME  -x LD_LIBRARY_PATH -x CLUSTER -x CORES -x R_LIBS Rscript -e "library(here,lib.loc='../libraries');library(rmarkdown,lib.loc=here::here('libraries'));render(here::here('Analysis','design_soldvsnot.Rmd'))"
+
