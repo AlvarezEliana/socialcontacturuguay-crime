@@ -73,8 +73,121 @@ adjps <- p.adjust(xb0ionebyone$p,method="holm")
 
 ```{r}
 xb0ionebyone$thevar <- 1:nrow(xb0ionebyone)
+xb0ionebyone$varlab <- c(
+"Violent robberies",
+"dis1_i",
+"sec_mea3_p",
+"Mean age",
+"dis2_i",
+"pop",
+"Robberies",
+"sec_mea1_p",
+"mvd_int",
+"Votes for P.N. (%)",
+"educ_av",
+"fa_per",
+"Homes with defenses/bars",
+"pt_per",
+"n_sec_i",
+"Votes for PERI(%)",
+"ap_per",
+"vic12_i",
+"Votes for P.C.(%)",
+"neigh3_i",
+"pstigma3_i",
+"Homeowners(%)",
+"pstigma4_i",
+"ubn_no",
+"Country insec. perception",
+"ubn_one",
+"ps1718",
+"Votes for P.I.(%)",
+"sec_mea4_p",
+"law2_i",
+"People who use marijuana are a threat to society",
+"neigh6_i",
+"pstigma2_i",
+"Agreement - although they regulate, people will continue buying marijuana illegal",
+"dis5_i",
+"op3_m_i",
+"Frequency of activities in the neighborhood -  Talk with your neighbors",
+"stigma4_i",
+"ph_impact_i",
+"Sex",
+"vic12_n_i",
+"ps_impact_i",
+"Homes with 3 or more UBNs(%)",
+"dis6_i",
+"if_impact_i",
+"Public stigma - Most people believe that you cannot trust marjuana user",
+"rent_per",
+"st1718",
+"Stigmatization Agreement: Marijuana Users are dishonest",
+"neigh4_i",
+"social_dis",
+"Stigmatization Agreement: Most marijuana users are not well educated",
+"op4_m_i",
+"rp_m1_i",
+"Public stigma - Most people do not take seriously the views of a marijuna user",
+"law1_i",
+"crime_t_i",
+"Risk perception of frequent marijuana use",
+"neigh7_i",
+"cat_value",
+"Age",
+"dens",
+"dis4_i",
+"Perceived impact on drug trafficking",
+"op2_m_i",
+"prev_lt_i",
+"Contact with marijuana consumers",
+"stigma3_i",
+"neigh5_i",
+"Public stigma - Most people would treat marijuana users as any person ",
+"sec_mea2_p",
+"rp_m2_i",
+"Citizens insertion in the neighborhood",
+"pstigma8_i",
+"op1_m_i",
+"educ_i",
+"stigma2_i",
+"neigh8_i",
+"ideol_si_i",
+"ubn_two",
+"pstigma7_i"
+)
+
+#age_av	Mean age
+#robb_2016	Number of robberies
+#pn_per	Votes for Partido Nacional (%)
+#dis3_i	Homes that have defenses/metal grilles or bars on the windows (includes perimeter fence, barbed wire, and similar)
+#peri_per	Votes for PERI (%)
+#pc_per	Votes for Partido Colorado (%)
+#h_owners	Percentage of homeowners
+#c_sec_i	Country insecurity perception
+#pi_per	Votes for Partido Independiente (%)
+#op6_m_i	Agreement - The people who use marijuana are a threat to society
+#op5_m_i	Agreement - although they regulate, people will continue buying marijuana illegal
+#neigh2_i	Frequency of activities in the neighborhood -  Talk with your neighbors
+#sex_i	Sex
+#ubn_more	Percentage of homes with THREE OR MORE UBNs
+#pstigma1_i	Public stigma - Agreement: Most people believe that you cannot trust marjuana user
+#stigma6_i	Stigmatization Agreement: Marijuana Users are dishonest
+#stigma1_i	Stigmatization Agreement: Most marijuana users are not well educated
+#pstigma6_i	Public stigma - Agreement: Most people do not take seriously the views of a marijuna user
+#rp_m3_i	Risk perception of frequent marijuana use
+#age_i	Age
+#dt_impact_i	Perceived impact on drug trafficking
+#ffuse_i	Contact with marijuana consumers
+#pstigma5_i	Public stigma - Agreement: Most people would treat marijuana users as any person 
+#activities_index	Citizens insertion in the neighborhood
+#educ_i	Educational level
+#ideol_si_i	Ideological self-identification
+
+
 
 pdf(file=here::here("media","initial_balance_plot.pdf"))
+
 par(oma=rep(0,4)+.01,mar=c(3,8,0,0),mgp=c(1,.5,0))
 with(xb0ionebyone,{
 	     plot(abs(std.diff),thevar,
@@ -83,10 +196,14 @@ with(xb0ionebyone,{
 		       bg=c("white","black")[as.numeric(xb0ionebyone$p<=.05)+1],
 		       axes=FALSE)
 axis(1)
-axis(2,at=thevar,labels=varnm,las=2,tick=FALSE)
+axis(2,at=thevar,labels=varlab,las=2,tick=FALSE)
 segments(rep(0,nrow(xb0ionebyone)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
 }
 )
+
+
+
+
 dev.off()
 
 
