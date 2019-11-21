@@ -10,19 +10,19 @@ bibliography:
  - ../refs.bib
 biblio-style: authoryear-comp
 output:
-  pdf_document:
-    toc: true
-    number_sections: true
-    fig_caption: yes
-    fig_height: 4
-    fig_width: 4
-    latex_engine: xelatex
-    keep_tex: true
-    citation_package: biblatex
-    md_extensions: +raw_attribute
+ pdf_document:
+ toc: true
+ number_sections: true
+ fig_caption: yes
+ fig_height: 4
+ fig_width: 4
+ latex_engine: xelatex
+ keep_tex: true
+ citation_package: biblatex
+ md_extensions: +raw_attribute
 ---
 
-NOTE: Adjust  for  baseline  crime covariates within  set because of  large variability  across pharmacies  in baseline  crime.
+NOTE: Adjust for baseline crime covariates within set because of large variability across pharmacies in baseline crime.
 
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
@@ -42,7 +42,7 @@ load(here::here("Analysis","design_soldvsnot.rda"),verbose=TRUE)
 
 We registered the following analyses in <https://osf.io/aey7w/registrations>
 
-## Data Setup  for the Analyses
+## Data Setup for the Analyses
 
 Not all outcome variables are available in endline survey.
 
@@ -55,32 +55,28 @@ regdesignvars <- c("id","Q56", "treat", "ronda", "ph_type")
 We want the versions of the variable without imputation for missing values
 
 ```{r}
-outdat2 <- finaldat %>% dplyr::select(c(regdesignvars,regoutcomes,regcovs)) %>%
-	filter(ronda==2018) %>% mutate_if(is.character, as.numeric)
+fdat18i <- finaldat %>% dplyr::select(c(regdesignvars,regoutcomes,regcovs)) %>%
+	filter(ronda==2018) %>%
+	mutate_if(is.character, as.numeric)
 
-replace_NA_0 <- function(x) {
-  ifelse(x %in% c(88, 99), NA, x)
-}
+## Since we do not have the same people in 2017 and 2018, we do covariance
+## adjustment either by: ## (1) the rebar method (following Sales and Hanseen)
+## and/or lin approach using indivi level data and (2) more simply just using the
+## phramacy level data
 
-## Make all 88 and 99 responses into NA
-outdat3 <- outdat2 %>% dplyr::select(-c("id","age_i")) %>% mutate_all(replace_NA_0)
-stopifnot(sum(is.na(outdat3$boca1_i))==288) ## make sure to preserve missings
-outdat3$id <- outdat2$id
-outdat3$age_i <- outdat2$age_i
-## How much missing data is there?
-outdat3 %>% summarise_all(~sum(is.na(.)))
 ```
 
 Now merge the pharmacy level design onto the individual level data
 
 ```{r}
-designdat <- dat17p %>% dplyr::select(c("Q56","fm3","soldvsnot17","ph_type","pscore1","pscore2"))
+designdat <- dat17p %>% dplyr::select(c("Q56","fm3","soldvsnot17","ph_type","pscore1","pscore2",
+					"n_sec_i_mean","robb_2016_mean","vrobb_2016_mean"))
 
 ## Two pharmacies (the placebos) were dropped
 stopifnot(length(unique(designdat$Q56))==58)
 stopifnot(unique(designdat$ph_type)!=5)
 
-outdat4 <- inner_join(outdat3,designdat)
+outdat4 <- inner_join(fdat18i,designdat)
 stopifnot(isTRUE(all.equal(sort(unique(designdat$Q56)),sort(unique(outdat4$Q56)))))
 
 outdat4 %>% summarise_all(~sum(is.na(.)))
@@ -104,7 +100,7 @@ dim(outdat5)
 A quick check
 
 ```{r}
-## Do we need  to worry about means (maybe)
+## Do we need to worry about means (maybe)
 outdat5 %>% dplyr::select(regoutcomes) %>% summarize_all(~length(unique(.)))
 outdat5 %>% dplyr::select(regcovs) %>% summarize_all(~length(unique(.)))
 
@@ -115,7 +111,7 @@ outdat5 %>% dplyr::select(regcovs) %>% summarize_all(~length(unique(.)))
 
 Comparing a few approaches here (as preregistered) because of concerns about the small number of clusters. Later we will mount a small simulation to assess the false positive rate of the tests done here.
 
-Doing the tests without covariance  adjustment first.
+Doing the tests without covariance adjustment first.
 
 
 
@@ -141,8 +137,8 @@ est1fn <- function(ynm,covnms=NULL,dat,blocks,clusters,weights=NULL,...){
 	stopifnot( is.null(weights) | weights %in% c("nbwt","hbwt"))
 	dat <- dat %>% filter(!is.na(!! rlang::sym(ynm))) %>% group_by(!! rlang::sym(blocks)) %>%
 		mutate(pib=mean(soldvsnot17),
-		       nbwt=( soldvsnot17/pib ) + ( (1-soldvsnot17)/(1-pib) ),
-		       hbwt =  nbwt * ( pib * (1 - pib) ))
+		 nbwt=( soldvsnot17/pib ) + ( (1-soldvsnot17)/(1-pib) ),
+		 hbwt = nbwt * ( pib * (1 - pib) ))
 	## Some blocks have no treated or no controls after dumping missing data
 	dat <- dat %>% filter(pib!=0 & pib!=1)
 	if(!is.null(covnms)){
@@ -153,7 +149,7 @@ est1fn <- function(ynm,covnms=NULL,dat,blocks,clusters,weights=NULL,...){
 	}
 	rhs <- unique(c("soldvsnot17",covnms))
 	fmla <- reformulate(rhs,response = ynm)
-	##  Adjust for differential cluster size (middleton and aronow)
+	## Adjust for differential cluster size (middleton and aronow)
 	dat <- dat %>% group_by(!! rlang::sym(clusters)) %>% mutate(nclus=n())
 	fmla <- update(fmla,.~.+nclus)
 	if(!is.null(weights)){
@@ -187,17 +183,17 @@ est1fn("boca1_i",dat=outdat5,blocks="fm3",clusters="Q56",weights="nbwt")
 ```
 
 Do the basic analyses. For now, and for speed, only using block-size weights.
-Obviously, more power is available  with precision weights. Prefer the
+Obviously, more power is available with precision weights. Prefer the
 confidence intervals and $p$-value from the precision weights.
 
 
 ```{r}
 #options(warn=1)
 res1 <- lapply(regoutcomes,function(ynm){
-		       message(ynm)
-		       unadj <- est1fn(ynm,dat=outdat5,blocks="fm3",clusters="Q56",weights="nbwt")
-		       covadj <- est1fn(ynm,covnms=regcovs,blocks="fm3",dat=outdat5,clusters="Q56",weights="nbwt")
-		       tmp <- bind_cols(unadj=unadj,covadj=covadj)
+		 message(ynm)
+		 unadj <- est1fn(ynm,dat=outdat5,blocks="fm3",clusters="Q56",weights="nbwt")
+		 covadj <- est1fn(ynm,covnms=regcovs,blocks="fm3",dat=outdat5,clusters="Q56",weights="nbwt")
+		 tmp <- bind_cols(unadj=unadj,covadj=covadj)
 				 })
 
 resdt <- bind_rows(res1)
@@ -210,7 +206,7 @@ kable(resdt)
 
 ## Compare to rank based tests
 
-## Check performance of the estimator and tests 
+## Check performance of the estimator and tests
 
 ## Do direct permutation based tests
 
