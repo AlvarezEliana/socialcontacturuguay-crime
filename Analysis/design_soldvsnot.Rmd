@@ -177,7 +177,7 @@ summary(as.vector(mhdist))
 matchfmla_iCluster <-  update(matchfmla_i,.~.+cluster(Q56))
 ```
 
-## Search for a good matched design
+## Load results of the search for a good matched design
 
 ```{r}
 load(here::here("Analysis", "design_soldvsnot_search_res.rda"))

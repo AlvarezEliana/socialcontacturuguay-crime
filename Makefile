@@ -49,6 +49,9 @@ Analysis/matchingresults.rda: Analysis/balanceAndMatching.Rmd Data/wrkdat.rda
 Analysis/outcomeresults.rda: Analysis/outcome_analysis.Rmd Analysis/matchingresults.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis.Rmd')"
 
+media/evo_delitos.pdf: Analysis/script_evol_delitos.R
+	cd Analysis &&  R --vanilla  --file=script_evol_delitos.R
+
 ### Data
 
 Analysis/match_data_prep.rda: Analysis/match_data_prep.Rmd Data/wrkdat.rda Data/finaldat.rda \
