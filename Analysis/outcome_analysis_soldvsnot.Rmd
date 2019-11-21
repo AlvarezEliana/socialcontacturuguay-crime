@@ -349,7 +349,8 @@ names(resRI) <- regoutcomes
 rips <-  simplify2array(resRI)
 
 res_hbwt  <- res2dt[,c("outcome","estimate","p.value","estimate1","p.value1","test.adj.diff","test.p")]
-
+row.names(res_hbwt) <- res2dt[,"outcome"]
+res_hbwt[names(rips),"rips"]  <- rips
 
 plan(sequential)
 save(resRI,file=here::here("Analysis","outcome_analysis_resRI.rda"))

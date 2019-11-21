@@ -56,7 +56,7 @@ xb0i$overall[, ]
 xb0ionebyone <- data.frame(xb0i$results[,,])
 xb0ionebyone$varnm <- row.names(xb0ionebyone)
 xb0ionebyone <- xb0ionebyone %>% arrange(desc(abs(std.diff)))
-xb0ionebyone
+xb0ionebyone <- xb0ionebyone %>% filter(varnm!="(_non-null record_)")
 ## head(xb0ionebyone,n=20) ## Worst balanced
 ## Number of small p-values
 numsmallp1 <- sum(xb0ionebyone[, "p"] <= .05)
@@ -70,6 +70,8 @@ summary(xb0ionebyone$std.diff)
 
 adjps <- p.adjust(xb0ionebyone$p,method="holm")
 ```
+
+Add informative labels.
 
 ```{r}
 xb0ionebyone$thevar <- 1:nrow(xb0ionebyone)
@@ -183,28 +185,53 @@ xb0ionebyone$varlab <- c(
 #activities_index	Citizens insertion in the neighborhood
 #educ_i	Educational level
 #ideol_si_i	Ideological self-identification
+```
+
+Make the  plot
+
+```{r}
+
+xb0ionebyone$abs_std_diff <- abs(xb0ionebyone$std.diff)
 
 
+is_outlier <- function(x,mult=1.5,pos_only=TRUE) {
+	if(!pos_only){
+  return(x < quantile(x, 0.25) - mult * IQR(x) | x > quantile(x, 0.75) + mult * IQR(x))
+	} else {
+  return( x > quantile(x, 0.75) + mult * IQR(x))
+  }
+}
 
-pdf(file=here::here("media","initial_balance_plot.pdf"))
+dat <- xb0ionebyone %>% mutate(is_outlier=ifelse(is_outlier(abs_std_diff,.1), abs_std_diff, as.numeric(NA)))
+dat$varlab[which(is.na(dat$is_outlier))] <- as.numeric(NA)
+dat$varlab
+
+pdf(file=here::here("media","initial_balance_plot.pdf"),width=4,height=8)
 
 par(oma=rep(0,4)+.01,mar=c(3,8,0,0),mgp=c(1,.5,0))
-with(xb0ionebyone,{
-	     plot(abs(std.diff),thevar,
-		       pch=21,
-		       xlab="Absolute Std. Diff of Means",ylab="",
-		       bg=c("white","black")[as.numeric(xb0ionebyone$p<=.05)+1],
-		       axes=FALSE)
-axis(1)
-axis(2,at=thevar,labels=varlab,las=2,tick=FALSE)
-segments(rep(0,nrow(xb0ionebyone)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
-}
-)
 
-
-
+g  <- ggplot(data=dat,aes(y=abs_std_diff,x="",label=varlab))+
+	geom_boxplot(outlier.shape=NA)+
+	#geom_point(aes(x=1)) +
+	theme_bw() +
+	ylab("Abs(Standardized Mean Differences, Pharmacy - No-Pharmacy)") + 
+	xlab("")
+fullg  <- g + geom_text(aes(label=varlab),na.rm=TRUE,nudge_y=0.05,size=3)
+print(fullg)
 
 dev.off()
+
+## with(xb0ionebyone,{
+## 	     plot(abs(std.diff),thevar,
+## 		       pch=21,
+## 		       xlab="Absolute Std. Diff of Means",ylab="",
+## 		       bg=c("white","black")[as.numeric(xb0ionebyone$p<=.05)+1],
+## 		       axes=FALSE)
+## axis(1)
+## axis(2,at=thevar,labels=varlab,las=2,tick=FALSE)
+## segments(rep(0,nrow(xb0ionebyone)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
+## }
+## )
 
 
 ```
