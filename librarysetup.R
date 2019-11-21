@@ -30,7 +30,7 @@ remotes::install_local(path=here("manytestsr"),build_manual=TRUE)
 
 
 secondpkgs <- c("ggplot2", "dplyr", "clubSandwich", "lmtest", "sandwich", "knitr","tidyr","broom","coin",
-"optmatch","estimatr","arm")
+"optmatch","estimatr","arm","gridExtra")
 
 
 toinstallsecond <- secondpkgs[!(secondpkgs %in% pkgs[,"Package"])]
