@@ -20,3 +20,5 @@
 .RData
 *.dot
 .Rproj.user
+libraries/*
+.Rhistory
