@@ -209,19 +209,19 @@ tidy(lr0)  %>%  filter(term=="soldvsnot17")
 
 ### Now taking into  account the clusters but only in the  standard errors so some bias probable because cluster size might be correlated with treatment  effects
 difference_in_means(n_sec_i~soldvsnot17,blocks=fm3,clusters=Q56,data=tmpdat)
-lm_robust(n_sec_i~soldvsnot17,dat=tmpdat,weights=nbwt,clusters=Q56)
-lm_robust(n_sec_i~soldvsnot17,dat=tmpdat,weights=hbwt,clusters=Q56)
-lm_robust(n_sec_i~soldvsnot17,dat=tmpdat,fixed_effects=~fm3,clusters=Q56)
-lr0a <- lm_robust(n_sec_i~soldvsnot17+fm3,dat=tmpdat,clusters=Q56)
+lm_robust(n_sec_i~soldvsnot17,dat=tmpdat,weights=nbwt,clusters=Q56,se_type="CR0")
+lm_robust(n_sec_i~soldvsnot17,dat=tmpdat,weights=hbwt,clusters=Q56,se_type="CR0")
+lm_robust(n_sec_i~soldvsnot17,dat=tmpdat,fixed_effects=~fm3,clusters=Q56,se_type="CR0")
+lr0a <- lm_robust(n_sec_i~soldvsnot17+fm3,dat=tmpdat,clusters=Q56,se_type="CR0")
 tidy(lr0a)  %>%  filter(term=="soldvsnot17")
 
 ### Now  adjusting for unequal cluster  sizes (Middleton and  Aronow)
-lm_robust(n_sec_i~soldvsnot17+nclus,dat=tmpdat,weights=nbwt,clusters=Q56)
+lm_robust(n_sec_i~soldvsnot17+nclus,dat=tmpdat,weights=nbwt,clusters=Q56,se_type="CR0")
 ##  The next approaches differ because of correlations between block size and cluster size.
-lm_robust(n_sec_i~soldvsnot17+nclus,dat=tmpdat,weights=hbwt,clusters=Q56) ##this  one like  balanceTest
-lm_robust(n_sec_i~soldvsnot17+nclus,fixed_effects=~fm3,dat=tmpdat,clusters=Q56)
-lm_robust(n_sec_i~soldvsnot17+nclus+fm3,dat=tmpdat,clusters=Q56)
-
+lm_robust(n_sec_i~soldvsnot17+nclus,dat=tmpdat,weights=hbwt,clusters=Q56,se_type="CR0") ##this  one like  balanceTest
+lm_robust(n_sec_i~soldvsnot17+nclus,fixed_effects=~fm3,dat=tmpdat,clusters=Q56,se_type="CR0")
+lr0b <- lm_robust(n_sec_i~soldvsnot17+nclus+fm3,dat=tmpdat,clusters=Q56,se_typ="CR0")
+tidy(lr0b)  %>%  filter(term=="soldvsnot17")
 ## Compare to the following test (which is like the  first  of  the precision weighted approaches above)
 test1 <- balanceTest(soldvsnot17~n_sec_i+strata(fm3)+cluster(Q56),data=tmpdat,report="all")
 test1$results
@@ -320,40 +320,56 @@ testfn <- function(ynm,trtnm,blocknm,clusternm,thedat,thedatp){
 thedatp <- designdat %>%  dplyr::select(fm3,Q56,soldvsnot17) %>% filter(!is.na(fm3))
 thedati  <- outdat5  %>%  dplyr::select(fm3,Q56,regoutcomes,nclus,soldvsnot17) %>%  filter(!is.na(fm3))
 testfn(ynm="n_sec_i",trtnm="soldvsnot17",blocknm="fm3",clusternm="Q56",thedat=thedati,thedatp=thedatp)
+```
 
-set.seed(12345)
-library(future)
-library(future.apply)
-##plan(multicore,workers=parallel::detectCores())
-##nulldist <- future_replicate(10000,testfn(ynm="n_sec_i",trtnm="soldvsnot17",blocknm="fm3",clusternm="Q56",thedat=thedati,thedatp=thedatp))
-##obsTZobj <- lm_robust(n_sec_i~soldvsnot17+nclus,data=outdat5,fixed_effects=~fm3,clusters=Q56,se_type="CR0")
-##obsTZ  <- coef(obsTZobj)["soldvsnot17"]
-####plot(density(nulldist))
-##plan(sequential)
-##mean(nulldist >= obsTZ)
-##2*min(mean(nulldist >= obsTZ),mean(nulldist <= obsTZ))
+```{r eval=FALSE}
 
-## Perm  Inf for  all:
-plan(multicore,workers=parallel::detectCores())
-resRI <- future_lapply(regoutcomes,function(ynm){
-			       message(ynm)
-			       tmpdati <- thedati %>% filter(!is.na(!! rlang::sym(ynm)))
-			       nulldist <- replicate(10000,testfn(ynm=ynm,trtnm="soldvsnot17",blocknm="fm3",clusternm="Q56",thedat=tmpdati,thedatp=thedatp))
-			       thefmla <- as.formula(paste(ynm,"~soldvsnot17+nclus",sep=""))
-			       obsTZobj <- lm_robust(thefmla,data=tmpdati,fixed_effects=~fm3,clusters=Q56,se_type="CR0")
-			       obsTZ  <- coef(obsTZobj)["soldvsnot17"]
-			       pval <-  2*min(mean(nulldist >= obsTZ),mean(nulldist <= obsTZ))
-			       return(pval)
-				 })
+tryCatch(load(here::here("Analysis", "outcome_analysis_resRI.rda")),
+	 error = function(e) {
+		 set.seed(12345)
+		 library(future)
+		 library(future.apply)
+		 ##plan(multicore,workers=parallel::detectCores())
+		 ##nulldist <- future_replicate(10000,testfn(ynm="n_sec_i",trtnm="soldvsnot17",blocknm="fm3",clusternm="Q56",thedat=thedati,thedatp=thedatp))
+		 ##obsTZobj <- lm_robust(n_sec_i~soldvsnot17+nclus,data=outdat5,fixed_effects=~fm3,clusters=Q56,se_type="CR0")
+		 ##obsTZ  <- coef(obsTZobj)["soldvsnot17"]
+		 ####plot(density(nulldist))
+		 ##plan(sequential)
+		 ##mean(nulldist >= obsTZ)
+		 ##2*min(mean(nulldist >= obsTZ),mean(nulldist <= obsTZ))
+
+		 ## Perm  Inf for  all:
+		 plan(multicore,workers=parallel::detectCores())
+		 resRI <- future_lapply(regoutcomes,function(ynm){
+						message(ynm)
+						tmpdati <- thedati %>% filter(!is.na(!! rlang::sym(ynm)))
+						nulldist <- replicate(10000,testfn(ynm=ynm,trtnm="soldvsnot17",blocknm="fm3",clusternm="Q56",thedat=tmpdati,thedatp=thedatp))
+						thefmla <- as.formula(paste(ynm,"~soldvsnot17+nclus",sep=""))
+						obsTZobj <- lm_robust(thefmla,data=tmpdati,fixed_effects=~fm3,clusters=Q56,se_type="CR0")
+						obsTZ  <- coef(obsTZobj)["soldvsnot17"]
+						pval <-  2*min(mean(nulldist >= obsTZ),mean(nulldist <= obsTZ))
+						return(pval)
+					})
+		 names(resRI) <- regoutcomes
+
+		 plan(sequential)
+		 save(resRI,file=here::here("Analysis","outcome_analysis_resRI.rda")),
+	 },
+	 finally = {
+		 load(here::here("Analysis", "outcome_analysis_resRI.rda"))
+	 }
+)
+
+```
+
+```{r }
+load(here::here("Analysis","outcome_analysis_resRI.rda"))
 names(resRI) <- regoutcomes
 rips <-  simplify2array(resRI)
 
 res_hbwt  <- res2dt[,c("outcome","estimate","p.value","estimate1","p.value1","test.adj.diff","test.p")]
 row.names(res_hbwt) <- res2dt[,"outcome"]
 res_hbwt[names(rips),"rips"]  <- rips
-
-plan(sequential)
-save(resRI,file=here::here("Analysis","outcome_analysis_resRI.rda"))
 
 ```
 
