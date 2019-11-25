@@ -238,16 +238,16 @@ The data used in this analysis come from face-to-face surveys that aimed to help
 
 \subsection{Stratification for Fair Comparison}
 
-To learn about whether sale of marijuana in a pharmacies influences attitudes and perceptions of neighbors, we compare the survey responses of neighbors living near pharmacies selling marijuana to the responses of neighbors who did not live near such pharmacies. The problem arising from a strategy like this, is that neighborhoods where pharmacy owners decided to sell marijuana are probably different from neighborhoods where they decided to pass over the opportunity to sell marijuana (we already know that owners and representatives of the pharmacies differ on their opinions towards the policy). The question is whether the amount of difference between the two groups of pharmacies would mislead our comparison to learn about the effects of selling marijuana on attitudes. What is the standard to judge whether a comparison might mislead us? We know that if an intervention is randomly assigned, then the comparisons based on that intervention would not confuse causal effects with confounding. \citep{hansen2008cbs} develop a formal way to compare a given observed comparison with what would be expected if that comparison had been randomized: in essence, they develop a hypothesis test for the hypothesis that the neighbors of selling pharmacies and the neighbors of not selling pharmacies might have been allocated at random. In our case, the raw comparison of attitudes around pharmacies selling marijuana and those not selling marijuana, confirms our hunch that the places do not in fact compare favorably to a randomized experiment:  the Hansen and Bowers omnibus test across 81 covariates reports a $p$-value of .07. Figure~\ref{fig:initbal} shows that very few of the covariates differed between the two groups of people by more than about .07 standard deviations, although one or two variables at the pharmacy level (average age and number of violent robberies) did differ appreciably at or beyond 1 standard deviation. That figure uses black dots to show when one-by-one hypothesis tests of the hypothesis of no difference between groups indicate a significant departure from the null. We see 11 $p$-values less than .05 out of 81 unadjusted tests (a Holm adjustment would yield only 3 $p$-values different from 1.0, and lowest $p$-value would be .38). In 81 tests of the null of no difference, we would expect approximately 4 tests with $p \le .05$ if there were truly no difference. The excess of 11-4 = 7 tests here is just another way to show what the omnibus $d^2$ tests reported --- more work can be done to improve our baseline comparison.
+To learn about whether sale of marijuana in a pharmacies influences attitudes and perceptions of neighbors, we compare the survey responses of neighbors living near pharmacies selling marijuana to the responses of neighbors who did not live near such pharmacies. The problem arising from a strategy like this, is that neighborhoods where pharmacy owners decided to sell marijuana are probably different from neighborhoods where they decided to pass over the opportunity to sell marijuana (we already know that owners and representatives of the pharmacies differ on their opinions towards the policy). The question is whether the amount of difference between the two groups of pharmacies would mislead our comparison to learn about the effects of selling marijuana on attitudes. What is the standard to judge whether a comparison might mislead us? We know that if an intervention is randomly assigned, then the comparisons based on that intervention would not confuse causal effects with confounding. \citep{hansen2008cbs} develop a formal way to compare a given observed comparison with what would be expected if that comparison had been randomized: in essence, they develop a hypothesis test for the hypothesis that the neighbors of selling pharmacies and the neighbors of not selling pharmacies might have been allocated at random. In our case, the raw comparison of attitudes around pharmacies selling marijuana and those not selling marijuana, confirms our hunch that the places do not in fact compare favorably to a randomized experiment:  the Hansen and Bowers omnibus test across 81 covariates reports a $p$-value of .07. The boxplot, Figure XX, in the  appendix shows that very few of the covariates differed between the two groups of people by more than about .07 standard deviations, although one or two variables at the pharmacy level (average age and number of violent robberies) did differ appreciably at or beyond 1 standard deviation. That figure uses black dots to show when one-by-one hypothesis tests of the hypothesis of no difference between groups indicate a significant departure from the null. We see 11 $p$-values less than .05 out of 81 unadjusted tests (a Holm adjustment would yield only 3 $p$-values different from 1.0, and lowest $p$-value would be .38). In 81 tests of the null of no difference, we would expect approximately 4 tests with $p \le .05$ if there were truly no difference. The excess of 11-4 = 7 tests here is just another way to show what the omnibus $d^2$ tests reported --- more work can be done to improve our baseline comparison.
 
-\begin{figure}[htbp!]
-\centering
-\caption{Absolute standardized differences of means between the neighbors of the 16 selling pharmacies and the 42 comparison pharmacies} 
-\label{fig:initbal}
-\includegraphics[width=.8\textwidth]{./media/initial_balance_plot.pdf}
+%\begin{figure}[htbp!]
+%\centering
+%\caption{Absolute standardized differences of means between the neighbors of the 16 selling pharmacies and the 42 comparison pharmacies} 
+%\label{fig:initbal}
+%\includegraphics[width=.8\textwidth]{./media/initial_balance_plot.pdf}
 
-\scriptsize{Although very few differences were larger than 1 sd, approximately 11 differences were inconsistent with random assignment (unadjusted $p \le .05$ (colored with black dots). The omnibus balance test across all 81 covariate relationships produces a $p=.07$ \citep{hansen2008cbs}.}
-\end{figure}
+%\scriptsize{Although very few differences were larger than 1 sd, approximately 11 differences were inconsistent with random assignment (unadjusted $p \le .05$ (colored with black dots). The omnibus balance test across all 81 covariate relationships produces a $p=.07$ \citep{hansen2008cbs}.}
+%\end{figure}
 
 \subsection{Designing a Better Baseline Comparison}
 
@@ -278,53 +278,17 @@ Finally, we will compare pharmacies depending on how long they have been selling
     \begin{tabular}{clll}
 Comparison	      &		&		&	Expected effect	\\
 number	      &		&		&		\\ \hline
-1	      &	Sellers (wholetime \&	&	Non-sellers	&	Effect on ``sellers'' if effect is	\\
+1	      &	Sellers (wholetime) \&	&	Non-sellers	&	Effect on ``sellers'' if effect is	\\
 	      &	dropouts\& newcomers)	&		&	about selling	\\
-2	      &	Baseline (wholetime	&	Non-sellers	&	Effect on ``baseline'' if the effect is 	\\
+2	      &	Baseline (16 wholetime)	&	Non-sellers	&	Effect on ``baseline'' if the effect is 	\\
 	      &	\& dropouts)	&		&	about selling	\\
-3	      &	Sellers (wholetime \&	&	Placebo	&	Effect if it is about actually selling or 	\\
+3	      &	Sellers (wholetime) \&	&	Placebo	&	Effect if it is about actually selling or 	\\
 	      &	dropouts \& newcomers)	&		&  no effect if it is about the decision of selling	\\
 4	      &	Placebo 	&	Non-sellers	&	No effect if the effect is about selling. 	\\
 5	      &	Wholetime	&	Part-time	&	Larger effect on ``wholetime'' 	\\
 	      &		&	 (dropouts \& newcomers)	&	than on the ``part-time''	\\ \hline
 \end{tabular}
 \end{table}
-
-\subsection{Preliminary Results before Stratification and Covariance Adjustment}
-
-In this version of the paper we show the results of the second proposed comparison between neighbors of pharmacies that sold marijuana at the beginning of the implementation of the policy, which includes ``wholetime'' and ``dropouts'', with neighbors of non-selling pharmacies. Below we present the results of the ATE model for the eight outcomes related to crime victimization, public security, and perceived law impacts.
-
-Having a marijuana selling pharmacy in the neighborhood does not have an impact on crime victimization, as it was expected. Neither there is an effect on country or neighborhood public insecurity perceptions. Neighborhood pharmacies selling marijuana do not change the perceived impact of the law on public security, and they do not alter citizens insertion in the neighborhood. In that sense, after the implementation of marijuana selling at pharmacies, neighbors of those dispensaries behave in the same way that other Uruguayans do in their daily routines and activities (see Table ~\ref{tab:regtab}). Despite the long lines of people outside pharmacies waiting to buy marijuana that became part of the urban scene since 2017, neighbors of those pharmacies do not feel more insecure or change their daily behaviors in the geographical where their live.
-
-Another outcome that we thought might change due to the existence of a marijuana selling pharmacy is the perceived existence of ``bocas'' in the neighborhood. The argument is that due to the existence of a legal selling point, ``bocas'' would disappear from the neighborhood, probable reallocating in another area. This preliminary analysis show that having a marijuana selling pharmacy close by did not have an impact on the perception of the existence of a ``boca'' in the neighborhood. At least from the citizens' perception, nothing change on that respect.
-
-\begin{table}[H]
-        \centering
-        \footnotesize
-        \caption{Differences in differences estimation for outcome variables}
-    \label{tab:regtab}
-    \begin{tabular}{lccccc}
- & \textbf{N} & \textbf{Coeff.}	&	\textbf{Robust Stand.}	&	\textbf{P value}	&	\textbf{CI 95\% } 		\\
- &  & 	&	\textbf{Error}	&		&		\\	\hline
-Country insecurity  perception	&	1215	&	-.0791165	&	.1030153	&	0.443	&	-.2812253    	.1229923	\\
-Neighborhood insecurity perception	&	1212	&	-.0469921	&	.1071544	&	0.661	&	-.257222    	.1632379	\\
-Crime victimization in the last 12 months	&	1217	&	-.041347	&	.0446088	&	0.354	&	-.1288663  	 .0461723	\\
-Perceived impact on drug trafficking &	1057	&	-.2066804 	&	.0953157	&	0.030**	&	 -.3937112  	 -.0196497	\\
-Perceived impact on public security	&	1071	&	-.0337569 	&	.0826017 	&	0.683	&	-.1958376    	.1283237	\\
-Reported existence of ``bocas''	&	1215	&	.0054253	&	.0602388	&	 0.928	&	-.112759 	.1236096	\\
-Social disorder index	&	1218	&	-.1596775 	&	.0390902 	&	0.000***	&	-.2363694 	-.0829856	\\
-Citizens insertion in their neighborhood	&	1131	&	.0104118	&	.0271764	&	0.702	&	-.0429104   	 .0637339	\\	\hline
-*Significant at 90\%\\
-**Significant at 95\%\\
-***Significant at 99\% \\~\\
-        \end{tabular}
-        \end{table}
-
-\hl{We include socio-demographic covarietes (sex, age, education and ideology). Perceptions that the law has an impact on drug trafficking and social disorder index are the only two outcomes on which marijuana selling pharmacies has a significant effect. Uruguayans perceptions about the impact that the law has to fight drug traffic positively changed when they have a marijuana selling pharmacy in their neighborhood. That might be because they see users buying marijuana at the pharmacy and make the deductive reasoning that those are not buying in the illegal market, and as such, this might undermine drug traffic.
-
-In the case of social disorder, the evidence goes against the expectation. We hypothesize that having a marijuana selling pharmacy in the neighborhood might generate a higher level of social disorder. That expectation took into account the inconveniences that long lines with users outside the pharmacies could imply for neighbors. But the preliminary evidence indicates that selling pharmacies do not generate more social disorder. At least, this was not registered by interviewers while measuring it in the survey.
-
-Our design makes possible to compare perceptions towards insecurity, either in the country or the neighborhood, through time. The effect of time have worsen both outcomes in the last twelve months. However, this deterioration has nothing to do with marijuana selling pharmacies, and it is consistent with  the national trends.}\footnote{According with data form the LAPOP Project, the percentage of people who declares feeling ``very safe'' in their neighborhood drops between 2010 and 2014. On the contrary, people that feels ``very unsafe'' grow in the same period.}
 
 \section{Sensitivity to unobserved confounds} \label{sec:sensitivity}
 
@@ -354,6 +318,7 @@ CONTEXTO AL ALZA DE PERCEPCIÓN DE INSEGURIDAD
 CAMBIOS EN LAS PERCEPCIONES, OPINIONES
 HABLAR DE LA DIRECCIÓN DE LOS EFECTOS AUNQUE NO SEAN SIGNIFICATIVOS
 
+FUTURE STEPS
 
 \printbibliography[title={8 References}]
 
