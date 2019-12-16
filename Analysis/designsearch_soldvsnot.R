@@ -15,7 +15,7 @@ table(dat17i$soldvsnot17,exclude=c())
 
 dat17p <- wdat17p %>% filter(!is.na(soldvsnot17))
 table(dat17p$soldvsnot17,exclude=c())
-
+row.names(dat17p) <- dat17p$Q56 ## needed to add this. 
 
 ## ------------------------------------------------------------------------
 tmpnms <- names(dat17p)[!names(dat17p) %in% designvars]
