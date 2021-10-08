@@ -1,6 +1,6 @@
 
 ---
-title: Describe Chosen Research Design for APSA
+title: Describe Chosen Research Design --- Sold Vs Not Comparison
 author: Jake Bowers
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 fontsize: 11pt
@@ -46,7 +46,7 @@ load(here::here("Analysis","design_soldvsnot.rda"),verbose=TRUE)
 ```
 
 ```{r}
-xb_i2vars <- xb_i2vars %>% arrange(desc(abs(std.diff))) 
+xb_i2vars <- xb_i2vars %>% arrange(desc(abs(std.diff)))
 
 xb_i2vars$thevar <- 1:nrow(xb_i2vars)
 

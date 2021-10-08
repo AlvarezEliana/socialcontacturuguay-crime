@@ -123,19 +123,22 @@ matchfmlacovs[tmp] <- gsub("_mean", "", matchfmlacovs[matchfmla_covs_idx])
 matchfmla2 <- reformulate(matchfmlacovs, response = "soldvsnot17")
 
 ## Assess mm1
+### At pharmacy level
 mm1p <- mm1_data %>%
   group_by(Q56) %>%
   summarize(mm1 = unique(pair.id))
 d17p <- left_join(dat17p, mm1p, by = "Q56", suffix = c("", ".y"))
 row.names(d17p) <- d17p$Q56
 stopifnot(all.equal(row.names(d17p), row.names(dat17p)))
-xb_mm1 <- balanceTest(update(matchfmla2, . ~ . + strata(mm1)), data = d17p, report = "all", subset = !is.na(mm1), p.adjust.method = "holm")
+xb_mm1 <- balanceTest(update(matchfmla2, . ~ . + strata(mm1)), data = d17p, report = "all", 
+                      subset = !is.na(mm1), p.adjust.method = "holm")
 xb_mm1$overall[, ]
 xb_mm1vars <- as_tibble(xb_mm1$results[, , "mm1"], rownames = "vars")
 xb_mm1vars %>%
   arrange(desc(abs(std.diff))) %>%
   head(x, n = 10)
-## Do individual level balance test
+
+### At individual level 
 ndati1 <- nrow(dat17i)
 dat17i$mm1 <- NULL
 dat17i <- left_join(dat17i, d17p[, c("Q56", "mm1")], by = "Q56")
@@ -164,7 +167,8 @@ fm1 <- fullmatch(pharm_score_mat, data = d17p)
 summary(fm1, min.controls = 0, max.controls = Inf)
 
 d17p$fm1 <- factor(fm1)
-xb1 <- balanceTest(update(matchfmla2, . ~ . + strata(fm1)), data = d17p, report = "all", subset = !is.na(fm1), p.adjust.method = "holm")
+xb1 <- balanceTest(update(matchfmla2, . ~ . + strata(fm1)), data = d17p, report = "all",
+                   subset = !is.na(fm1), p.adjust.method = "holm")
 xb1$overall[, ]
 ## What vars have the worst balance?
 xb1vars <- as_tibble(xb1$results[, , "fm1"], rownames = "vars")
