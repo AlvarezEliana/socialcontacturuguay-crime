@@ -10,7 +10,8 @@ SHELL = /bin/sh
 
 .PHONY: all
 
-all: main.pdf
+all: main.pdf \
+	Analysis/pharm_score_mat.rda
 
 ## Paper
 
@@ -51,6 +52,9 @@ Analysis/outcomeresults.rda: Analysis/outcome_analysis.Rmd Analysis/matchingresu
 
 media/evo_delitos.pdf: Analysis/script_evol_delitos.R
 	cd Analysis &&  R --vanilla  --file=script_evol_delitos.R
+
+Analysis/pharm_score_mat.rda: Analsis/design_svn_zubi.R
+	cd Analysis && R --vanilla --file=design_svn_zubi.R
 
 ### Data
 
