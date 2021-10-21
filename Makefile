@@ -86,10 +86,9 @@ libraries/librarysetup_done.txt: librarysetup.R
 
 ## Other tasks
 
-makefile.png: Makefile
-	make -Bnd | make2graph > makefile.dot;
-	gsed -i '2i graph [dpi =   600]; \n size="7.5,9"; \n ratio="fill" ' makefile.dot;
-	dot -Tpng makefile.dot -o makefile.png
+## A graph of the makefile
+makefile.png: Makefile make_p_to_json.py json_to_dot.py
+	make -qp | python3 make_p_to_json.py | python3 json_to_dot.py | dot -Tpng >| makefile.png
 
 ## see also https://stackoverflow.com/questions/14784405/how-to-set-the-output-size-in-graphviz-for-the-dot-format/20536144
 ## dot -Tpng -Gsize=9,15\! -Gdpi=100 -ofoo.png foo.gv
