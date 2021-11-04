@@ -40,6 +40,7 @@ library(arm)
 library(tidyverse)
 ```
 
+## Using the pharmacy level full matching
 
 ```{r}
 load(here::here("Analysis","design_soldvsnot.rda"),verbose=TRUE)
@@ -65,14 +66,74 @@ segments(rep(0,nrow(xb_i2vars)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
 )
 
 dev.off()
+## n_sec neighborhood security perceptions
+```
 
+
+```{r}
+meandiff <- function(v, z = soldvsnot17) {
+  force(z)
+  mean(v[z == 1]) - mean(v[z == 0])
+}
+
+setstats <- dat17i %>%
+	filter(!is.na(fm2)) %>%
+  group_by(fm2) %>%
+  summarize(
+    age_diffmean = meandiff(age_i,z=soldvsnot17),
+    n_sec_diffmean=meandiff(n_sec_i,z=soldvsnot17),
+    #ps2017_mean = meandiff(ps2017_mean, z = soldvsnot17),
+    #ps2017_median = meandiff(ps2017_median, z = soldvsnot17),
+    #st2017_mean = meandiff(st2017_mean, z = soldvsnot17),
+    vrobb_2016_diffmean = meandiff(vrobb_2016, z = soldvsnot17),
+    robb_2016_diffmean = meandiff(robb_2016, z = soldvsnot17),
+    setsize = n(),
+    Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
+  )
+setstats %>% arrange(desc(abs(vrobb_2016_diffmean)))
+
+summary(abs(setstats$vrobb_2016_diffmean))
+## vrobb son violentos (assault)
+## robb son robos
+```
+
+## Using the MultiMatch input to Fullmatch
+
+```{r}
+## Not elegant but don't want to get confused
+rm(list=ls())
+
+```
+
+```{r}
+load(here::here("Analysis","design_svn_zubi.rda"),verbose=TRUE)
+```
+
+```{r}
+xb_i2vars <- xb_i2vars %>% arrange(desc(abs(std.diff)))
+
+xb_i2vars$thevar <- 1:nrow(xb_i2vars)
+
+pdf(file=here::here("media","fm2_mm1_balance_plot.pdf"))
+par(oma=rep(0,4)+.01,mar=c(3,8,0,1),mgp=c(1.5,.5,0))
+with(xb_i2vars,{
+	     plot(abs(std.diff),thevar,
+		       pch=21,
+		       xlab="Absolute Std. Diff of Means",ylab="",
+		       bg=c("white","black")[as.numeric(xb_i2vars$p<=.05)+1],
+		       axes=FALSE)
+axis(1)
+axis(2,at=thevar,labels=vars,las=2,tick=FALSE)
+segments(rep(0,nrow(xb_i2vars)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
+}
+)
+
+dev.off()
 
 ```
 
 
-
 ```{r}
-
 meandiff <- function(v, z = soldvsnot17) {
   force(z)
   mean(v[z == 1]) - mean(v[z == 0])
@@ -97,6 +158,5 @@ setstats %>% arrange(desc(abs(vrobb_2016_diffmean)))
 summary(abs(setstats$vrobb_2016_diffmean))
 ```
 
-
-
+This makes me think we should use the original matched design.
 

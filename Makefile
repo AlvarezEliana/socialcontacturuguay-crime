@@ -44,17 +44,19 @@ Analysis/initial_balance.rda: Analysis/initial_balance.Rmd Analysis/match_data_p
 
 media/initial_balance_plot.pdf: Analysis/initial_balance.rda
 
-Analysis/matchingresults.rda: Analysis/balanceAndMatching.Rmd Data/wrkdat.rda
-	cd Analysis && Rscript -e "library(rmarkdown);render('balanceAndMatching.Rmd')"
+##Analysis/matchingresults.rda: Analysis/balanceAndMatching.Rmd Data/wrkdat.rda
+##	cd Analysis && Rscript -e "library(rmarkdown);render('balanceAndMatching.Rmd')"
 
-Analysis/outcomeresults.rda: Analysis/outcome_analysis.Rmd Analysis/matchingresults.rda
-	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis.Rmd')"
+##Analysis/outcomeresults.rda: Analysis/outcome_analysis.Rmd Analysis/matchingresults.rda
+##	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis.Rmd')"
 
 media/evo_delitos.pdf: Analysis/script_evol_delitos.R
 	cd Analysis &&  R --vanilla  --file=script_evol_delitos.R
 
-Analysis/pharm_score_mat.rda: Analsis/design_svn_zubi.R
+Analysis/design_svn_zubi.rda: Analsis/design_svn_zubi.R
 	cd Analysis && R --vanilla --file=design_svn_zubi.R
+
+Analysis/pharm_score_mat.rda: Analysis/design_svn_zubi.rda
 
 ### Data
 
@@ -65,7 +67,7 @@ Analysis/match_data_prep.rda: Analysis/match_data_prep.Rmd Data/wrkdat.rda Data/
 Data/finaldat.rda : Data/stata2R.R Data/wd_basefinal1718.dta
 	cd Data && R --vanilla --file=stata2R.R
 
-Data/wrkdat.rda : Data/finaldat.rda Data/datasetup.R libraries/librarysetup_done.txt
+Data/wrkdat.rda : Data/finaldat.rda Data/datasetup.R
 	cd Data && R --vanilla --file=datasetup.R
 
 wd_basefinal1718.dta:
@@ -81,8 +83,8 @@ wd_basefinal1718.dta:
 
 ## Local libraries
 
-libraries/librarysetup_done.txt: librarysetup.R
-	R --vanilla --file=librarysetup.R
+##libraries/librarysetup_done.txt: librarysetup.R
+##	R --vanilla --file=librarysetup.R
 
 ## Other tasks
 
@@ -90,5 +92,7 @@ libraries/librarysetup_done.txt: librarysetup.R
 makefile.png: Makefile make_p_to_json.py json_to_dot.py
 	make -qp | python3 make_p_to_json.py | python3 json_to_dot.py | dot -Tpng >| makefile.png
 
+makefile.pdf: Makefile make_p_to_json.py json_to_dot.py
+	make -qp | python3 make_p_to_json.py | python3 json_to_dot.py | dot -Tpdf >| makefile.pdf
 ## see also https://stackoverflow.com/questions/14784405/how-to-set-the-output-size-in-graphviz-for-the-dot-format/20536144
 ## dot -Tpng -Gsize=9,15\! -Gdpi=100 -ofoo.png foo.gv

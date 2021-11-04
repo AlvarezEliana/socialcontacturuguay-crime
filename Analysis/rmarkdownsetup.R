@@ -3,7 +3,7 @@
 # knitr settings to control how R chunks work.
 rm(list = ls())
 
-##require(knitr)
+## require(knitr)
 ## Setup for most r markdown files
 
 ## This plus size="\\scriptsize" from https://stackoverflow.com/questions/26372138/beamer-presentation-rstudio-change-font-size-for-chunk
@@ -44,18 +44,4 @@ options(
   width = 132
 )
 
-## Later make this installation to a local library
-### This next will not re-run if there has not been change in Github
-
-
-## see librarysetup.R
-##devtools::install_github("markmfredrickson/RItools",lib="libraries")
-library(here)
-library(RItools,lib.loc=here::here("libraries"))
-library(optmatch)
-library(stringr)
-library(tidyverse)
-library(arm)
-
 if (!dir.exists("figs")) dir.create("figs")
-

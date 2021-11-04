@@ -1,6 +1,13 @@
 ## Follow the multilevel matching ideas from Zubizarreta, Keele, and Pimental
 ## focusing on sold_vs_not comparison
 
+
+library(here)
+library(RItools)
+library(optmatch)
+library(stringr)
+library(tidyverse)
+library(arm)
 source("rmarkdownsetup.R")
 library(matchMulti)
 
@@ -122,7 +129,7 @@ names(dat17p)[names(dat17p) %in% tmp2] <- gsub("_mean", "", names(dat17p)[names(
 matchfmlacovs[tmp] <- gsub("_mean", "", matchfmlacovs[matchfmla_covs_idx])
 matchfmla2 <- reformulate(matchfmlacovs, response = "soldvsnot17")
 
-## Assess mm1
+## Assess the schools included in mm1
 ### At pharmacy level
 mm1p <- mm1_data %>%
   group_by(Q56) %>%
@@ -130,28 +137,26 @@ mm1p <- mm1_data %>%
 d17p <- left_join(dat17p, mm1p, by = "Q56", suffix = c("", ".y"))
 row.names(d17p) <- d17p$Q56
 stopifnot(all.equal(row.names(d17p), row.names(dat17p)))
-xb_mm1 <- balanceTest(update(matchfmla2, . ~ . + strata(mm1)), data = d17p, report = "all", 
-                      subset = !is.na(mm1), p.adjust.method = "holm")
+xb_mm1 <- xBalance(matchfmla2, strata = list(mm1 = ~mm1), data = d17p[!is.na(d17p$mm1), ], report = "all")
 xb_mm1$overall[, ]
 xb_mm1vars <- as_tibble(xb_mm1$results[, , "mm1"], rownames = "vars")
 xb_mm1vars %>%
   arrange(desc(abs(std.diff))) %>%
   head(x, n = 10)
 
-### At individual level 
+### At individual level
 ndati1 <- nrow(dat17i)
 dat17i$mm1 <- NULL
 dat17i <- left_join(dat17i, d17p[, c("Q56", "mm1")], by = "Q56")
 stopifnot(ndati1 == nrow(dat17i))
-balfmla_i <- update(matchfmla_iCluster, . ~ . + strata(mm1))
-xb_imm1 <- balanceTest(balfmla_i, data = dat17i, report = "all", p.adjust.method = "holm")
+xb_imm1 <- xBalance(matchfmla_iCluster, strata = list(mm1 = ~mm1), data = dat17i, report = "all")
 xb_imm1$overall[, ]
 xb_imm1vars <- as_tibble(xb_imm1$results[, , "mm1"], rownames = "vars")
 xb_imm1vars %>%
   arrange(desc(abs(std.diff))) %>%
   head(x, n = 10)
 mm1_bal1_farmacias <- as.data.frame(mm1_bal1$schools)
-mm1_bal1_farmacias$var <- row.names(mm1_bal1_schools)
+mm1_bal1_farmacias$var <- row.names(mm1_bal1$schools)
 ## What vars have the worst balance?
 mm1_bal1_farmacias %>%
   arrange(desc(abs(`SDiff After`))) %>%
@@ -167,8 +172,7 @@ fm1 <- fullmatch(pharm_score_mat, data = d17p)
 summary(fm1, min.controls = 0, max.controls = Inf)
 
 d17p$fm1 <- factor(fm1)
-xb1 <- balanceTest(update(matchfmla2, . ~ . + strata(fm1)), data = d17p, report = "all",
-                   subset = !is.na(fm1), p.adjust.method = "holm")
+xb1 <- xBalance(matchfmla2, strata = list(fm1 = ~fm1), data = d17p[!is.na(d17p$fm1), ], report = "all")
 xb1$overall[, ]
 ## What vars have the worst balance?
 xb1vars <- as_tibble(xb1$results[, , "fm1"], rownames = "vars")
@@ -183,20 +187,19 @@ ndati1 <- nrow(dat17i)
 dat17i$fm1 <- NULL
 dat17i <- inner_join(dat17i, d17p[, c("Q56", "fm1")], by = "Q56")
 stopifnot(ndati1 == nrow(dat17i))
-balfmla_i <- update(matchfmla_iCluster, . ~ . + strata(fm1))
-xb_i1 <- balanceTest(balfmla_i, data = dat17i, report = "all", p.adjust.method = "holm")
+xb_i1 <- xBalance(matchfmla_iCluster, strata = list(fm1 = ~fm1), data = dat17i, report = "all")
 xb_i1$overall[, ]
 xb_i1vars <- as_tibble(xb_i1$results[, , "fm1"], rownames = "vars")
 xb_i1vars %>%
   arrange(desc(abs(std.diff))) %>%
   head(x, n = 10)
 
-## full matching allowing some neighrborhoods to drop out
+## full matching allowing some control/comparison neighrborhoods to drop out
 fm2 <- fullmatch(pharm_score_mat + caliper(pharm_score_mat, pharm_score_cal), data = d17p, mean.controls = 2)
 summary(fm2, min.controls = 0, max.controls = Inf)
 
 d17p$fm2 <- factor(fm2)
-xb2 <- balanceTest(update(matchfmla2, . ~ . + strata(fm2)), data = d17p, report = "all", subset = !is.na(fm2), p.adjust.method = "holm")
+xb2 <- xBalance(matchfmla2, strata = list(fm2 = ~fm2), data = d17p[!is.na(d17p$fm2), ], report = "all")
 xb2$overall[, ]
 ## What vars have the worst balance?
 xb2vars <- as_tibble(xb2$results[, , "fm2"], rownames = "vars")
@@ -211,8 +214,7 @@ ndati1 <- nrow(dat17i)
 dat17i$fm2 <- NULL
 dat17i <- inner_join(dat17i, d17p[, c("Q56", "fm2")], by = "Q56")
 stopifnot(ndati1 == nrow(dat17i))
-balfmla_i <- update(matchfmla_iCluster, . ~ . + strata(fm2))
-xb_i2 <- balanceTest(balfmla_i, data = dat17i, report = "all", p.adjust.method = "holm")
+xb_i2 <- xBalance(matchfmla_iCluster, strata = list(fm2 = ~fm2), data = dat17i, report = "all")
 xb_i2$overall[, ]
 xb_i2vars <- as_tibble(xb_i2$results[, , "fm2"], rownames = "vars")
 xb_i2vars %>%
@@ -220,3 +222,15 @@ xb_i2vars %>%
   head(x, n = 10)
 
 save(pharm_score_mat, file = "pharm_score_mat.rda")
+
+
+save(fm1, fm2, mm1,
+  xb1, xb2,
+  xb1vars, xb2vars,
+  xb_i1, xb_i2,
+  xb_i1vars, xb_i2vars,
+  xb_imm1, xb_imm1vars, xb_mm1, xb_mm1vars,
+  dat17i, dat17p,
+  xb0i,
+  file = here::here("Analysis", "design_svn_zubi.rda")
+)
