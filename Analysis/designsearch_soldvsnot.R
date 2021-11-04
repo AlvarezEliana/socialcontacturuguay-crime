@@ -182,6 +182,7 @@ source(here::here("Analysis", "utilityfns.R"))
 
 ## ----setupdesignfinding--------------------------------------------------
 # Test the function.
+## Clean this all up later.
 
 find_design(
   x = c(0, max(mhdist), max(psdist2)),
@@ -233,8 +234,9 @@ find_design(
 )
 
 
+## Try using the least restrictive calipers
 find_design2(
-  x = search_space[1, ],
+  x = search_space[which.max(rowSums(search_space)),],
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_iCluster,
   matchdist = crimedist,
@@ -292,4 +294,4 @@ system.time(
   )
 )
 plan(sequential)
-save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res.rda"))
+save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res2.rda"))

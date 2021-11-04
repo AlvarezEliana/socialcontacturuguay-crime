@@ -128,10 +128,10 @@
     },
     "backports": {
       "Package": "backports",
-      "Version": "1.2.1",
+      "Version": "1.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "644043219fc24e190c2f620c1a380a69"
+      "Hash": "194ad71f8ed59393272a0c4be2eac215"
     },
     "base64enc": {
       "Package": "base64enc",
@@ -219,10 +219,10 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.0.1",
+      "Version": "3.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e3ae5d68dea0c55a12ea12a9fda02e61"
+      "Hash": "66a3834e54593c89d8beefb312347e58"
     },
     "clipr": {
       "Package": "clipr",
@@ -457,10 +457,10 @@
     },
     "generics": {
       "Package": "generics",
-      "Version": "0.1.0",
+      "Version": "0.1.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4d243a9c10b00589889fe32314ffd902"
+      "Hash": "3f6bcfb0ee5d671d9fd1893d2faa79cb"
     },
     "gert": {
       "Package": "gert",

@@ -65,6 +65,8 @@ find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdi
 
 
 find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, themhdist, dista, distb, ydist, datb, dati) {
+    require(optmatch)
+    require(RItools)
   ## message(paste(x,collapse=" "))
   if (is.null(matchdist)) {
     newdist <- (thepsdist * x[1] + themhdist * (1 - x[1])) + caliper(themhdist, x[2]) + caliper(thepsdist, x[3]) + caliper(dista, x[4]) + caliper(distb, x[5])
@@ -89,7 +91,7 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
 
   datb$thefm <- factor(thefm)
 
-  xb <- try(bxBalance(thebalfmla_b, strata=list(thefm=~thefm),
+  xb <- try(xBalance(thebalfmla_b, strata=list(thefm=~thefm),
     data = datb,
     report = c("chisquare.test", "p.values")
   ), silent = TRUE)
@@ -103,7 +105,7 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
   dati <- inner_join(dati, datb[, c("Q56", "thefm")], by = "Q56")
   stopifnot(nrow(dati) == ndati)
 
-  xb_i <- try(xBalance(thebalfmla_b, strata=list(thefm=~thefm),
+  xb_i <- try(xBalance(thebalfmla_i, strata=list(thefm=~thefm),
     data = dati, report = c("chisquare.test", "p.values")
   ), silent = TRUE)
   if (inherits(xb_i, "try-error")) {

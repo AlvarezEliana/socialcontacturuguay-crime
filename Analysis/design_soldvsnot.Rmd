@@ -24,7 +24,11 @@ output:
 
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
-source("rmarkdownsetup.R")
+library(here)
+source(here("Analysis","rmarkdownsetup.R"))
+library(arm)
+library(optmatch)
+library(tidyverse)
 ```
 
 ```{r}
@@ -180,7 +184,7 @@ matchfmla_iCluster <-  update(matchfmla_i,.~.+cluster(Q56))
 ## Load results of the search for a good matched design
 
 ```{r}
-load(here::here("Analysis", "design_soldvsnot_search_res.rda"))
+load(here::here("Analysis", "design_soldvsnot_search_res2.rda"))
 ```
 
 ```{r}
