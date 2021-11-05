@@ -126,6 +126,14 @@ new_psdisti <- thepsdisti[not_missing_trts,not_missing_ctrls]
       return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
   }
 
+ ## Do the key crime variable predict treatment neighborhood conditional on set? 
+  ## Here we can use a nice cluster robust test.
+
+  bal_lm <- lm_robust(soldvsnot17~vrobb_2016 + robb_2016 + n_sec_i, fixed_effects=~thefm_i, clusters=Q56, se_type="CR2", data=droplevels(dati[!is.na(dati$thefm_i),]))
+
+  thef <- bal_lm$proj_fstatistic
+  p_thef <- pf(thef["value"],df1=thef["numdf"],df2=thef["dendf"],lower.tail=FALSE)
+ 
   if (!is.null(ydist)) {
       maxydiff <- max(unlist(matched.distances(thefm, distance = ydist)))
   } else {
@@ -155,6 +163,7 @@ new_psdisti <- thepsdisti[not_missing_trts,not_missing_ctrls]
     robbdiff = crime_i_res["robb_2016","adj.diff"],
     vrobbp = crime_i_res["vrobb_2016","p"], ## this will be too low, not adjusted for clusters, but higher better for purpose of finding designs
     robbp = crime_i_res["robb_2016","p"],
+    crime_p = p_thef,
     maxydiff = maxydiff,
     maxadiff = maxadiff,
     maxbdiff = maxbdiff,

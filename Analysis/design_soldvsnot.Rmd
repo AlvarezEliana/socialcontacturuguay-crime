@@ -49,6 +49,8 @@ dat17p <- wdat17p %>% filter(!is.na(soldvsnot17))
 table(dat17p$soldvsnot17,exclude=c())
 ```
 
+REORGANIZE NOW THAT WE ARE DOING THE SEARCH
+
 
 # Create Distance Matrices for use in Matching
 

@@ -3,6 +3,8 @@ library(here)
 library(arm)
 library(optmatch)
 library(tidyverse)
+library(RItools)
+library(estimatr)
 source(here("Analysis","rmarkdownsetup.R"))
 
 ## ------------------------------------------------------------------------
