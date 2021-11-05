@@ -52,11 +52,13 @@ setdiff(all.vars(baselineFmla), names(dat17i))
 ## Remove variables that don't vary that slipped through match_data_prep.Rmd.
 ## Remove census variables: we will match at pharmacy level on them, too
 
-matchfmla_i <- update(baselineFmla, . ~ . - neigh6_i.NA - vic12_i - vic12_n_i.NA
-    - age_av      - educ_av     - h_owners    - rent_per    - pop         - dens
-    - ubn_no      - ubn_one     - ubn_two  - ubn_more    - cat_value   - fa_per
-    - pn_per      - pc_per      - pi_per      - ap_per      - peri_per    -
-        pt_per  - vrobb_2016  - robb_2016 - sec_mea1_p + sec_mea2_p + sec_mea3_p + sec_mea4_p)
+#matchfmla_i <- update(baselineFmla, . ~ . - neigh6_i.NA - vic12_i - vic12_n_i.NA
+#    - age_av      - educ_av     - h_owners    - rent_per    - pop         - dens
+#    - ubn_no      - ubn_one     - ubn_two  - ubn_more    - cat_value   - fa_per
+#    - pn_per      - pc_per      - pi_per      - ap_per      - peri_per    -
+#        pt_per  - vrobb_2016  - robb_2016 - sec_mea1_p + sec_mea2_p + sec_mea3_p + sec_mea4_p)
+
+matchfmla_i <- update(baselineFmla, . ~ . - neigh6_i.NA - vic12_i - vic12_n_i.NA)
 
 ## Make sure all variables in the formula are actually in the dataset
 setdiff(all.vars(matchfmla_i), names(dat17i))
@@ -99,7 +101,7 @@ names(dat17pSimp) <- gsub("_mean", "", names(dat17pSimp))
 dat17pSimp$Q56F <- factor(dat17pSimp$Q56)
 
 setdiff(all.vars(formula(bglm2)), names(dat17pSimp))
-stopifnot( setdiff(names(dat17pSimp), all.vars(formula(bglm2))) == "Q56")
+stopifnot(setdiff(names(dat17pSimp), all.vars(formula(bglm2))) == "Q56")
 
 changevars <- grep(".NA", names(dat17pSimp), value = TRUE)
 dat17pSimp <- dat17pSimp %>% mutate_at(changevars, as.logical)
@@ -108,6 +110,9 @@ dat17pSimp <- dat17pSimp %>% mutate_at(changevars, as.logical)
 ## neighborhood level means
 dat17p$pscore2 <- predict(bglm2, newdata = dat17pSimp)
 
+
+## Make an individual level propensity score distance matrix
+psdist_i <- match_on(bglm2,data=dat17i)
 
 ## Combine the two bayesian propensity scores in a mahalanobis distance
 ## psdist <- match_on(soldvsnot17~pscore1+pscore2,data=dat17p,method="rank_mahalanobis")
@@ -184,29 +189,29 @@ source(here::here("Analysis", "utilityfns.R"))
 # Test the function.
 ## Clean this all up later.
 
-find_design(
-  x = c(0, max(mhdist), max(psdist2)),
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_iCluster,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i
-)
-
-
-find_design(
-  x = c(0, max(mhdist), max(psdist2)),
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_iCluster,
-  matchdist = crimedist,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  ydist = robbdist,
-  datb = dat17p,
-  dati = dat17i
-)
+## find_design(
+##   x = c(0, max(mhdist), max(psdist2)),
+##   thebalfmla_b = matchfmla,
+##   thebalfmla_i = matchfmla_iCluster,
+##   themhdist = mhdist,
+##   thepsdist = psdist2,
+##   ydist = crimedist,
+##   datb = dat17p,
+##   dati = dat17i
+## )
+## 
+## 
+## find_design(
+##   x = c(0, max(mhdist), max(psdist2)),
+##   thebalfmla_b = matchfmla,
+##   thebalfmla_i = matchfmla_iCluster,
+##   matchdist = crimedist,
+##   themhdist = mhdist,
+##   thepsdist = psdist2,
+##   ydist = robbdist,
+##   datb = dat17p,
+##   dati = dat17i
+## )
 
 
 search_space <- as.matrix(expand.grid(
@@ -221,47 +226,48 @@ search_space <- as.matrix(expand.grid(
 ## ensure that it runs on a small subset of the search_space
 ## search_space <- search_space[sample(1:nrow(search_space),10),]
 
-find_design(
-  x = search_space[1, ],
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_iCluster,
-  matchdist = crimedistPen,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i
-)
+## find_design(
+##   x = search_space[1, ],
+##   thebalfmla_b = matchfmla,
+##   thebalfmla_i = matchfmla_iCluster,
+##   matchdist = crimedistPen,
+##   themhdist = mhdist,
+##   thepsdist = psdist2,
+##   ydist = crimedist,
+##   datb = dat17p,
+##   dati = dat17i
+## )
+## 
+## 
+## set.seed(12345)
+## find_design(
+##   x = search_space[sample(1:nrow(search_space), 1), ],
+##   thebalfmla_b = matchfmla,
+##   thebalfmla_i = matchfmla_iCluster,
+##   themhdist = mhdistPen,
+##   thepsdist = psdistPen,
+##   ydist = crimedist,
+##   datb = dat17p,
+##   dati = dat17i
+## )
+## 
 
-
-## Try using the least restrictive calipers
+quantile(psdist_i,seq(0,1,.1))
 find_design2(
-  x = search_space[which.max(rowSums(search_space)),],
+  #x = search_space[which.max(rowSums(search_space)),],
+  x = search_space[1,],
   thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_iCluster,
-  matchdist = crimedist,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
   themhdist = mhdist,
   thepsdist = psdist2,
+  thepsdisti = psdist_i,
   ydist = robbdist,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
   dati = dat17i
 )
-
-
-set.seed(12345)
-find_design(
-  x = search_space[sample(1:nrow(search_space), 1), ],
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_iCluster,
-  themhdist = mhdistPen,
-  thepsdist = psdistPen,
-  ydist = crimedist,
-  datb = dat17p,
-  dati = dat17i
-)
-
 ## ----matchsearch, cache=FALSE--------------------------------------------
 ncores <- parallel::detectCores()
 
@@ -269,16 +275,18 @@ options(future.globals.maxSize = +Inf)
 ## This should work on all platforms.
 library(future.apply)
 plan(multiprocess, workers = ncores)
+
 system.time(
   results <- future_mapply(
     function(x1, x2, x3, x4, x5) {
       find_design2(
         x = c(x1, x2, x3, x4, x5),
         thebalfmla_b = matchfmla,
-        thebalfmla_i = matchfmla_iCluster,
-        matchdist = crimedist,
+        thebalfmla_i = matchfmla_i,
+        matchdist = NULL,
         themhdist = mhdist,
         thepsdist = psdist2,
+        thepsdisti = psdist_i,
         ydist = robbdist,
         dista = robbdist,
         distb = vrobbdist,
@@ -290,8 +298,10 @@ system.time(
     x2 = search_space[, 2],
     x3 = search_space[, 3],
     x4 = search_space[, 4],
-    x5 = search_space[, 5]
+    x5 = search_space[, 5],future.seed=TRUE
   )
 )
+
 plan(sequential)
+
 save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res2.rda"))

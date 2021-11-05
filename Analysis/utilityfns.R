@@ -64,7 +64,7 @@ find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdi
 
 
 
-find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, themhdist, dista, distb, ydist, datb, dati) {
+find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, thepsdisti, themhdist, dista, distb, ydist, datb, dati) {
     require(optmatch)
     require(RItools)
   ## message(paste(x,collapse=" "))
@@ -100,22 +100,36 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
     return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
   }
 
-  ## Do individual level balance test
+  ## Do individual level matching:
   ndati <- nrow(dati)
   dati <- inner_join(dati, datb[, c("Q56", "thefm")], by = "Q56")
   stopifnot(nrow(dati) == ndati)
 
-  xb_i <- try(xBalance(thebalfmla_i, strata=list(thefm=~thefm),
-    data = dati, report = c("chisquare.test", "p.values")
-  ), silent = TRUE)
+not_missing_trts <- row.names(dati)[!is.na(dati$thefm) & dati$soldvsnot17==1]
+not_missing_ctrls <- row.names(dati)[!is.na(dati$thefm) & dati$soldvsnot17==0]
+
+new_psdisti <- thepsdisti[not_missing_trts,not_missing_ctrls]
+
+  disti <- new_psdisti + exactMatch(soldvsnot17~thefm,data=dati[!is.na(dati$thefm),]) + caliper(new_psdisti,quantile(new_psdisti,.9))
+
+  thefm_i <- try(fullmatch(disti,data=dati,min.controls=1,max.controls=Inf,tol=.00001),silent=TRUE)
+  if (inherits(thefm_i, "try-error")) {
+      return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
+  }
+  dati$thefm_i <- factor(thefm_i)
+
+  xb_i <- try(xBalance(thebalfmla_i, strata=list(thefm=~thefm_i),
+          data = dati, report = "all", #c("chisquare.test", "p.values")
+          ), silent = TRUE)
+
   if (inherits(xb_i, "try-error")) {
-    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
+      return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
   }
 
   if (!is.null(ydist)) {
-    maxydiff <- max(unlist(matched.distances(thefm, distance = ydist)))
+      maxydiff <- max(unlist(matched.distances(thefm, distance = ydist)))
   } else {
-    maxydiff <- NA
+      maxydiff <- NA
   }
 
   if (!is.null(dista)) {
@@ -124,21 +138,28 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
     maxadiff <- NA
   }
 
-
   if (!is.null(distb)) {
     maxbdiff <- max(unlist(matched.distances(thefm, distance = distb)))
   } else {
     maxbdiff <- NA
   }
 
+  crime_i_res <- xb_i$results[c("vrobb_2016","robb_2016"),c("adj.diff","p"),]
+
+
   return(c(
     x = x,
     d2p = xb$overall["thefm", "p.value"],
     d2p_i = xb_i$overall["thefm", "p.value"],
+    vrobbdiff = crime_i_res["vrobb_2016","adj.diff"],
+    robbdiff = crime_i_res["robb_2016","adj.diff"],
+    vrobbp = crime_i_res["vrobb_2016","p"], ## this will be too low, not adjusted for clusters, but higher better for purpose of finding designs
+    robbp = crime_i_res["robb_2016","p"],
     maxydiff = maxydiff,
     maxadiff = maxadiff,
     maxbdiff = maxbdiff,
     n = sum(!is.na(thefm)),
-    effn = summary(thefm)$effective.sample.size
+    effn = summary(thefm)$effective.sample.size,
+    effn_i = summary(thefm_i)$effective.sample.size
   ))
 }
