@@ -121,7 +121,7 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
   coin_fmla <- ~ soldvsnot17F | thefm
   lhs(coin_fmla) <- rhs(thebalfmla_b)
 
-  coin_obj <- try(independence_test(coin_fmla,data=datb,teststat="maximum"))
+  coin_obj <- try(independence_test(coin_fmla,data=datb,teststat="maximum"),silent=TRUE)
 
   if (inherits(coin_obj, "try-error")) {
             return(return_obj_template)
