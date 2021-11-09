@@ -4,6 +4,8 @@ library(arm)
 library(optmatch)
 library(tidyverse)
 library(RItools)
+library(coin)
+library(formula.tools)
 library(estimatr)
 source(here("Analysis","rmarkdownsetup.R"))
 
@@ -256,7 +258,7 @@ find_design2(
 )
 
 ## ----matchsearch, cache=FALSE--------------------------------------------
-ncores <- parallel::detectCores()
+ncores <- parallel::detectCores() - 1
 
 options(future.globals.maxSize = +Inf)
 ## This should work on all platforms.

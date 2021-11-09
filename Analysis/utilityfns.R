@@ -70,6 +70,7 @@ find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdi
 find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, thepsdisti, themhdist, dista, distb, datb, dati, return_full_obs = FALSE) {
   require(optmatch)
   require(RItools)
+  require(coin)
   require(formula.tools)
   ## message(paste(x,collapse=" "))
   ## If no matchdist then match on propensity score
