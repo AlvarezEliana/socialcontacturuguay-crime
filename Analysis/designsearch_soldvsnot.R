@@ -258,7 +258,8 @@ find_design2(
 )
 
 ## ----matchsearch, cache=FALSE--------------------------------------------
-ncores <- parallel::detectCores() - 1
+##ncores <- parallel::detectCores() - 1
+ncores <- round(parallel::detectCores()/2)
 
 options(future.globals.maxSize = +Inf)
 ## This should work on all platforms.
@@ -268,7 +269,8 @@ plan(multiprocess, workers = ncores)
 system.time(
   results <- future_mapply(
     function(x1, x2, x3, x4, x5) {
-      find_design2(
+      parms <- c(x1,x2,x3,x4,x5)
+      res <- try(find_design2(
         x = c(x1, x2, x3, x4, x5),
         thebalfmla_b = matchfmla,
         thebalfmla_i = matchfmla_i,
@@ -280,7 +282,12 @@ system.time(
         distb = vrobbdist,
         datb = dat17p,
         dati = dat17i
-      )
+      ),silent=TRUE)
+if(inherits(res,"try-error")){
+  return(parms)
+} else {
+  return(res)
+}
     },
     x1 = search_space[, 1],
     x2 = search_space[, 2],
