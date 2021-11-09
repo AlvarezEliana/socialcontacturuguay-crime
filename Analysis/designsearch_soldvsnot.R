@@ -67,9 +67,9 @@ setdiff(all.vars(matchfmla_i), names(dat17i))
 ## Add a random effect to capture neighborhood average differences.
 #refmla <- update(matchfmla_i,.~(1|Q56)+.)
 
-standardize <- function(x){
-  (x - mean(x))/sd(x)
-}
+##standardize <- function(x){
+##  (x - mean(x))/sd(x)
+##}
 
 ### dat17i_stand <- dat17i %>% mutate(across(where(is.numeric),.fns=standardize))
 ### refmla <- update(matchfmla_i,.~(1|Q56)+activities_index + age_i + c_sec_i + crime_t_i + sex_i + vic12_n_i)
@@ -85,7 +85,6 @@ standardize <- function(x){
 
 
 ## glm1 <- glm(matchfmla,data=dat17p,family=binomial())
-library(arm)
 bglm1 <- bayesglm(matchfmla, data = dat17p, family = binomial(link = "logit"))
 glm1 <- glm(matchfmla, data = dat17p, family = binomial(link = "logit"))
 bglm1mat <- summary(bglm1)$coef
@@ -112,7 +111,6 @@ dat17pSimp <- dat17pSimp %>% mutate_at(changevars, as.logical)
 ## neighborhood level means
 dat17p$pscore2 <- predict(bglm2, newdata = dat17pSimp)
 
-
 ## Make an individual level propensity score distance matrix
 psdist_i <- match_on(bglm2,data=dat17i)
 
@@ -131,6 +129,7 @@ crimedist <- match_on(soldvsnot17 ~ n_sec_i_mean + vrobb_2016_mean + robb_2016_m
 crimedist[1:5, 1:5]
 
 ## Make distances  on raw  crime
+## the _mean is not meaningful. robb and vrobb are neighborhood level variables.
 tmp_robb <- dat17p$robb_2016_mean
 names(tmp_robb) <- rownames(dat17p)
 robbdist <- match_on(tmp_robb, z = dat17p$soldvsnot17)
@@ -138,6 +137,20 @@ robbdist <- match_on(tmp_robb, z = dat17p$soldvsnot17)
 tmp_vrobb <- dat17p$vrobb_2016_mean
 names(tmp_vrobb) <- rownames(dat17p)
 vrobbdist <- match_on(tmp_vrobb, z = dat17p$soldvsnot17)
+
+## What kinds of differences do we see in general on these variables?
+### So, if we insist on perfect matches we will throw away nearly all of our
+### data. It seems to me that we can restrict the matches
+## > quantile(robbdist,seq(0,1,.1))
+##   0%  10%  20%  30%  40%  50%  60%  70%  80%  90% 100%
+##    0    5   11   17   21   29   37   50   66   87  201
+## > quantile(vrobbdist,seq(0,1,.1))
+##   0%  10%  20%  30%  40%  50%  60%  70%  80%  90% 100%
+##    0    0    1    2    3    5    8   10   14   18   25
+
+quantile(robbdist,seq(0,1,.1))
+quantile(vrobbdist,seq(0,1,.1))
+
 
 
 ### Match on covariate distances alone, trying to soldvsnot17 each covariate equally
@@ -201,8 +214,8 @@ source(here::here("Analysis", "utilityfns.R"))
 ##   datb = dat17p,
 ##   dati = dat17i
 ## )
-## 
-## 
+##
+##
 ## find_design(
 ##   x = c(0, max(mhdist), max(psdist2)),
 ##   thebalfmla_b = matchfmla,
@@ -221,40 +234,12 @@ search_space <- as.matrix(expand.grid(
   mhcal = quantile(mhdist, seq(.5, 1, length.out = 20)),
   ## pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
   pscal = quantile(psdist2, seq(.5, 1, length.out = 20)),
-  robbcal = quantile(robbdist, seq(.5, 1, length.out = 5)),
-  vrobbcal = quantile(vrobbdist, seq(.5, 1, length.out = 5))
+  robbcal = quantile(robbdist, seq(.2, 1, length.out = 10)),
+  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 10))
 ))
 
-## ensure that it runs on a small subset of the search_space
-## search_space <- search_space[sample(1:nrow(search_space),10),]
+dat17p$soldvsnot17F <- factor(dat17p$soldvsnot17)
 
-## find_design(
-##   x = search_space[1, ],
-##   thebalfmla_b = matchfmla,
-##   thebalfmla_i = matchfmla_iCluster,
-##   matchdist = crimedistPen,
-##   themhdist = mhdist,
-##   thepsdist = psdist2,
-##   ydist = crimedist,
-##   datb = dat17p,
-##   dati = dat17i
-## )
-## 
-## 
-## set.seed(12345)
-## find_design(
-##   x = search_space[sample(1:nrow(search_space), 1), ],
-##   thebalfmla_b = matchfmla,
-##   thebalfmla_i = matchfmla_iCluster,
-##   themhdist = mhdistPen,
-##   thepsdist = psdistPen,
-##   ydist = crimedist,
-##   datb = dat17p,
-##   dati = dat17i
-## )
-## 
-
-quantile(psdist_i,seq(0,1,.1))
 find_design2(
   #x = search_space[which.max(rowSums(search_space)),],
   x = search_space[1,],
@@ -264,12 +249,12 @@ find_design2(
   themhdist = mhdist,
   thepsdist = psdist2,
   thepsdisti = psdist_i,
-  ydist = robbdist,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
   dati = dat17i
 )
+
 ## ----matchsearch, cache=FALSE--------------------------------------------
 ncores <- parallel::detectCores()
 
@@ -289,7 +274,6 @@ system.time(
         themhdist = mhdist,
         thepsdist = psdist2,
         thepsdisti = psdist_i,
-        ydist = robbdist,
         dista = robbdist,
         distb = vrobbdist,
         datb = dat17p,
@@ -306,4 +290,8 @@ system.time(
 
 plan(sequential)
 
+## Post processing to make a matrix
+## len_res <- sapply(results,length)
+
 save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res2.rda"))
+

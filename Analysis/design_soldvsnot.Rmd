@@ -189,23 +189,24 @@ matchfmla_iCluster <-  update(matchfmla_i,.~.+cluster(Q56))
 load(here::here("Analysis", "design_soldvsnot_search_res2.rda"))
 ```
 
+Basically, all designs look good for balance at the neighborhood level.
+
 ```{r}
 resdf <- data.frame(t(results))
 apply(resdf, 2, summary)
 quantile(resdf$d2p,seq(0,1,.1))
-quantile(resdf$d2p_i,seq(0,1,.1))
 ```
 
 ```{r}
 par(mfrow=c(1,1))
 ## Lighter are lower differences in the key baseline outcome
-with(resdf, plot(d2p, effn, pch = 21, bg = gray(maxydiff / max(maxydiff),alpha=.7),cex=.7))
-with(resdf[resdf$d2p>.6,], text(d2p,effn,labels = n,offset=.2,pos=2,cex=.7))
+with(resdf, plot(crime_p.value, effn, pch = 21, bg = gray(maxydiff / max(maxydiff),alpha=.7),cex=.7))
+with(resdf[resdf$effn>19,], text(crime_p.value,effn,labels = n,offset=.2,pos=2,cex=.7))
 ```
 
 ```{r}
 pdf(file="designps.pdf")
-gp3 <-  ggplot(data=resdf,aes(x=d2p,y=d2p_i,color=effn)) +
+gp3 <-  ggplot(data=resdf,aes(x=crime_p.value,y=d2p_i,color=effn)) +
 	geom_point()
 print(gp3)
 dev.off()
@@ -216,24 +217,16 @@ Use three possible solutions: (1) overall balance plus maximimum effective sampl
 ```{r}
 
 ## Choose a design that is pretty balanced but also considers sample size
-cut1 <- resdf %>% dplyr::filter(d2p >= .6 & d2p_i >= .6)
-apply(cut1, 2, summary)
-
-parms1 <- cut1 %>% filter(effn==max(effn)) %>% filter(d2p==max(d2p)) %>% filter(d2p_i==max(d2p_i)) %>% filter(x2==max(x2))
+parms1 <- resdf %>% dplyr::filter(crime_p.value >= .6)  %>% filter(effn==max(effn)) %>%  filter(d2p_i==max(d2p_i)) %>%  filter(x2==max(x2) & x3==max(x3)) %>% unique
 parms1
 
-## Now max d2p (may need to match again at indiv level here)
-parms2 <- resdf  %>% filter(d2p>quantile(d2p,.95)) %>% filter(d2p_i>quantile(d2p_i,.9)) %>% filter(effn==max(effn)) %>%
+## Now max d2p_i
+parms2 <- resdf  %>% filter(d2p_i>quantile(d2p_i,.95)) %>% filter(crime_p.value>quantile(crime_p.value,.9)) %>% filter(effn==max(effn)) %>%
 	filter(x2==max(x2) & x3==max(x3)) %>% unique
 parms2
 
-### Now focus  on  d2p_i (turns out no dropping obs in this design)
-#parms3 <- resdf  %>% filter(d2p_i>.5) %>% filter(d2p==max(d2p)) %>% filter(x3==max(x3) & x1==max(x1) & x2==max(x2))
-#apply(parms3,2,summary)
-#parms3
-
-parms3 <- resdf  %>% filter(maxydiff < 30) %>% filter(d2p>.5 & d2p_i>.5) %>% filter(effn==max(effn)) %>% filter(x2==max(x2))
-apply(parms3,2,summary)
+## Now focus on max differences
+parms3 <- resdf  %>% filter(maxydiff < 30) %>% filter(crime_p.value > .1) %>% filter(effn==max(effn)) %>% filter(x2==max(x2))
 parms3
 
 ```
