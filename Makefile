@@ -35,9 +35,9 @@ Analysis/design_soldvsnot.rda: Analysis/design_soldvsnot.Rmd Analysis/match_data
 	Analysis/initial_balance.rda Analysis/design_soldvsnot_search_res.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('design_soldvsnot.Rmd')"
 
-Analysis/design_soldvsnot_search_res.rda: Analysis/designsearch_soldvsnot.R Analysis/match_data_prep.rda \
+Analysis/design_soldvsnot_search_res2.rda: Analysis/designsearch_soldvsnot.R Analysis/match_data_prep.rda \
 	Analysis/initial_balance.rda
-	cd Analysis  && R --vanilla  --file=designsearch_soldvsnot.R
+	R --file=Analysis/designsearch_soldvsnot.R
 
 Analysis/initial_balance.rda: Analysis/initial_balance.Rmd Analysis/match_data_prep.rda
 	cd Analysis && Rscript -e "library(rmarkdown);render('initial_balance.Rmd')"
