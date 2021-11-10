@@ -271,23 +271,23 @@ system.time(
     function(x1, x2, x3, x4, x5) {
       parms <- c(x1,x2,x3,x4,x5)
       res <- try(find_design2(
-        x = c(x1, x2, x3, x4, x5),
-        thebalfmla_b = matchfmla,
-        thebalfmla_i = matchfmla_i,
-        matchdist = NULL,
-        themhdist = mhdist,
-        thepsdist = psdist2,
-        thepsdisti = psdist_i,
-        dista = robbdist,
-        distb = vrobbdist,
-        datb = dat17p,
-        dati = dat17i
-      ),silent=TRUE)
-if(inherits(res,"try-error")){
-  return(parms)
-} else {
-  return(res)
-}
+          x = c(x1, x2, x3, x4, x5),
+          thebalfmla_b = matchfmla,
+          thebalfmla_i = matchfmla_i,
+          matchdist = NULL,
+          themhdist = mhdist,
+          thepsdist = psdist2,
+          thepsdisti = psdist_i,
+          dista = robbdist,
+          distb = vrobbdist,
+          datb = dat17p,
+          dati = dat17i
+          ),silent=TRUE)
+      if(inherits(res,"try-error")){
+        return(parms)
+      } else {
+        return(res)
+      }
     },
     x1 = search_space[, 1],
     x2 = search_space[, 2],
@@ -299,8 +299,8 @@ if(inherits(res,"try-error")){
 
 plan(sequential)
 
-## Post processing to make a matrix
 ## len_res <- sapply(results,length)
+## table(len_res)
 
 save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res2.rda"))
 

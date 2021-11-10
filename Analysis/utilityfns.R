@@ -122,12 +122,15 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
   lhs(coin_fmla) <- rhs(thebalfmla_b)
 
   coin_obj <- try(independence_test(coin_fmla,data=droplevels(datb[!is.na(datb$thefm),]),teststat="maximum"),silent=TRUE)
-
+  if (inherits(coin_obj, "try-error")) {
+            return(return_obj_template)
+  }
+  coin_p <- try(pvalue(coin_obj))
   if (inherits(coin_obj, "try-error")) {
             return(return_obj_template)
   }
 
-  ## Do individual level matching:
+  ## Do individual level matching and assessment:
   ndati <- nrow(dati)
   dati <- inner_join(dati, datb[, c("Q56", "thefm")], by = "Q56")
   stopifnot(nrow(dati) == ndati)
@@ -204,7 +207,7 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
       x = x,
       d2p = xb$overall["thefm", "p.value"],
       d2p_i = xb_i$overall["thefm", "p.value"],
-      maxTp = pvalue(coin_obj)[1],
+      maxTp = coin_p[1],
       vrobbdiff = crime_i_res["vrobb_2016", "adj.diff"],
       robbdiff = crime_i_res["robb_2016", "adj.diff"],
       vrobbp = crime_i_res["vrobb_2016", "p"], ## this will be too low, not adjusted for clusters, but higher better for purpose of finding designs
