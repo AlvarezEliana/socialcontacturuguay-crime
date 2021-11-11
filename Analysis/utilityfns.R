@@ -67,11 +67,12 @@ find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdi
 
 
 
-find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, thepsdisti, themhdist, dista, distb, datb, dati, return_full_obs = FALSE) {
+find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, thepsdisti, themhdist, dista, distb, datb, dati, return_full_objs = FALSE) {
   require(optmatch)
   require(RItools)
   require(coin)
   require(formula.tools)
+  require(estimatr)
   ## message(paste(x,collapse=" "))
   ## If no matchdist then match on propensity score
   if (is.null(matchdist)) {
@@ -80,18 +81,22 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
     newdist <- matchdist + caliper(themhdist, x[2]) + caliper(thepsdist, x[3]) + caliper(dista, x[4]) + caliper(distb, x[5])
   }
 
-return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = NA,
+  return_obj_template <- c(
+    x = x, d2p = NA, maxTp = NA, d2p_i = NA, vrobbdiff = NA,
     robbdiff = NA, vrobbp = NA, robbp = NA, crime_p = NA, maxadiff = NA,
-    maxbdiff = NA, n = NA, effn = NA, effn_i = NA)
+    maxbdiff = NA, n = NA, effn = NA, effn_i = NA
+  )
 
 
   sum_newdist <- summary(newdist)
   if (sum_newdist$total$matchable == 0) {
-      return(return_obj_template)
+    return(return_obj_template)
   }
 
   ctrl_trt_ratio <- length(sum_newdist$matchable$control) / length(sum_newdist$matchable$treatment)
-  if(ctrl_trt_ratio < 1){ ctrl_trt_ratio <- 1}
+  if (ctrl_trt_ratio < 1) {
+    ctrl_trt_ratio <- 1
+  }
 
   thefm <- try(fullmatch(newdist,
     data = datb, tol = .00001,
@@ -99,7 +104,7 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
   ))
 
   if (inherits(thefm, "try-error")) {
-            return(return_obj_template)
+    return(return_obj_template)
   }
 
   datb$thefm <- factor(thefm)
@@ -112,22 +117,22 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
 
 
   if (inherits(xb, "try-error")) {
-            return(return_obj_template)
+    return(return_obj_template)
   }
 
-## Using coin::independence_test when p>>n for now until we iron out some stuff
+  ## Using coin::independence_test when p>>n for now until we iron out some stuff
   ## in xBalance.
 
   coin_fmla <- ~ soldvsnot17F | thefm
   lhs(coin_fmla) <- rhs(thebalfmla_b)
 
-  coin_obj <- try(independence_test(coin_fmla,data=droplevels(datb[!is.na(datb$thefm),]),teststat="maximum"),silent=TRUE)
+  coin_obj <- try(independence_test(coin_fmla, data = droplevels(datb[!is.na(datb$thefm), ]), teststat = "maximum"), silent = TRUE)
   if (inherits(coin_obj, "try-error")) {
-            return(return_obj_template)
+    return(return_obj_template)
   }
   coin_p <- try(pvalue(coin_obj))
   if (inherits(coin_obj, "try-error")) {
-            return(return_obj_template)
+    return(return_obj_template)
   }
 
   ## Do individual level matching and assessment:
@@ -140,21 +145,58 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
 
   new_psdisti <- thepsdisti[not_missing_trts, not_missing_ctrls]
 
-  disti <- new_psdisti + exactMatch(soldvsnot17 ~ thefm, data = dati[!is.na(dati$thefm), ]) + caliper(new_psdisti, quantile(new_psdisti, .9))
+  ##disti <- new_psdisti + exactMatch(soldvsnot17 ~ thefm, data = dati[!is.na(dati$thefm), ])# + caliper(new_psdisti, quantile(new_psdisti, .9))
 
-  thefm_i <- try(fullmatch(disti, data = dati, min.controls = 1, max.controls = Inf, tol = .00001), silent = TRUE)
-  if (inherits(thefm_i, "try-error")) {
-            return(return_obj_template)
+  ## Match people across neighborhoods within set
+  match_within <- function(theset){
+      ## theset is the name of a matched set
+      dat_i_b <- droplevels(dati[dati$thefm==theset & !is.na(dati$thefm),])
+      trts <- row.names(dat_i_b)[dat_i_b$soldvsnot17 == 1]
+      ctrls <- row.names(dat_i_b)[dat_i_b$soldvsnot17 == 0]
+      match_mat <- thepsdisti[trts,ctrls]
+      match_mat_w_cal <- match_mat + caliper(match_mat,quantile(match_mat,.95))
+      #sum_mat <- summary(match_mat_w_cal)
+      #ctrl_trt_ratio <- length(sum_mat$matchable$control) / length(sum_mat$matchable$treatment)
+      #if (ctrl_trt_ratio < 1) {
+      #    ctrl_trt_ratio <- 1
+      #}
+      fm_i_b <- try(fullmatch(match_mat_w_cal, data = dat_i_b, min.controls = 1, max.controls = Inf,  tol = .00001), silent = TRUE)
+      if (inherits(fm_i_b, "try-error") | all(matchfailed(fm_i_b))) {
+          #ctrl_trt_ratio <- ncol(match_mat) / nrow(match_mat)
+          #if (ctrl_trt_ratio < 1) {
+          #    ctrl_trt_ratio <- 1
+          #}
+          fm_i_b <- try(fullmatch(match_mat, data = dat_i_b, min.controls = 1, max.controls = Inf,  tol = .00001), silent = TRUE)
+      }
+      return(fm_i_b)
   }
-  dati$thefm_i <- factor(thefm_i)
+
+  ## Do the matches within each level of the fullmatch
+  within_set_matches <- lapply(levels(thefm[!is.na(thefm)]),function(theset){
+      match_within(theset)
+  })
+  ## names(within_set_matches) <- levels(thefm[!is.na(thefm)])
+
+  all_errors <- sapply(within_set_matches,function(x){ inherits(x,"try_error") })
+  if(all(all_errors)){
+      return(return_obj_template)
+  }
+
+  thefm_i <- do.call("c",within_set_matches)
+
+  ##thefm_i <- try(fullmatch(disti, data = dati, min.controls = 1, max.controls = Inf, tol = .00001), silent = TRUE)
+  if (inherits(thefm_i, "try-error")) {
+      return(return_obj_template)
+  }
+  dati[names(thefm_i),"thefm_i"] <- factor(thefm_i)
 
   xb_i <- try(xBalance(thebalfmla_i,
-    strata = list(thefm = ~thefm_i),
-    data = dati, report = "all", # c("chisquare.test", "p.values")
-  ), silent = TRUE)
+          strata = list(thefm = ~thefm_i),
+          data = droplevels(dati[!is.na(dati$thefm_i),]), report = "all", # c("chisquare.test", "p.values")
+          ), silent = TRUE)
 
   if (inherits(xb_i, "try-error")) {
-            return(return_obj_template)
+      return(return_obj_template)
   }
 
   ## Do the key crime variable predict treatment neighborhood conditional on set?
@@ -172,43 +214,42 @@ return_obj_template <-   c( x = x, d2p = NA, maxTp=NA, d2p_i = NA, vrobbdiff = N
   ## }
 
   if (!is.null(dista)) {
-    maxadiff <- max(unlist(matched.distances(thefm, distance = dista)))
+      maxadiff <- max(unlist(matched.distances(thefm, distance = dista)))
   } else {
-    maxadiff <- NA
+      maxadiff <- NA
   }
 
   if (!is.null(distb)) {
-    maxbdiff <- max(unlist(matched.distances(thefm, distance = distb)))
+      maxbdiff <- max(unlist(matched.distances(thefm, distance = distb)))
   } else {
-    maxbdiff <- NA
+      maxbdiff <- NA
   }
 
   crime_i_res <- xb_i$results[c("vrobb_2016", "robb_2016"), c("adj.diff", "p"), ]
 
-  if (return_full_obs) {
-    return(list(
-      fm_p = thefm,
-      fm_i = thefm_i,
-      xb_p = xb,
-      maxTp = coin_obj,
-      xb_i = xb_i,
-      parms = x,
-      dista = dista,
-      distb = distb,
-      thepsdist = thepsdist,
-      themhdist = themdhist,
-      disti = disti,
-      new_psdisti = new_psdisti,
-      psdisti = psdisti,
-      newdist = newdist
-    ))
+  if (return_full_objs) {
+      return(list(
+              fm_p = thefm,
+              fm_i = thefm_i,
+              xb_p = xb,
+              maxTp = coin_obj,
+              xb_i = xb_i,
+              parms = x,
+              dista = dista,
+              distb = distb,
+              thepsdist = thepsdist,
+              themhdist = themhdist,
+              new_psdisti = new_psdisti,
+              psdisti = thepsdisti,
+              newdist = newdist
+              ))
   } else {
-    return(c(
-      x = x,
-      d2p = xb$overall["thefm", "p.value"],
-      d2p_i = xb_i$overall["thefm", "p.value"],
-      maxTp = coin_p[1],
-      vrobbdiff = crime_i_res["vrobb_2016", "adj.diff"],
+      return(c(
+              x = x,
+              d2p = xb$overall["thefm", "p.value"],
+              d2p_i = xb_i$overall["thefm", "p.value"],
+              maxTp = coin_p[1],
+              vrobbdiff = crime_i_res["vrobb_2016", "adj.diff"],
       robbdiff = crime_i_res["robb_2016", "adj.diff"],
       vrobbp = crime_i_res["vrobb_2016", "p"], ## this will be too low, not adjusted for clusters, but higher better for purpose of finding designs
       robbp = crime_i_res["robb_2016", "p"],

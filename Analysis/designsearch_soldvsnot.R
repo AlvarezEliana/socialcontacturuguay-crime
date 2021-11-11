@@ -302,5 +302,7 @@ plan(sequential)
 ## len_res <- sapply(results,length)
 ## table(len_res)
 
-save(results, search_space, file = here::here("Analysis", "design_soldvsnot_search_res2.rda"))
+save(results, search_space,  matchfmla, matchfmla_i, mhdist, psdist2, psdist_i,
+    robbdist, vrobbdist, datb = dat17p, dati = dat17i, file =
+        here::here("Analysis", "design_soldvsnot_search_res2.rda"))
 

@@ -26,8 +26,8 @@ output:
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
 library(here)
 source(here("Analysis","rmarkdownsetup.R"))
-library(arm)
 library(optmatch)
+library(RItools)
 library(tidyverse)
 ```
 
@@ -49,476 +49,118 @@ dat17p <- wdat17p %>% filter(!is.na(soldvsnot17))
 table(dat17p$soldvsnot17,exclude=c())
 ```
 
-REORGANIZE NOW THAT WE ARE DOING THE SEARCH
-
-
-# Create Distance Matrices for use in Matching
-
-We will use both Mahalanobis distance matrices of the covariates and propensity
-score distance matrices. We rank transform the variables before calculating
-Mahalanobis distances avoid giving too much influence to any single covariate
-[@rosenbaum2010design, Chap 8]. Because we have more covariates ($p \approx 100$)
-than observations ($N=60$) ordinary logistic regression will fail to produce
-coefficients for many terms and will, in general, produce an overfit model ---
-basically saying that the registered pharmacies have probability = 1 of being
-registered and those unregistered probability = 0. Because logistic regression
-is famous for this kind of overfitting --- even when the units outnumber the
-terms --- we use a Bayesian version of logistic regression following @gelman2008weakly.
-
-```{r}
-tmpnms <- names(dat17p)[!names(dat17p) %in% designvars]
-matchfmla <- reformulate(tmpnms, response = "soldvsnot17")
-matchfmla
-### Propensity score distances
-## Since we worry about separation in logistic regressions, we try a couple of
-## bayesian approaches following Gelman et al on Separation problems and Weakly
-## informative priors in logistic regression. We worry about this in particular
-## with such a small data set and so many covariates
-## glm1 <- glm(matchfmla,data=dat17p,family=binomial())
-bglm1 <- bayesglm(matchfmla, data = dat17p, family = binomial(link = "logit"))
-glm1 <- glm(matchfmla, data = dat17p, family = binomial(link = "logit"))
-bglm1mat <- summary(bglm1)$coef
-stopifnot(min(abs(bglm1mat))>0)
-dat17p$pscore1 <- predict(bglm1)
-
-setdiff(all.vars(baselineFmla),names(dat17i))
-matchfmla_i <-  update(baselineFmla,.~.-neigh6_i.NA-vic12_i-vic12_n_i.NA)
-setdiff(all.vars(matchfmla_i),names(dat17i))
-
-## Now fit the model at the individual level and predict to the cluster level
-bglm2 <- bayesglm(update(matchfmla_i,.~.+Q56F),data=droplevels(dat17i), family = binomial(link = "logit"))
-
-dat17pSimp <- dat17i %>% dplyr::select(unique(c("Q56", all.vars(formula(bglm2))))) %>%
-  group_by(Q56) %>% summarise_if(is.numeric,funs( mean = mean))
-names(dat17pSimp) <-  gsub("_mean","",names(dat17pSimp))
-dat17pSimp$Q56F <- factor(dat17pSimp$Q56)
-
-setdiff(all.vars(formula(bglm2)),names(dat17pSimp))
-setdiff(names(dat17pSimp),all.vars(formula(bglm2)))
-
-changevars <- grep(".NA",names(dat17pSimp),value=TRUE)
-dat17pSimp <- dat17pSimp %>%  mutate_at(changevars,as.logical)
-
-dat17p$pscore2 <- predict(bglm2,newdata = dat17pSimp )
-
-## Also perhaps just predict at individual level and average to farmacia
-
-## Combine the two bayesian propensity scores in a mahalanobis distance
-## psdist <- match_on(soldvsnot17~pscore1+pscore2,data=dat17p,method="rank_mahalanobis")
-psdist <- match_on(soldvsnot17 ~ pscore1+pscore2, data = dat17p) ## want  pscore2 to play a bigger role, method = "rank_mahalanobis")
-## Example few entries from the distance matrix
-as.matrix(psdist)[1:10,1:5]
-
-### Absolute differences on a scalar: neighborhood insecurity perception
-##summary(dat17p$robb_2016_mean)
-##robbdist <- match_on(soldvsnot17 ~ robb_2016_mean, data = dat17p, method = "rank_mahalanobis")
-##robbdist[1:5, 1:5]
-summary(dat17p$n_sec_i_mean)
-crimedist <- match_on(soldvsnot17 ~ n_sec_i_mean + vrobb_2016_mean + robb_2016_mean , data = dat17p, method="rank_mahalanobis")
-crimedist[1:5, 1:5]
-
-## Make distances  on raw  crime
-tmp_robb <- dat17p$robb_2016_mean
-names(tmp_robb) <- rownames(dat17p)
-robbdist <- match_on(tmp_robb, z = dat17p$soldvsnot17)
-
-tmp_vrobb <- dat17p$vrobb_2016_mean
-names(tmp_vrobb) <- rownames(dat17p)
-vrobbdist <- match_on(tmp_vrobb, z = dat17p$soldvsnot17)
-
-
-### Match on covariate distances alone, trying to soldvsnot17 each covariate equally
-### using the rank based mahalanobis distance: See Rosenbaum 2010, Chap 8
-mhdist <- match_on(matchfmla, data = dat17p, method = "rank_mahalanobis")
-mhdist[1:5, 1:5]
-```
-
-What are the distributions of the distances in the distance matrices? This
-information lets us know if there are pairs of neighborhoods that are very far
-away from each other. Below we will penalize matches of this kind --- we want
-to avoid such matches.
-
-
-```{r}
-quantile(as.vector(psdist), seq(.9, 1, .01))
-quantile(as.vector(mhdist), seq(.9, 1, .01))
-quantile(as.vector(crimedist), seq(.9, 1, .01))
-
-pcal <- quantile(as.vector(psdist), .98)
-mcal <- quantile(as.vector(mhdist), .98)
-crimecal <- quantile(as.vector(crimedist), .98)
-
-## The maximum distances for use in penalties
-maxmh <- max(mhdist)
-maxps <- max(psdist)
-maxyd <- max(crimedist)
-```
-
-# Create a matched design
-
-We have 16 focal units and 42 "controls". So, for precision we'd like 16 sets, each with about 42/16 = `r 42/16` control neighborhoods. We would like to exclude bad matches (ideally only non-registered neighborhoods).
-
-We don't want to exclude control neighborhoods here, so we use a penalty
-rather than a caliper
-
-```{r penalizedistmats}
-mhdistPen <- mhdist + (psdist > pcal) * maxmh + (mhdist > mcal) * maxmh + (crimedist > crimecal)*100*maxmh ## Penalty like Rosenbaum
-psdistPen <- psdist + (psdist > pcal) * maxps + (mhdist > mcal) * maxps + (crimedist >  crimecal)*100*maxps ## Penalty like Rosenbaum
-crimedistPen <- crimedist + (psdist > pcal) * maxyd + (mhdist > mcal) * maxyd  ## Penalty like Rosenbaum
-
-summary(mhdist)
-## summary(mhdistPen)
-
-## Rescale for combining later
-
-summary(as.vector(psdistPen))
-summary(as.vector(mhdistPen))
-psdistPen <- psdistPen * (1 / (max(psdistPen) / max(mhdistPen)))
-summary(as.vector(psdistPen))
-
-psdist2 <- psdist * (1 / (max(psdist) / max(mhdist)))
-summary(as.vector(psdist2))
-summary(as.vector(mhdist))
-
-matchfmla_iCluster <-  update(matchfmla_i,.~.+cluster(Q56))
-```
 
 ## Load results of the search for a good matched design
 
 ```{r}
-load(here::here("Analysis", "design_soldvsnot_search_res2.rda"))
+load(here::here("Analysis", "design_soldvsnot_search_res2.rda"),verbose=TRUE)
 ```
 
 Basically, all designs look good for balance at the neighborhood level.
+`crime_p.value` is from a cluster adjusted assessment of the three crime
+variables and treatment. For now, `d2p_i` and `vrobbp` and `robbp` are all
+without cluster adjustment --- so, bigger is better but we shouldn't interpret
+them strictly speaking. `maxTp` and `d2p` are omnibus balance tests at level of
+the neighborhood --- so their values are p-values in the ordinary sense.
 
 ```{r}
-resdf <- data.frame(t(results))
+## Convert character to numeric (maybe change this if we search again)
+results_num <- apply(results,1,as.numeric)
+resdf0 <- data.frame(results_num)
+## Drop any row with NAs
+resdf <- na.omit(resdf0)
 apply(resdf, 2, summary)
+quantile(resdf$maxTp,seq(0,1,.1))
 quantile(resdf$d2p,seq(0,1,.1))
+apply(resdf,2,quantile,seq(0,1,.1))
 ```
 
-```{r}
-par(mfrow=c(1,1))
-## Lighter are lower differences in the key baseline outcome
-with(resdf, plot(crime_p.value, effn, pch = 21, bg = gray(maxydiff / max(maxydiff),alpha=.7),cex=.7))
-with(resdf[resdf$effn>19,], text(crime_p.value,effn,labels = n,offset=.2,pos=2,cex=.7))
-```
+
 
 ```{r}
 pdf(file="designps.pdf")
-gp3 <-  ggplot(data=resdf,aes(x=crime_p.value,y=d2p_i,color=effn)) +
+gp3 <-  ggplot(data=resdf,aes(x=maxTp,y=effn,color=crime_p.value)) +
 	geom_point()
 print(gp3)
 dev.off()
+
+gp4 <-  ggplot(data=resdf,aes(x=abs(robbdiff),y=maxadiff,color=crime_p.value)) +
+	geom_point()
+print(gp4)
+
+
+gp5 <-  ggplot(data=resdf,aes(x=abs(vrobbdiff),y=maxbdiff,color=crime_p.value)) +
+	geom_point()
+print(gp5)
+
+
+gp5 <-  resdf %>% filter(maxTp >= .05 & effn >= 15 & maxadiff < 50 & maxbdiff < 30)  %>% ggplot(aes(x=crime_p.value,y=maxadiff,color=effn)) +
+	geom_point()
+print(gp5)
+
+
 ```
 
-Use three possible solutions: (1) overall balance plus maximimum effective sample size while dropping few control obs, (2) simply maximizing comparison  with  a block randomized experiment, (3) not dropping any obs.
+
+Use three possible solutions:
 
 ```{r}
 
-## Choose a design that is pretty balanced but also considers sample size
-parms1 <- resdf %>% dplyr::filter(crime_p.value >= .6)  %>% filter(effn==max(effn)) %>%  filter(d2p_i==max(d2p_i)) %>%  filter(x2==max(x2) & x3==max(x3)) %>% unique
+## Choose a design that is pretty balanced overall but also considers sample size and focuses on closeness on crime variables
+parms1 <- resdf %>% filter(maxTp >= .4)  %>% filter(crime_p.value > .25) %>% filter(effn==max(effn))
 parms1
 
-## Now max d2p_i
-parms2 <- resdf  %>% filter(d2p_i>quantile(d2p_i,.95)) %>% filter(crime_p.value>quantile(crime_p.value,.9)) %>% filter(effn==max(effn)) %>%
-	filter(x2==max(x2) & x3==max(x3)) %>% unique
+## Now focus on the worst crime difference and mean crime differences with some
+## overall balance
+parms2 <- resdf  %>% filter(maxadiff < quantile(maxadiff,.25) & maxbdiff < quantile(maxbdiff,.25)) %>% filter(crime_p.value > .1 & maxTp > .1) %>% 
+    filter(abs(robbdiff) < 1) %>% filter(effn==max(effn))
 parms2
 
-## Now focus on max differences
-parms3 <- resdf  %>% filter(maxydiff < 30) %>% filter(crime_p.value > .1) %>% filter(effn==max(effn)) %>% filter(x2==max(x2))
+## What about (nearly) maximizing overall balance?
+parms3 <- resdf  %>% filter(maxTp > quantile(maxTp,.9)) %>% filter(effn==max(effn))
 parms3
 
 ```
 
-The summary of  the three candidates.
+The summary of  the three candidates (choosing the one that has the largest/most
+permissive calipers)
 
 ```{r}
+parms1 <- parms1 %>% filter(x3==max(x3))
+parms2 <- parms2 %>% filter(x3==max(x3)) %>% filter(maxTp==max(maxTp))
+parms3 <- parms3 %>% filter(x3==max(x3))
+
 parms1
 parms2
 parms3
 ```
 
+Now generate the actual matches and save them for analysis.
+
+```{r}
+source(here("Analysis","utilityfns.R"))
+```
 
 ```{r}
 
-newdist_old1 <- (psdistPen * parms1[[1]] + mhdistPen * (1 - parms1[[1]])) + caliper(mhdistPen, parms1[[2]]) + caliper(psdistPen, parms1[[3]])
-sum_newdist_old1 <- summary(newdist_old1)
-ctrl_trt_ratio1 <- length(sum_newdist_old1$matchable$control)/length(sum_newdist_old1$matchable$treatment)
-sum_newdist_old1
+parms1_res <- find_design2(
+  x = unlist(select(parms1,x1,x2,x3,x4,x5)),
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_full_objs=FALSE
+)
 
-newdist_old2 <- (psdistPen * parms2[[1]] + mhdistPen * (1 - parms2[[1]])) + caliper(mhdistPen, parms2[[2]]) + caliper(psdistPen, parms2[[3]])
-sum_newdist_old2 <- summary(newdist_old2)
-ctrl_trt_ratio2 <- length(sum_newdist_old2$matchable$control)/length(sum_newdist_old2$matchable$treatment)
-sum_newdist_old2
-
-newdist_old3 <- (psdistPen * parms3[[1]] + mhdistPen * (1 - parms3[[1]])) + caliper(mhdistPen, parms3[[2]]) + caliper(psdistPen, parms3[[3]])
-sum_newdist_old3 <- summary(newdist_old3)
-ctrl_trt_ratio3 <- length(sum_newdist_old3$matchable$control)/length(sum_newdist_old3$matchable$treatment)
-sum_newdist_old3
-
-
-newdist1 <- crimedist  + caliper(mhdist, parms1[[2]]) + caliper(psdist2, parms1[[3]]) + caliper(robbdist,parms1[[4]]) + caliper(vrobbdist,parms1[[5]])
-sum_newdist1 <- summary(newdist1)
-ctrl_trt_ratio1 <- length(sum_newdist1$matchable$control)/length(sum_newdist1$matchable$treatment)
-sum_newdist1
-
-newdist2 <- crimedist + caliper(mhdist, parms2[[2]]) + caliper(psdist2, parms2[[3]]) + caliper(robbdist,parms2[[4]]) + caliper(vrobbdist,parms2[[5]])
-sum_newdist2 <- summary(newdist2)
-ctrl_trt_ratio2 <- length(sum_newdist2$matchable$control)/length(sum_newdist2$matchable$treatment)
-sum_newdist2
-
-newdist3 <- crimedist + caliper(mhdist, parms3[[2]]) + caliper(psdist2, parms3[[3]]) +  caliper(robbdist,parms3[[4]]) + caliper(vrobbdist,parms3[[5]])
-sum_newdist3 <- summary(newdist3)
-ctrl_trt_ratio3 <- length(sum_newdist3$matchable$control)/length(sum_newdist3$matchable$treatment)
-sum_newdist3
-
-
-
-```
-
-Now, do the matchings found above.
-
-```{r domatching}
-## Match 1:
-fm1 <- fullmatch(newdist1, data = dat17p, tol = .00001, min.controls = 1, mean.controls=ctrl_trt_ratio1)
-summary(fm1, min.controls = 0, max.controls = Inf)
-dat17p$fm1 <- factor(fm1)
-xb1 <- balanceTest(update(matchfmla, . ~ . + strata(fm1)), data = dat17p, report = "all",subset=!is.na(fm1),p.adjust.method="holm")
-xb1$overall[,]
-## Worse balance
-xb1vars <- as_tibble(xb1$results[,,"fm1"],rownames="vars")
-xb1vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm1, distance = robbdist))
-summary(ydiffs1)
-quantile(ydiffs1,seq(0,1,.1))
-## Do individual level balance test
-ndati1 <-  nrow(dat17i)
-dat17i$fm1 <- NULL
-dat17i <- inner_join(dat17i, dat17p[,c("Q56","fm1")], by = "Q56")
-stopifnot(ndati1==nrow(dat17i))
-balfmla_i <- update(matchfmla_iCluster, . ~ . + strata(fm1))
-xb_i1 <- balanceTest(balfmla_i, data = dat17i, report = "all", p.adjust.method = "holm")
-xb_i1$overall[,]
-xb_i1vars <- as_tibble(xb_i1$results[,,"fm1"],rownames="vars")
-xb_i1vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-
-## Match 2:
-fm2 <- fullmatch(newdist2, data = dat17p, tol = .00001, min.controls = 1) #, mean.controls=2) #ctrl_trt_ratio2)
-summary(fm2, min.controls = 0, max.controls = Inf)
-dat17p$fm2 <- factor(fm2)
-xb2 <- balanceTest(update(matchfmla, . ~ . + strata(fm2)), data = dat17p, report = "all",subset=!is.na(fm2),p.adjust.method="holm")
-xb2$overall[,]
-## Worse balance
-xb2vars <- as_tibble(xb2$results[,,"fm2"],rownames="vars")
-xb2vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs1 <- unlist(matched.distances(fm2, distance = robbdist))
-summary(ydiffs1)
-quantile(ydiffs1,seq(0,1,.1))
-## Do individual level balance test
-ndati1 <-  nrow(dat17i)
-dat17i$fm2 <- NULL
-dat17i <- inner_join(dat17i, dat17p[,c("Q56","fm2")], by = "Q56")
-stopifnot(ndati1==nrow(dat17i))
-balfmla_i <- update(matchfmla_iCluster, . ~ . + strata(fm2))
-xb_i2 <- balanceTest(balfmla_i, data = dat17i, report = "all", p.adjust.method = "holm")
-xb_i2$overall[,]
-xb_i2vars <- as_tibble(xb_i2$results[,,"fm2"],rownames="vars")
-xb_i2vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-
-## Match 3:
-fm3 <- fullmatch(newdist3, data = dat17p, tol = .00001, min.controls = 1)
-summary(fm3, min.controls = 0, max.controls = Inf)
-dat17p$fm3 <- factor(fm3)
-xb3 <- balanceTest(update(matchfmla, . ~ . + strata(fm3)), data = dat17p, report = "all",subset=!is.na(fm3),p.adjust.method="holm")
-xb3$overall[,]
-## Worse balance
-xb3vars <- as_tibble(xb3$results[,,"fm3"],rownames="vars")
-xb3vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-ydiffs3 <- unlist(matched.distances(fm3, distance = robbdist))
-summary(ydiffs3)
-quantile(ydiffs3,seq(0,1,.1))
-## Do individual level balance test
-ndati1 <-  nrow(dat17i)
-dat17i$fm3 <- NULL
-dat17i <- inner_join(dat17i, dat17p[,c("Q56","fm3")], by = "Q56")
-stopifnot(ndati1==nrow(dat17i))
-balfmla_i <- update(matchfmla_iCluster, . ~ . + strata(fm3))
-xb_i3 <- balanceTest(balfmla_i, data = dat17i, report = "all", p.adjust.method = "holm")
-xb_i3$overall[,]
-xb_i3vars <- as_tibble(xb_i3$results[,,"fm3"],rownames="vars")
-xb_i3vars %>% arrange(desc(abs(std.diff))) %>% head(x,n=10)
-
-```
-
-Notice that we are assessing balance on `r nrow(xb3vars)` at the neighborhood level and  on `r nrow(xb_i1vars)` at the individual level.  The numbers of variables differ because we have some continuous  variables at the individual level that we use at mean, median, and even some quantiles, at the neighborhood  level. In a randomized experiment with no effects at all, we would expect to see about  `r round(nrow(xb3vars)*.05,2)` tests reporting uncorrected $p$-values of less than .05. The displays above correct the $p$-values for multiple testing. One can look at $z$ statistics for this kind of information but the omnibus chi-square test summarizes this relationship --- and in case case provides little argument against the standard of a block randomized study.
-
-
-We may want to assess  balance differently? Or match within neighborhoods. Notice that the cluster are the same size, so additional weighting is not needed (cf @hansen2008cbs and Aronow and Middleton on bias).
-
-```{r}
-xb123 <-  balanceTest(update(matchfmla, . ~ . + strata(fm1) + strata(fm2) + strata(fm3)),
-		      data = dat17p, report = "all")
-xb123$overall[,]
-
-balfmla2 <- update(matchfmla_iCluster, . ~ . + strata(fm1) + strata(fm2) + strata(fm3))
-xbi <- balanceTest(balfmla2, data = dat17i, report = "all", p.adjust.method = "holm")
-xbi$overall[, ]
-
-## This next is just to show the importance adjusting for cluster assignment 
-balfmla3 <- update(matchfmla_iCluster, . ~ . + strata(fm1) + strata(fm2) + strata(fm3) - cluster(Q56))
-xbitest <- balanceTest(balfmla3, data = dat17i, report = "all", p.adjust.method = "holm")
-xbitest$overall[, ] ## not sure what is happening with fm2
-
-## Collect the standardized differences across the matchings at the individual level
-xbivars <- as_tibble(xbi$results[,"std.diff",],rownames="vars")
-names(xbivars)[5]  <- "raw"
-## The biggest std diffs
-xbivars %>% arrange(desc(raw)) %>% head(.,10)
-xbivars %>% filter(vars=="n_sec_i")
-```
-
-How often does one or the other matching better than the other? Compare standardized differences.
-
-```{r}
-xbivars <- xbivars %>% mutate(fm1v2=abs(fm1)-abs(fm2),
-		   fm1v3=abs(fm1)-abs(fm3),
-		   fm2v3=abs(fm2)-abs(fm3))
-
-## 1 = fm1 greater than fm2, -1  = fm1 smaller than fm2
-table(sign(xbivars$fm1v2))
-table(sign(xbivars$fm1v3))
-table(sign(xbivars$fm2v3))
-
-summary(xbivars)
-```
-
-Looks like `fm1` tends to have bigger std diffs than `fm2`, and a bit smaller than  `fm3`, it also looks like `fm3` has smaller std diffs than `fm2`.
-
-These plots suggest fm2 from the perspective of std.diffs.
-
-```{r}
-library(reshape2)
-
-tmp <- melt(xbivars, measure.vars=c("fm1v2","fm1v3","fm2v3"),variable.name="StdDiffComparison")
-
-gfms <- ggplot(data=tmp,aes(x=value,color=StdDiffComparison)) +
-	geom_density() +
-	geom_rug() +
-	geom_vline(xintercept=0)
-print(gfms)
-
-tmp2 <- melt(xbivars, measure.vars=c("fm1","fm2","fm3"),variable.name="StdDiff")
-
-gfms2 <- ggplot(data=tmp2,aes(x=abs(value),color=StdDiff)) +
-	geom_density() +
-	geom_rug() +
-	geom_vline(xintercept=0)
-print(gfms2)
-
-
-```
-
-Also look at MSEs:
-
-```{r}
-
-tmp2 %>% group_by(StdDiff) %>% summarize(mn=mean( (value-mean(value) )^2))
+print(parms1_res$fm_p,grouped=TRUE)
+print(parms1_res$maxTp)
 
 ```
 
 
-
-```{r eval=FALSE}
-mypairfn <- function(x,y,...){
-	points(x,y,...)
-	abline(0,1)
-}
-
-pairs(xbivars[,c("fm1","fm2","fm3","raw")],lower.panel=mypairfn,upper.panel=mypairfn)
-```
-
-```{r}
-with(dat17i,plot(vrobb_2016,robb_2016,col=c("black","red")[soldvsnot17+1]))
-```
-
-
-Which sets appear worst --- with pharmacies that seem most different from each
-other on a few key variables. Just choosing one variable for now for example.
-We can assess matches using other variables, too. Or even propensity scores.
-
-```{r}
-
-meandiff <- function(v, z = soldvsnot17) {
-  force(z)
-  mean(v[z == 1]) - mean(v[z == 0])
-}
-
-absmeandiff <- function(v, z = soldvsnot17) {
-  force(z)
-  abs(mean(v[z == 1]) - mean(v[z == 0]))
-}
-
-setstats1 <- dat17i %>%
-	filter(!is.na(fm1)) %>%
-  group_by(fm1) %>%
-  summarize(
-    age_diffmean = absmeandiff(age_i,z=soldvsnot17),
-    n_sec_diffmean=absmeandiff(n_sec_i,z=soldvsnot17),
-    vrobb_2016_diffmean = absmeandiff(vrobb_2016, z = soldvsnot17),
-    robb_2016_diffmean = absmeandiff(robb_2016, z = soldvsnot17),
-    setsize = n(),
-    Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
-  )
-setstats1 %>% arrange(robb_2016_diffmean)
-
-setstats2 <- dat17i %>%
-	filter(!is.na(fm2)) %>%
-  group_by(fm2) %>%
-  summarize(
-    age_diffmean = absmeandiff(age_i,z=soldvsnot17),
-    n_sec_diffmean=absmeandiff(n_sec_i,z=soldvsnot17),
-    vrobb_2016_diffmean = absmeandiff(vrobb_2016, z = soldvsnot17),
-    robb_2016_diffmean = absmeandiff(robb_2016, z = soldvsnot17),
-    setsize = n(),
-    Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
-  )
-setstats2 %>% arrange(robb_2016_diffmean)
-
-
-setstats3 <- dat17i %>%
-	filter(!is.na(fm3)) %>%
-  group_by(fm3) %>%
-  summarize(
-    age_diffmean = absmeandiff(age_i,z=soldvsnot17),
-    n_sec_diffmean=absmeandiff(n_sec_i,z=soldvsnot17),
-    vrobb_2016_diffmean = absmeandiff(vrobb_2016, z = soldvsnot17),
-    robb_2016_diffmean = absmeandiff(robb_2016, z = soldvsnot17),
-    setsize = n(),
-    Pharmacies = paste(Q56, "(Z=", soldvsnot17, ")", collapse = ",", sep = "")
-  )
-setstats3   %>% arrange(robb_2016_diffmean)
-
-summary(setstats1$robb_2016_diffmean)
-summary(setstats2$robb_2016_diffmean)
-summary(setstats3$robb_2016_diffmean)
-
-```
-
-## Save products
-
-Using `parms3` as our chosen one.
-
-```{r}
-save(fm1, fm2, fm3,
-     xb1, xb2, xb3,
-     xb1vars, xb2vars, xb3vars,
-     xb_i1, xb_i2, xb_i3,
-     xb_i1vars, xb_i2vars, xb_i3vars,
-     parms1, parms2, parms3, xbi, xb123, dat17i, dat17p,
-     setstats1, setstats2, setstats3,
-     file = here::here("Analysis","design_soldvsnot.rda"))
-```
-
-
-# References
