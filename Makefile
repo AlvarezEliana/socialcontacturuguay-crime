@@ -2,9 +2,10 @@
 # For example the following example says that the file, outputdata.rda depends in inputdata.rda and the datawork.R file.
 # To create outputdata.rda we will need to run the R CMD BATCH datawork.R command.
 # To use the makefile at the unix command line, we would type make outputdata.rda .
-
 ## outputdata.rda: inputdata.rda datawork.R
 ## 	R CMD BATCH datawork.R
+
+## Currently assuming that we are using the renv setup as described in the README.md file to deal with R packages.
 
 SHELL = /bin/sh
 
@@ -24,37 +25,37 @@ main.pdf: main.tex  \
 ## Analysis
 
 Analysis/outcome_analysis_soldvsnot.pdf: Analysis/outcome_analysis_soldvsnot.Rmd Analysis/design_soldvsnot.rda
-	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis_soldvsnot.Rmd')"
+	Rscript -e "library(rmarkdown);render('Analysis/outcome_analysis_soldvsnot.Rmd')"
 
 Analysis/describe_design_soldvsnot.pdf: Analysis/describe_design_soldvsnot.Rmd Analysis/design_soldvsnot.rda
-	cd Analysis && Rscript -e "library(rmarkdown);render('describe_design_soldvsnot.Rmd')"
+	 Rscript -e "library(rmarkdown);render('Analysis/describe_design_soldvsnot.Rmd')"
 
 media/fm2_balance_plot.pdf: Analysis/describe_design_soldvsnot.pdf
 
 Analysis/design_soldvsnot.rda: Analysis/design_soldvsnot.Rmd Analysis/match_data_prep.rda \
-	Analysis/initial_balance.rda Analysis/design_soldvsnot_search_res.rda
-	cd Analysis && Rscript -e "library(rmarkdown);render('design_soldvsnot.Rmd')"
+	Analysis/initial_balance.rda Analysis/design_soldvsnot_search_res2.rda
+	Rscript -e "library(rmarkdown);render('Analysis/design_soldvsnot.Rmd')"
 
 Analysis/design_soldvsnot_search_res2.rda: Analysis/designsearch_soldvsnot.R Analysis/match_data_prep.rda \
 	Analysis/initial_balance.rda
 	R --file=Analysis/designsearch_soldvsnot.R
 
 Analysis/initial_balance.rda: Analysis/initial_balance.Rmd Analysis/match_data_prep.rda
-	cd Analysis && Rscript -e "library(rmarkdown);render('initial_balance.Rmd')"
+	 Rscript -e "library(rmarkdown);render('Analysis/initial_balance.Rmd')"
 
 media/initial_balance_plot.pdf: Analysis/initial_balance.rda
 
 ##Analysis/matchingresults.rda: Analysis/balanceAndMatching.Rmd Data/wrkdat.rda
-##	cd Analysis && Rscript -e "library(rmarkdown);render('balanceAndMatching.Rmd')"
+##	 Rscript -e "library(rmarkdown);render('Analysis/balanceAndMatching.Rmd')"
 
 ##Analysis/outcomeresults.rda: Analysis/outcome_analysis.Rmd Analysis/matchingresults.rda
-##	cd Analysis && Rscript -e "library(rmarkdown);render('outcome_analysis.Rmd')"
+##	 Rscript -e "library(rmarkdown);render('Analysis/outcome_analysis.Rmd')"
 
 media/evo_delitos.pdf: Analysis/script_evol_delitos.R
-	cd Analysis &&  R --vanilla  --file=script_evol_delitos.R
+	  R --vanilla  --file=script_evol_delitos.R
 
 Analysis/design_svn_zubi.rda: Analsis/design_svn_zubi.R
-	cd Analysis && R --vanilla --file=design_svn_zubi.R
+	 R --vanilla --file=design_svn_zubi.R
 
 Analysis/pharm_score_mat.rda: Analysis/design_svn_zubi.rda
 
@@ -62,7 +63,7 @@ Analysis/pharm_score_mat.rda: Analysis/design_svn_zubi.rda
 
 Analysis/match_data_prep.rda: Analysis/match_data_prep.Rmd Data/wrkdat.rda Data/finaldat.rda \
 	Analysis/rmarkdownsetup.R
-	cd Analysis && Rscript -e "library(rmarkdown);render('match_data_prep.Rmd')"
+	 Rscript -e "library(rmarkdown);render('Analysis/match_data_prep.Rmd')"
 
 Data/finaldat.rda : Data/stata2R.R Data/wd_basefinal1718.dta
 	cd Data && R --vanilla --file=stata2R.R

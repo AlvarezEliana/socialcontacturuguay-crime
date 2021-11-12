@@ -1,5 +1,5 @@
 ---
-title: Compare pharmacies who sold starting at the beginning (16) to those never selling (42).
+title: Choose a design
 author: Jake Bowers
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 fontsize: 11pt
@@ -94,7 +94,8 @@ gp5 <-  ggplot(data=resdf,aes(x=abs(vrobbdiff),y=maxbdiff,color=crime_p.value)) 
 print(gp5)
 
 
-gp5 <-  resdf %>% filter(maxTp >= .05 & effn >= 15 & maxadiff < 50 & maxbdiff < 30)  %>% ggplot(aes(x=crime_p.value,y=maxadiff,color=effn)) +
+gp5 <-  resdf %>% filter(maxTp > median(maxTp) & effn >= 16 & maxadiff < median(maxadiff) & maxbdiff < median(maxbdiff) & crime_p.value > median(crime_p.value))  %>%
+    ggplot(aes(x=crime_p.value,y=maxTp,color=abs(robbdiff))) +
 	geom_point()
 print(gp5)
 
@@ -102,22 +103,23 @@ print(gp5)
 ```
 
 
-Use three possible solutions:
+Use three possible solutions (note: `maxadiff` is maximum difference in `robb`
+within set, `maxbdiff`, is maximum difference in `vrobb` within set. And the
+`vrobbdiff` and `robbdiff` are the set-adjusted mean differences).
 
 ```{r}
-
 ## Choose a design that is pretty balanced overall but also considers sample size and focuses on closeness on crime variables
-parms1 <- resdf %>% filter(maxTp >= .4)  %>% filter(crime_p.value > .25) %>% filter(effn==max(effn))
+parms1 <- resdf %>% filter(maxTp > quantile(maxTp,.5) & crime_p.value > quantile(crime_p.value,.5) & effn >= 16)  %>%
+    filter(maxbdiff < median(maxbdiff) & maxadiff < median(maxadiff) &
+        abs(robbdiff) < 2 & abs(vrobbdiff) < 2)  %>% filter(effn==max(effn))
 parms1
 
-## Now focus on the worst crime difference and mean crime differences with some
-## overall balance
-parms2 <- resdf  %>% filter(maxadiff < quantile(maxadiff,.25) & maxbdiff < quantile(maxbdiff,.25)) %>% filter(crime_p.value > .1 & maxTp > .1) %>% 
-    filter(abs(robbdiff) < 1) %>% filter(effn==max(effn))
+## Now focus on the worst crime difference and mean crime differences
+parms2 <- resdf  %>% filter(maxadiff < quantile(maxadiff,.25) & maxbdiff < quantile(maxbdiff,.25)) %>% filter(abs(robbdiff) < 1) %>% filter(effn==max(effn))
 parms2
 
 ## What about (nearly) maximizing overall balance?
-parms3 <- resdf  %>% filter(maxTp > quantile(maxTp,.9)) %>% filter(effn==max(effn))
+parms3 <- resdf  %>% filter(maxTp > quantile(maxTp,.9) & crime_p.value > quantile(crime_p.value,.9)) %>% filter(effn==max(effn)) %>% filter(maxbdiff==min(maxbdiff))
 parms3
 
 ```
@@ -126,13 +128,14 @@ The summary of  the three candidates (choosing the one that has the largest/most
 permissive calipers)
 
 ```{r}
-parms1 <- parms1 %>% filter(x3==max(x3))
+parms1 <- parms1 %>% filter(x2==max(x2))
 parms2 <- parms2 %>% filter(x3==max(x3)) %>% filter(maxTp==max(maxTp))
-parms3 <- parms3 %>% filter(x3==max(x3))
+parms3 <- parms3 %>% filter(x2==max(x2))
 
-parms1
-parms2
-parms3
+the_designs <- rbind(parms1=parms1,
+parms2=parms2,
+parms3=parms3)
+the_designs
 ```
 
 Now generate the actual matches and save them for analysis.
@@ -140,9 +143,9 @@ Now generate the actual matches and save them for analysis.
 ```{r}
 source(here("Analysis","utilityfns.R"))
 ```
+Inspect parms1 solution:
 
-```{r}
-
+```{r parms1_inspection}
 parms1_res <- find_design2(
   x = unlist(select(parms1,x1,x2,x3,x4,x5)),
   thebalfmla_b = matchfmla,
@@ -155,12 +158,119 @@ parms1_res <- find_design2(
   distb = vrobbdist,
   datb = dat17p,
   dati = dat17i,
-  return_full_objs=FALSE
+  return_full_objs=TRUE
 )
-
+names(parms1_res)
 print(parms1_res$fm_p,grouped=TRUE)
+summary(parms1_res$fm_p,max.controls=Inf)
+summary(parms1_res$fm_i,max.controls=Inf)
 print(parms1_res$maxTp)
+print(parms1_res$crime_lm)
+print(parms1_res$crime_p)
+```
+
+We dropped 13 control neighborhoods at the first stage and one person at the
+second stage.
+
+```{r}
+## Just check that our fm_i stratification is nested within fm_p so that we can
+## use it to compare people living in treatment versus control neighborhoods.
+
+## Also add the stratifications to the main datasets
+dat17p[names(parms1_res$fm_p),"parms1_fm_p"] <- factor(parms1_res$fm_p)
+dat17i[names(parms1_res$fm_i),"parms1_fm_i"] <- factor(parms1_res$fm_i)
+dat17i <- inner_join(dat17i,dat17p[,c("Q56","parms1_fm_p")],by="Q56")
+
+## This is what is looks like
+dat17i %>% filter(parms1_fm_p=="1.1") %>% select(id,Q56,soldvsnot17,parms1_fm_p,parms1_fm_i) %>% arrange(parms1_fm_i,desc(soldvsnot17),Q56)
+dat17i %>% filter(parms1_fm_p=="1.6") %>% select(id,Q56,soldvsnot17,parms1_fm_p,parms1_fm_i) %>% arrange(parms1_fm_i,desc(soldvsnot17),Q56)
+dat17i %>% filter(parms1_fm_i=="12.1.5") %>% select(id,Q56,soldvsnot17,parms1_fm_p,parms1_fm_i) %>% arrange(parms1_fm_i,desc(soldvsnot17),Q56)
+
+test1 <- dat17i %>% filter(!is.na(parms1_fm_i)) %>% group_by(parms1_fm_i) %>% summarize(num_fm_p=length(unique(parms1_fm_p)))
+stopifnot(all(test1$num_fm_p==1))
+```
+
+Parms2 inspection
+
+```{r parms2_inspection}
+parms2_res <- find_design2(
+  x = unlist(select(parms2,x1,x2,x3,x4,x5)),
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_full_objs=TRUE
+)
+names(parms2_res)
+print(parms2_res$fm_p,grouped=TRUE)
+summary(parms2_res$fm_p,max.controls=Inf)
+summary(parms2_res$fm_i,max.controls=Inf)
+print(parms2_res$maxTp)
+print(parms2_res$crime_lm)
+print(parms2_res$crime_p)
+```
+
+Parms3 inspection
+
+
+```{r parms3_inspection}
+parms3_res <- find_design2(
+  x = unlist(select(parms3,x1,x2,x3,x4,x5)),
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_full_objs=TRUE
+)
+names(parms3_res)
+print(parms3_res$fm_p,grouped=TRUE)
+summary(parms3_res$fm_p,max.controls=Inf)
+summary(parms3_res$fm_i,max.controls=Inf)
+print(parms3_res$maxTp)
+print(parms3_res$crime_lm)
+print(parms3_res$crime_p)
+```
+
+Looking at these, I prefer parms1: we don't drop any treated observations. The
+few weird sets can be dropped if we want, for robustness purposes.
+
+```{r}
+the_designs <- rbind(parms1=parms1,
+parms2=parms2,
+parms3=parms3)
+the_designs
+
+summary(parms1_res$fm_p,max.controls=Inf)
+summary(parms1_res$fm_i,max.controls=Inf)
+
+summary(parms2_res$fm_p,max.controls=Inf)
+summary(parms2_res$fm_i,max.controls=Inf)
+
+summary(parms3_res$fm_p,max.controls=Inf)
+summary(parms3_res$fm_i,max.controls=Inf)
 
 ```
+
+Save chosen design info:
+
+```{r}
+save(parms1_res,file=here("Analysis","design_soldvsnot.rda"))
+```
+
+
+
+
 
 
