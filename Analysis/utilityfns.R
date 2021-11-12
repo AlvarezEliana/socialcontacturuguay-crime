@@ -1,72 +1,5 @@
 ## Functions for the paper
 
-
-find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, themhdist, ydist, datb, dati) {
-  ## message(paste(x,collapse=" "))
-  if (is.null(matchdist)) {
-    newdist <- (thepsdist * x[1] + themhdist * (1 - x[1])) + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
-  } else {
-    newdist <- matchdist + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
-  }
-  sum_newdist <- summary(newdist)
-  if (sum_newdist$total$matchable == 0) {
-    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
-  }
-
-  ctrl_trt_ratio <- length(sum_newdist$matchable$control) / length(sum_newdist$matchable$treatment)
-
-  thefm <- try(fullmatch(newdist,
-    data = datb, tol = .00001,
-    min.controls = 1, max.controls = Inf, mean.controls = ctrl_trt_ratio,
-  ))
-
-  if (inherits(thefm, "try-error")) {
-    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
-  }
-
-  datb$thefm <- factor(thefm)
-
-  xb <- try(xBalance(thebalfmla_b,
-    strata = list(thefm = ~thefm),
-    data = datb,
-    report = c("chisquare.test", "p.values")
-  ), silent = TRUE)
-
-  if (inherits(xb, "try-error")) {
-    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
-  }
-
-  ## Do individual level balance test
-  ndati <- nrow(dati)
-  dati <- inner_join(dati, datb[, c("Q56", "thefm")], by = "Q56")
-  stopifnot(nrow(dati) == ndati)
-
-  xb_i <- try(xBalance(thebalfmla_i,
-    strata = list(thefm = ~thefm),
-    data = dati, report = c("chisquare.test", "p.values")
-  ), silent = TRUE)
-  if (inherits(xb_i, "try-error")) {
-    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
-  }
-
-  if (!is.null(ydist)) {
-    maxydiff <- max(unlist(matched.distances(thefm, distance = ydist)))
-  } else {
-    maxydiff <- NA
-  }
-
-  return(c(
-    x = x,
-    d2p = xb$overall["thefm", "p.value"],
-    d2p_i = xb_i$overall["thefm", "p.value"],
-    maxydiff = maxydiff,
-    n = sum(!is.na(thefm)),
-    effn = summary(thefm)$effective.sample.size
-  ))
-}
-
-
-
 find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, thepsdisti, themhdist, dista, distb, datb, dati, return_full_objs = FALSE) {
   require(optmatch)
   require(RItools)
@@ -86,7 +19,6 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
     robbdiff = NA, vrobbp = NA, robbp = NA, crime_p = NA, maxadiff = NA,
     maxbdiff = NA, n = NA, effn = NA, effn_i = NA
   )
-
 
   sum_newdist <- summary(newdist)
   if (sum_newdist$total$matchable == 0) {
@@ -114,7 +46,6 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
     data = datb,
     report = c("chisquare.test", "p.values")
   ), silent = TRUE)
-
 
   if (inherits(xb, "try-error")) {
     return(return_obj_template)
@@ -155,18 +86,9 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
       ctrls <- row.names(dat_i_b)[dat_i_b$soldvsnot17 == 0]
       match_mat <- thepsdisti[trts,ctrls]
       match_mat_w_cal <- match_mat + caliper(match_mat,quantile(match_mat,.95))
-      #sum_mat <- summary(match_mat_w_cal)
-      #ctrl_trt_ratio <- length(sum_mat$matchable$control) / length(sum_mat$matchable$treatment)
-      #if (ctrl_trt_ratio < 1) {
-      #    ctrl_trt_ratio <- 1
-      #}
-      fm_i_b <- try(fullmatch(match_mat_w_cal, data = dat_i_b, min.controls = 1, max.controls = Inf,  tol = .00001), silent = TRUE)
+      fm_i_b <- try(pairmatch(match_mat_w_cal, data = dat_i_b, remove.unmatchable=TRUE, tol = .00001), silent = TRUE)
       if (inherits(fm_i_b, "try-error") | all(matchfailed(fm_i_b))) {
-          #ctrl_trt_ratio <- ncol(match_mat) / nrow(match_mat)
-          #if (ctrl_trt_ratio < 1) {
-          #    ctrl_trt_ratio <- 1
-          #}
-          fm_i_b <- try(fullmatch(match_mat, data = dat_i_b, min.controls = 1, max.controls = Inf,  tol = .00001), silent = TRUE)
+          fm_i_b <- try(pairmatch(match_mat, data = dat_i_b, remove.unmatchables=TRUE,  tol = .00001), silent = TRUE)
       }
       return(fm_i_b)
   }
@@ -259,8 +181,77 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
       maxadiff = maxadiff,
       maxbdiff = maxbdiff,
       n = sum(!is.na(thefm)),
+      n_trt = sum(datb$soldvsnot17[!is.na(datb$thefm)]),
+      n_ctrl = sum((1-datb$soldvsnot17[!is.na(datb$thefm)])),
       effn = summary(thefm)$effective.sample.size,
       effn_i = summary(thefm_i)$effective.sample.size
     ))
   }
 }
+
+## Next will be deleted soon. Old function.
+
+find_design <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, themhdist, ydist, datb, dati) {
+  ## message(paste(x,collapse=" "))
+  if (is.null(matchdist)) {
+    newdist <- (thepsdist * x[1] + themhdist * (1 - x[1])) + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
+  } else {
+    newdist <- matchdist + caliper(themhdist, x[2]) + caliper(thepsdist, x[3])
+  }
+  sum_newdist <- summary(newdist)
+  if (sum_newdist$total$matchable == 0) {
+    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
+  }
+
+  ctrl_trt_ratio <- length(sum_newdist$matchable$control) / length(sum_newdist$matchable$treatment)
+
+  thefm <- try(fullmatch(newdist,
+    data = datb, tol = .00001,
+    min.controls = 1, max.controls = Inf, mean.controls = ctrl_trt_ratio,
+  ))
+
+  if (inherits(thefm, "try-error")) {
+    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
+  }
+
+  datb$thefm <- factor(thefm)
+
+  xb <- try(xBalance(thebalfmla_b,
+    strata = list(thefm = ~thefm),
+    data = datb,
+    report = c("chisquare.test", "p.values")
+  ), silent = TRUE)
+
+  if (inherits(xb, "try-error")) {
+    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
+  }
+
+  ## Do individual level balance test
+  ndati <- nrow(dati)
+  dati <- inner_join(dati, datb[, c("Q56", "thefm")], by = "Q56")
+  stopifnot(nrow(dati) == ndati)
+
+  xb_i <- try(xBalance(thebalfmla_i,
+    strata = list(thefm = ~thefm),
+    data = dati, report = c("chisquare.test", "p.values")
+  ), silent = TRUE)
+  if (inherits(xb_i, "try-error")) {
+    return(c(x = x, d2p = NA, d2p_i = NA, maxydiff = NA, n = NA, effn = NA))
+  }
+
+  if (!is.null(ydist)) {
+    maxydiff <- max(unlist(matched.distances(thefm, distance = ydist)))
+  } else {
+    maxydiff <- NA
+  }
+
+  return(c(
+    x = x,
+    d2p = xb$overall["thefm", "p.value"],
+    d2p_i = xb_i$overall["thefm", "p.value"],
+    maxydiff = maxydiff,
+    n = sum(!is.na(thefm)),
+    effn = summary(thefm)$effective.sample.size
+  ))
+}
+
