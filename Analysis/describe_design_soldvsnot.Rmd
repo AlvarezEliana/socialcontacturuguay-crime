@@ -1,4 +1,3 @@
-
 ---
 title: Pre-analysis plan and design description
 author: Jake Bowers
@@ -165,6 +164,7 @@ tmpfmla <- formula(terms(parms1_res$maxTp@statistic@y))
 lhs(initial_neigh_bal_fmla) <- rhs(tmpfmla)
 initial_omnibus_bal <-
     independence_test(initial_neigh_bal_fmla,data=dat17p,teststat="quadratic")
+pvalue(initial_omnibus_bal)
 ```
 
 ## Designing a Better Baseline Comparison
@@ -198,7 +198,7 @@ Our specific design first creates strata with similar neighborhoods where one
 neighborhood has a pharmarcy selling marijuana and the other comparison
 neighborhoods were places where a pharmacy did not sell marijuana. This design
 compared favorably with a randomized experiment. The algorithm ended up dropping
-13 neighborhoods as too different from the focal neighborhoods. 
+13 neighborhoods as too different from the focal neighborhoods.
 
 See the details below:
 
@@ -208,10 +208,10 @@ pvalue(parms1_res$maxTp)
 ```
 
 To further return differences in exposure to a selling pharmacy, we next matched
-people to each other within the sets just described. We ended up dropping one
-person from one of the comparison neighborhoods, and produced a design that was
-mostly pairs with a few people in treated neighborhoods matched to many people
-in control neighborhoods.
+people to each other within the sets just described: we required pairs, so we
+end up with 160 pairs of people. Within each pair, we have one person living in
+a neighborhood where a pharmacy sold marijuana and one person living in a
+prevoiusly matched neighborhood where a pharmacy did not sell marijuana.
 
 ```{r}
 summary(parms1_res$fm_i,max.controls=Inf)
@@ -240,40 +240,59 @@ outcomes <- c("n_sec_i","c_sec_i","vic12","dt_impact_i","ps_impact_i","boca1_i",
 Our  two main confirmatory hypotheses are:
   -   H1: *The sale of marijuana at pharmacies will not have significant
       effects on crime victimization of pharmacies' neighbors*
-  
+
   -   H2: *The sale of marijuana at pharmacies will not have significant
       effects on neighbors' insecurity perceptions*
- 
+
  In adittion we have five exploratory hypotheses:
- 
+
   -   H3: *The sale of marijuana at pharmacies will push "bocas" outside the
       neighborhood, and by doing that, neighbors' insecurity perception
       might be reduced*
-  
+
   -   H4: *The sale of marijuana at pharmacies will increase social disorder
       in the neighborhood, that would lead to higher levels of public
       insecurity perception among neighbors*
-  
+
   -   H5: *The sale of marijuana at pharmacies will diminish citizens'
       insertion in the neighborhood*
-  
+
   -   H6: *The sale of marijuana at pharmacies will not change citizens'
       evaluations about the impact of marijuana legalization on public
       security*
-  
+
   -   H7: *The sale of marijuana at pharmacies will change citizens'
       evaluations about the impact of marijuana legalization on drug
       trafficking*
 
 # Measures and Index Construction
 
-Include the description of all measures, either with the table or text. 
+The social disorder index was built using three variables: presence of young
+people loitering, presence of drunk or stoned people in the streets, and
+presence of people arguing with each other. Each of these variables have the
+following values: 1 (Not at all), 2 (Little), 3 (Somewhat), and 4 (Very much).
+In order to construct the index we assume intermediate substitutability among
+variables and assign the mean value \citep{goertz2006social}.
 
-The social disorder index was built using three variables: presence of young people loitering, presence of drunk or stoned people in the streets, and presence of people arguing with each other. Each of these variables have the following values: 1 (Not at all), 2 (Little), 3 (Somewhat), and 4 (Very much). In order to construct the index we assume intermediate substitutability among variables and assign the mean value \citep{goertz2006social}.
+Citizens' Insertion on their Neighborhood is an index constructed with eight
+variables grouped in four dimensions. The dimensions are: use of services
+(education and health) in the neighborhood, contact among neighbors (chat and/or
+meet for collective action activities), perform recreational activities in the
+neighborhood, and shopping in the neighborhood. We assume intermediate
+substitutability among dimensions and assign the mean value. The use of services
+dimension has two indicators: use of educational services (kindergarten,
+school,high school) in the neighborhood and use of health services (doctor,
+hospital) in the neighborhood. We assume total substitutability among the two
+indicators and assign the maximum value  \citep{goertz2006social}.Contact among
+neighbors dimension also has two indicators: talk with your neighbors and meets/
+organizes with the neighbors for any improvement activity for the neighborhood.
+We also assume total substitutability among the two indicators and assign the
+maximum value. Perform recreational activities in the neighborhood is measured
+by the question: do you perform any recreational activities in the neighborhood?
+Finally, shopping in the neighborhood is measured by the question: do you
+purchase in warehouses or stores in the neighborhood?
 
-Citizens' Insertion on their Neighborhood is an index constructed with eight variables grouped in four dimensions. The dimensions are: use of services (education and health) in the neighborhood, contact among neighbors (chat and/or meet for collective action activities), perform recreational activities in the neighborhood, and shopping in the neighborhood. We assume intermediate substitutability among dimensions and assign the mean value. The use of services dimension has two indicators: use of educational services (kindergarten, school,high school) in the neighborhood and use of health services (doctor, hospital) in the neighborhood. We assume total substitutability among the two indicators and assign the maximum value  \citep{goertz2006social}.Contact among neighbors dimension also has two indicators: talk with your neighbors and meets/ organizes with the neighbors for any improvement activity for the neighborhood. We also assume total substitutability among the two indicators and assign the maximum value. Perform recreational activities in the neighborhood is measured by the question: do you perform any recreational activities in the neighborhood? Finally, shopping in the neighborhood is measured by the question: do you purchase in warehouses or stores in the neighborhood?
-
-We document our index construction in the github repository in `datasetup.do` (date stamped using the commit and date mentioned above).
+We document our index construction in the github repository in `datasetup.do`.
 
 Table 1. Outcomes variables description
 
@@ -307,6 +326,20 @@ We will report both unadjusted and covariance adjusted results --- focusing on a
 
 Our covariance adjustment will follow Lin's method (Lin 2013). And we will estimate the ATE (i.e. using block-size weights) but report confidence intervals and standard errors based on precision weighting because of our diversity in block  size (see Hansen and Bowers 2008 among other places showing the precision gains from this approach).
 
+We will estimate the average effect of living near a pharmacy that sells
+marijuana using differences of means conditional on matched set, adjusting the
+standard errors for hypothesis testing and confidence interval creation using
+the CR2 cluster-robust standard errors (cite). All of this will occur using the
+`lm_robust()` command from the `estimatr` package in R.
+
+```{r eval=FALSE}
+
+lm1 <- lm_robust(outcome1~soldvsnot17,fixed_effects=~fm_i,cluster=Q56,data=dat17i)
+
+
+```
+
+
 ## Approaches to Testing
 
 We will use both direct permutation  based approaches to testing as well as asymptotic approaches since we have only 16 "treated" clusters.
@@ -338,23 +371,8 @@ covariates <- c("ideol_si_i","educ_i","sex_i","age_i")
 
 # Missing  Data  and Extreme Data Points
 
-Since our data are from a survey we do not anticipate extreme data points in the endline --- our  work with the baseline  data supports this idea that we should not worry about overly influential points 
+Since our data are from a survey we do not anticipate extreme data points in the endline --- our  work with the baseline  data supports this idea that we should not worry about overly influential points
 
-
-### Statistical Inferencea
-
-We will estimate the average effect of living near a pharmacy that sells
-marijuana using differences of means conditional on matched set, adjusting the
-standard errors for hypothesis testing and confidence interval creation using
-the CR2 cluster-robust standard errors (cite). All of this will occur using the
-`lm_robust()` command from the `estimatr` package in R.
-
-```{r eval=FALSE}
-
-lm1 <- lm_robust(outcome1~soldvsnot17,fixed_effects=~fm_i,cluster=Q56,data=dat17i)
-
-
-```
 
 
 ### Sensitivity Analysis

@@ -65,7 +65,18 @@ the neighborhood --- so their values are p-values in the ordinary sense.
 
 ```{r}
 ## Convert character to numeric (maybe change this if we search again)
-results_num <- apply(results,1,as.numeric)
+##results_num <- apply(results,1,as.numeric)
+## Only keep valid results (fix this in utilityfns later.
+res_lens <- sapply(results,length)
+results[res_lens==18][1:2]
+results1 <- results[res_lens==20]
+### maxTp with errors is returning text error. So, for now, convert to numeric.
+## Again to fix before a next search run
+results2 <- lapply(results1,function(x){ res<-as.numeric(x); names(res) <-
+    names(x); return(res)})
+
+results_num <- bind_rows(results2)
+
 resdf0 <- data.frame(results_num)
 ## Drop any row with NAs
 resdf <- na.omit(resdf0)
@@ -109,9 +120,9 @@ within set, `maxbdiff`, is maximum difference in `vrobb` within set. And the
 
 ```{r}
 ## Choose a design that is pretty balanced overall but also considers sample size and focuses on closeness on crime variables
-parms1 <- resdf %>% filter(maxTp > quantile(maxTp,.5) & crime_p.value > quantile(crime_p.value,.5) & effn >= 16)  %>%
-    filter(maxbdiff < median(maxbdiff) & maxadiff < median(maxadiff) &
-        abs(robbdiff) < 2 & abs(vrobbdiff) < 2)  %>% filter(effn==max(effn))
+parms1 <- resdf %>% filter(maxTp > quantile(maxTp,.5) & crime_p.value > quantile(crime_p.value,.7) & effn >= 16 & n_trt==16)  %>%
+    filter(maxbdiff < median(maxbdiff) & maxadiff < median(maxadiff)) %>%
+    filter(abs(robbdiff) < 1) %>% filter(maxTp==max(maxTp))
 parms1
 
 ## Now focus on the worst crime difference and mean crime differences
@@ -130,7 +141,7 @@ permissive calipers)
 ```{r}
 parms1 <- parms1 %>% filter(x2==max(x2))
 parms2 <- parms2 %>% filter(x3==max(x3)) %>% filter(maxTp==max(maxTp))
-parms3 <- parms3 %>% filter(x2==max(x2))
+parms3 <- parms3 %>% filter(x3==max(x3))
 
 the_designs <- rbind(parms1=parms1,
 parms2=parms2,

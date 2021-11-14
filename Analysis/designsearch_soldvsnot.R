@@ -204,37 +204,9 @@ source(here::here("Analysis", "utilityfns.R"))
 
 ## ----setupdesignfinding--------------------------------------------------
 # Test the function.
-## Clean this all up later.
-
-## find_design(
-##   x = c(0, max(mhdist), max(psdist2)),
-##   thebalfmla_b = matchfmla,
-##   thebalfmla_i = matchfmla_iCluster,
-##   themhdist = mhdist,
-##   thepsdist = psdist2,
-##   ydist = crimedist,
-##   datb = dat17p,
-##   dati = dat17i
-## )
-##
-##
-## find_design(
-##   x = c(0, max(mhdist), max(psdist2)),
-##   thebalfmla_b = matchfmla,
-##   thebalfmla_i = matchfmla_iCluster,
-##   matchdist = crimedist,
-##   themhdist = mhdist,
-##   thepsdist = psdist2,
-##   ydist = robbdist,
-##   datb = dat17p,
-##   dati = dat17i
-## )
-
 
 search_space <- as.matrix(expand.grid(
-  mix = 1, ## seq(0, 1, length.out = 10),
-  mhcal = quantile(mhdist, seq(.5, 1, length.out = 20)),
-  ## pscal = quantile(psdistPen, seq(.5, 1, length.out = 40))
+  mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
   pscal = quantile(psdist2, seq(.5, 1, length.out = 20)),
   robbcal = quantile(robbdist, seq(.2, 1, length.out = 10)),
   vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 10))
@@ -256,6 +228,78 @@ find_design2(
   datb = dat17p,
   dati = dat17i
 )
+
+
+starting_par <- apply(search_space,2,mean)
+lower_par <-apply(search_space,2,min)
+upper_par <-apply(search_space,2,max)
+
+find_design2(
+  #x = search_space[which.max(rowSums(search_space)),],
+  x = search_space[2,],
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_score=TRUE,
+  thelower=lower_par,
+  theupper=upper_par
+)
+
+find_design2(
+  #x = search_space[which.max(rowSums(search_space)),],
+  x = starting_par,
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_score=TRUE,
+  thelower=lower_par,
+  theupper=upper_par
+)
+
+
+
+## Try an optimization approach first:
+library(optimr)
+opt_res <- optim(par=starting_par,thelower=lower_par,theupper=upper_par,method="SANN",
+        fn=find_design2, thebalfmla_b = matchfmla, thebalfmla_i = matchfmla_i,
+        matchdist = NULL, themhdist = mhdist, thepsdist = psdist2, thepsdisti =
+            psdist_i, dista = robbdist, distb = vrobbdist, datb = dat17p, dati =
+            dat17i, return_score=TRUE,control=list(trace=10,maxit=40000,tmax=100,temp=100000))
+
+##control=list(all.methods=TRUE,trace=10,niter=20000))
+
+
+
+find_design2(
+  x = opt_res$par,
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i
+)
+
+
+
 
 ## ----matchsearch, cache=FALSE--------------------------------------------
 ##ncores <- parallel::detectCores() - 1
