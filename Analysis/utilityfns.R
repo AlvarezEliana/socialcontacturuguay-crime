@@ -1,4 +1,25 @@
 ## Functions for the paper
+invlogit <- function(x){ exp(x)/(1+exp(x)) }
+
+design_score <-  function(maxTp,vrobbdiff,robbdiff,crime_p,maxrobbdiff,maxvrobbdiff,n_trt,effn){
+      ## We are going to *minimize* the score function. So, lower is better
+      ## Put everything on the same scale. Using invlogit for convenience.
+
+    ## First, require no dropped treated obs
+      if(n_trt!=16){ return(999999) }
+
+    ## Next, calculate the score.
+      score_maxTp <- 1-maxTp
+      score_crime_p <- 1-crime_p
+      score_vrobbdiff <- invlogit(abs(vrobbdiff))
+      score_robbdiff <- invlogit(abs(robbdiff))
+      score_maxrobbdiff <- invlogit(abs(maxrobbdiff))
+      score_maxvrobbdiff <- invlogit(abs(maxvrobbdiff))
+      score_effn <- 1-invlogit(abs(effn))
+
+      thescore <- 100*(score_maxTp+score_crime_p+score_vrobbdiff+score_robbdiff+score_maxrobbdiff+score_maxvrobbdiff+score_effn)
+      return(thescore)
+}
 
 find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsdist, thepsdisti, themhdist, dista, distb, datb, dati, return_full_objs = FALSE, return_score=FALSE,thelower=NULL,theupper=NULL) {
     ## return_score is TRUE when we are optimizing
@@ -7,6 +28,8 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, matchdist = NULL, thepsd
   require(coin)
   require(formula.tools)
   require(estimatr)
+
+  stopifnot(length(x)==4)
 
   if(return_score & !is.null(thelower) & !is.null(theupper)){
       bad_parms <- any(x<thelower) | any(x>theupper)
@@ -212,30 +235,13 @@ if (inherits(xb_i, "try-error") & !return_score) {
   }
 
   if(return_score){
-      invlogit <- function(x){ exp(x)/(1+exp(x)) }
-
-      score_elements <- data.frame(
-              maxTp = coin_p[1],
-              vrobbdiff = crime_i_res["vrobb_2016", "adj.diff"],
+      design_score(maxTp=coin_p[1], vrobbdiff = crime_i_res["vrobb_2016", "adj.diff"],
               robbdiff = crime_i_res["robb_2016", "adj.diff"],
               crime_p = p_thef,
-              maxadiff = maxadiff,
-              maxbdiff = maxbdiff,
+              maxrobbdiff = maxadiff,
+              maxvrobbdiff = maxbdiff,
               n_trt = sum(datb$soldvsnot17[!is.na(datb$thefm)]),
-              effn = summary(thefm)$effective.sample.size
-              )
-      ## We are going to *minimize* the score function. So, lower is better
-      ## Put everything on the same scale. Using invlogit for convenience.
-      score_elements$maxTp <- 1-invlogit(score_elements$maxTp)
-      score_elements$crime_p <- 1-invlogit(score_elements$crime_p)
-      score_elements$vrobbdiff = invlogit(abs(score_elements$vrobbdiff))
-      score_elements$robbdiff = invlogit(abs(score_elements$robbdiff))
-      score_elements$maxadiff = invlogit(abs(score_elements$maxadiff))
-      score_elements$maxbdiff = invlogit(abs(score_elements$maxbdiff))
-      score_elements$effn = 1-invlogit(abs(score_elements$effn))
-      thescore <- with(score_elements,100*(maxTp+crime_p+vrobbdiff+robbdiff+maxadiff+maxbdiff+effn))
-      if(score_elements$n_trt!=16){ return(999999) }
-      return(thescore)
+              effn = summary(thefm)$effective.sample.size)
   } else {
       return(c(
               x = x,
