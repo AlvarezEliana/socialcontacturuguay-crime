@@ -207,9 +207,9 @@ source(here::here("Analysis", "utilityfns.R"))
 
 search_space <- as.matrix(expand.grid(
   mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
-  pscal = quantile(psdist2, seq(.5, 1, length.out = 20)),
-  robbcal = quantile(robbdist, seq(.2, 1, length.out = 10)),
-  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 10))
+  pscal = quantile(psdist2, seq(.5, 1, length.out = 40)),
+  robbcal = quantile(robbdist, seq(.2, 1, length.out = 40)),
+  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 40))
 ))
 
 dat17p$soldvsnot17F <- factor(dat17p$soldvsnot17)
@@ -278,27 +278,8 @@ opt_res <- optim(par=starting_par,thelower=lower_par,theupper=upper_par,method="
         fn=find_design2, thebalfmla_b = matchfmla, thebalfmla_i = matchfmla_i,
         matchdist = NULL, themhdist = mhdist, thepsdist = psdist2, thepsdisti =
             psdist_i, dista = robbdist, distb = vrobbdist, datb = dat17p, dati =
-            dat17i, return_score=TRUE,control=list(trace=10,maxit=40000,tmax=100,temp=100000))
-
+            dat17i, return_score=TRUE,control=list(trace=10,maxit=10000,tmax=10,temp=1000))
 ##control=list(all.methods=TRUE,trace=10,niter=20000))
-
-
-
-find_design2(
-  x = opt_res$par,
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  thepsdisti = psdist_i,
-  dista = robbdist,
-  distb = vrobbdist,
-  datb = dat17p,
-  dati = dat17i
-)
-
-
 
 
 ## ----matchsearch, cache=FALSE--------------------------------------------
