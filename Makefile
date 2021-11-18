@@ -28,7 +28,7 @@ Analysis/outcome_analysis_soldvsnot.pdf: Analysis/outcome_analysis_soldvsnot.Rmd
 	Rscript -e "library(rmarkdown);render('Analysis/outcome_analysis_soldvsnot.Rmd')"
 
 Analysis/pap_soldvsnot.pdf: Analysis/pap_soldvsnot.Rmd Analysis/design_soldvsnot.rda
-	 Rscript -e "library(rmarkdown);render('Analysis/describe_design_soldvsnot.Rmd')"
+	 Rscript -e "library(rmarkdown);render('Analysis/pap_soldvsnot.Rmd')"
 
 media/fm2_balance_plot.pdf: Analysis/pap_soldvsnot.pdf
 

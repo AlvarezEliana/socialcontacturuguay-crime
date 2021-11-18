@@ -231,7 +231,7 @@ summary(parms2_res$fm_i,max.controls=Inf)
 Save chosen design info:
 
 ```{r}
-save(parms1_res,parms2_res,file=here("Analysis","design_soldvsnot.rda"))
+save(parms1_res,parms2_res,dat17i,dat17p,file=here("Analysis","design_soldvsnot.rda"))
 ```
 
 

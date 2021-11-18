@@ -27,7 +27,7 @@ library(here)
 source(here::here("Analysis","rmarkdownsetup.R"))
 ```
 
-```{r setup1, echo=FALSE}
+```{r setup1, echo=TRUE}
 library(RItools)
 library(optmatch)
 library(tidyverse)
@@ -58,9 +58,6 @@ experiences with crime as outcomes in this study.
 
 # Study Design Overview: Data Collection
 
-TODO Describe the collaboration with the government that gave us access to the
-lists of pharmacies that were confidential to the public.
-
 
 ## Data Collection: Changes in Selling Pharmacies
 
@@ -86,7 +83,7 @@ that we label as ``wholetime'', (4) pharmacies that sold marijuana for some of
 that first year but stopped selling at some point between 2017 to 2018 (n=6)
 that we call ``dropouts'', and (5) pharmacies that joined the system at some
 point between the 2017 round and 2018 round (n=4) that we call ``newcomers''
-(see Table \ref{tab:pharmsalestatus}).
+(see Table \ref{tab:pharmsalestatus} in APPENDIX TODO).
 
 \begin{figure}[htpb!]
     \centering
@@ -237,7 +234,7 @@ decision to sell marijuana, and thus not systematically related to the exposure
 of people nearby to the selling of marijuana. Now, we do not have such a
 randomized design, but we know what such a design would look like. And we can
 use the hypothetical design as a standard against which we can compare an
-observational study.  \citet{hansen2008cbs} develop a formal way to compare a
+observational study. [@hansen2008cbs] develop a formal way to compare a
 given observed comparison with what would be expected if that comparison had
 been randomized: they provide a test for the hypothesis
 that the neighbors of selling pharmacies and the neighbors of not selling
@@ -295,8 +292,7 @@ only speak to differences on the covariates we observed, not on all possible
 observed and unobserved as we could if we had an actually randomized experiment.
 Later, in \S~\ref{sec:sensitivity}, we assess the extent to which we might
 change our substantive conclusions based on the stratified design due to the
-influence of unobserved covariates.\footnote{See \citep[Chapter
-3]{rosenbaum2010design} for an overview of this method of sensitivity analysis.}
+influence of unobserved covariates.\footnote{See [@rosenbaum2010design], Chapter 3 for an overview of this method of sensitivity analysis.}
 
 Our specific design first creates strata with similar neighborhoods where one
 neighborhood has a pharmarcy selling marijuana and the other comparison
@@ -308,12 +304,10 @@ For example, it created 14 pairs and two sets with one selling pharmacy and two
 non-selling pharmacies. It also dropped 24 comparison pharmacies. The comparison
 to a randomized experiment across many covariates suggests little evidence
 against the idea that this design is compatible with the randomized hypothetical
-design. 
+design.
 ```{r}
 summary(parms1_res$fm_p,max.controls=Inf)
 pvalue(parms1_res$maxTp)
-
-
 ```
 
 To further return differences in exposure to a selling pharmacy, we next matched
@@ -351,13 +345,13 @@ outcomes <- c("n_sec_i","c_sec_i","vic12","dt_impact_i","ps_impact_i","boca1_i",
 ```
 
 
- 
+
 
 | Hypothesis | Outcome | Variable(s) |
 |------------ | -------- | ---------------|
 | H1 | Neighbors' crime victimization in the last 12 months  |  vic12 |
 | H2 |Neighbors' insecurity perceptions. Country and neighborhood | c_sec_i and n_sec_i |
-| H3 | Existence of "bocas" in the neighborhood  | boca1_i | 
+| H3 | Existence of "bocas" in the neighborhood  | boca1_i |
 | H4 | Social Disorder Index  | social_dis |
 | H5 | Neighbors' insertion in neighborhood  | activities_index  |
 | H6 | Law's perceived of impact on public security  | ps_impact_i  |
@@ -404,7 +398,7 @@ presence of drunk or stoned people in the streets, and perceptions of presence
 of people arguing with each other. Each of these variables have the following
 values: 1 (Not at all), 2 (Little), 3 (Somewhat), and 4 (Very much).  In order
 to construct the index we assume intermediate substitutability among variables
-and assign the mean value \citep{goertz2006social}.
+and assign the mean value \cite{goertz2006social}.
 
 Citizens' Connection to their Neighborhood is an index constructed with eight
 variables grouped in four dimensions. The dimensions are: use of services
@@ -415,7 +409,7 @@ substitutability among dimensions and assign the mean value. The use of services
 dimension has two indicators: use of educational services (kindergarten,
 school,high school) in the neighborhood and use of health services (doctor,
 hospital) in the neighborhood. We assume total substitutability among the two
-indicators and assign the maximum value  \citep{goertz2006social}.Contact among
+indicators and assign the maximum value  \cite{goertz2006social}.Contact among
 neighbors dimension also has two indicators: talk with your neighbors and meets/
 organizes with the neighbors for any improvement activity for the neighborhood.
 We also assume total substitutability among the two indicators and assign the
@@ -465,7 +459,17 @@ follows:
 lm1 <- lm_robust(outcome1~soldvsnot17,fixed_effects=~fm_i,cluster=Q56,data=dat17i)
 ```
 
+## Subgroup analysis
 
+We expect that the effects of living near a pharmacy should be weaker for those
+people living near the ``dropout'' pharmacies if living near a pharmacy does
+matter for the outcomes. We also assess this exploratory hypothesis using the
+same analytic strategy as above, but allowing different effects for people
+living near the dropout pharmacies. For example, we would use code like this:
+
+```{r eval=FALSE}
+lm2 <- lm_robust(outcome1~soldvsnot17*I(dropout),fixed_effects=~fm_i,cluster=Q56,data=dat17i)
+```
 
 ## Approach to multiple testing
 
