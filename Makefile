@@ -27,10 +27,10 @@ main.pdf: main.tex  \
 Analysis/outcome_analysis_soldvsnot.pdf: Analysis/outcome_analysis_soldvsnot.Rmd Analysis/design_soldvsnot.rda
 	Rscript -e "library(rmarkdown);render('Analysis/outcome_analysis_soldvsnot.Rmd')"
 
-Analysis/describe_design_soldvsnot.pdf: Analysis/describe_design_soldvsnot.Rmd Analysis/design_soldvsnot.rda
-	 Rscript -e "library(rmarkdown);render('Analysis/describe_design_soldvsnot.Rmd')"
+Analysis/pap_soldvsnot.pdf: Analysis/pap_soldvsnot.Rmd Analysis/design_soldvsnot.rda
+	 Rscript -e "library(rmarkdown);render('Analysis/pap_soldvsnot.Rmd')"
 
-media/fm2_balance_plot.pdf: Analysis/describe_design_soldvsnot.pdf
+media/fm2_balance_plot.pdf: Analysis/pap_soldvsnot.pdf
 
 Analysis/design_soldvsnot.rda: Analysis/design_soldvsnot.Rmd Analysis/match_data_prep.rda \
 	Analysis/initial_balance.rda Analysis/design_soldvsnot_search_res2.rda

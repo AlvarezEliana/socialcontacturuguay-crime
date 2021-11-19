@@ -298,9 +298,6 @@ find_design2(
 ##  dati = dat17i
 ##)
 
-
-
-
 ## ----matchsearch, cache=FALSE--------------------------------------------
 ##ncores <- parallel::detectCores() - 1
 ncores <- round(parallel::detectCores()/2)

@@ -22,5 +22,10 @@ media/initial_balance_plot.pdf
 .RData
 *.dot
 .Rproj.user
-libraries/*
 .Rhistory
+Analysis/describe_design_soldvsnot.tex
+Analysis/design_soldvsnot.tex
+Analysis/initial_balance.tex
+Analysis/match_data_prep.tex
+main-old.tex
+oldpreamble.tex
