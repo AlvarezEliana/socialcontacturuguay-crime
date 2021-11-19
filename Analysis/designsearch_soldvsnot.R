@@ -207,9 +207,9 @@ source(here::here("Analysis", "utilityfns.R"))
 
 search_space <- as.matrix(expand.grid(
   mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
-  pscal = quantile(psdist2, seq(.5, 1, length.out = 20)),
-  robbcal = quantile(robbdist, seq(.2, 1, length.out = 10)),
-  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 10))
+  pscal = quantile(psdist2, seq(.5, 1, length.out = 40)),
+  robbcal = quantile(robbdist, seq(.2, 1, length.out = 40)),
+  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 40))
 ))
 
 dat17p$soldvsnot17F <- factor(dat17p$soldvsnot17)
@@ -273,30 +273,30 @@ find_design2(
 
 
 ## Try an optimization approach first:
-library(optimr)
-opt_res <- optim(par=starting_par,thelower=lower_par,theupper=upper_par,method="SANN",
-        fn=find_design2, thebalfmla_b = matchfmla, thebalfmla_i = matchfmla_i,
-        matchdist = NULL, themhdist = mhdist, thepsdist = psdist2, thepsdisti =
-            psdist_i, dista = robbdist, distb = vrobbdist, datb = dat17p, dati =
-            dat17i, return_score=TRUE,control=list(trace=10,maxit=40000,tmax=100,temp=100000))
+## library(optimr)
+## opt_res <- optim(par=starting_par,thelower=lower_par,theupper=upper_par,method="SANN",
+##         fn=find_design2, thebalfmla_b = matchfmla, thebalfmla_i = matchfmla_i,
+##         matchdist = NULL, themhdist = mhdist, thepsdist = psdist2, thepsdisti =
+##             psdist_i, dista = robbdist, distb = vrobbdist, datb = dat17p, dati =
+##             dat17i, return_score=TRUE,control=list(trace=10,maxit=40000,tmax=100,temp=100000))
 
 ##control=list(all.methods=TRUE,trace=10,niter=20000))
 
 
 
-find_design2(
-  x = opt_res$par,
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  thepsdisti = psdist_i,
-  dista = robbdist,
-  distb = vrobbdist,
-  datb = dat17p,
-  dati = dat17i
-)
+##find_design2(
+##  x = opt_res$par,
+##  thebalfmla_b = matchfmla,
+##  thebalfmla_i = matchfmla_i,
+##  matchdist = NULL,
+##  themhdist = mhdist,
+##  thepsdist = psdist2,
+##  thepsdisti = psdist_i,
+##  dista = robbdist,
+##  distb = vrobbdist,
+##  datb = dat17p,
+##  dati = dat17i
+##)
 
 
 
@@ -312,10 +312,10 @@ plan(multiprocess, workers = ncores)
 
 system.time(
   results <- future_mapply(
-    function(x1, x2, x3, x4, x5) {
-      parms <- c(x1,x2,x3,x4,x5)
+    function(x1, x2, x3, x4) {
+      parms <- c(x1,x2,x3,x4)
       res <- try(find_design2(
-          x = c(x1, x2, x3, x4, x5),
+          x = c(x1, x2, x3, x4),
           thebalfmla_b = matchfmla,
           thebalfmla_i = matchfmla_i,
           matchdist = NULL,
@@ -336,8 +336,7 @@ system.time(
     x1 = search_space[, 1],
     x2 = search_space[, 2],
     x3 = search_space[, 3],
-    x4 = search_space[, 4],
-    x5 = search_space[, 5],future.seed=TRUE
+    x4 = search_space[, 4] ,future.seed=TRUE
   )
 )
 
