@@ -57,7 +57,6 @@ load(here::here("Analysis", "design_soldvsnot_search_res2.rda"),verbose=TRUE)
 source(here("Analysis","utilityfns.R"))
 ```
 
-Basically, all designs look good for balance at the neighborhood level.
 `crime_p.value` is from a cluster adjusted assessment of the three crime
 variables and treatment. For now, `d2p_i` and `vrobbp` and `robbp` are all
 without cluster adjustment --- so, bigger is better but we shouldn't interpret
@@ -66,16 +65,16 @@ the neighborhood --- so their values are p-values in the ordinary sense.
 
 ```{r}
 ## Only keep valid results (fix this in utilityfns later.
-res_lens <- sapply(results,length)
-table(res_lens)
-results[res_lens==18][1:2]
-results1 <- results[res_lens==20]
+##res_lens <- sapply(results,length)
+##table(res_lens)
+##results[res_lens==18][1:2]
+##results1 <- results[res_lens==20]
 ## Some text is being converted to NA. This is fine. They were error messages
-results2 <- lapply(results1,function(x){ res<-as.numeric(x); names(res) <-
-    names(x); return(res)})
-results_num <- bind_rows(results2)
+##results2 <- lapply(results1,function(x){ res<-as.numeric(x); names(res) <-
+##    names(x); return(res)})
+##results_num <- bind_rows(results2)
 
-resdf0 <- data.frame(results_num)
+resdf0 <- data.frame(t(results))
 ## Drop any row with NAs
 resdf <- na.omit(resdf0)
 apply(resdf, 2, summary)
@@ -83,6 +82,16 @@ quantile(resdf$maxTp,seq(0,1,.1))
 quantile(resdf$d2p,seq(0,1,.1))
 apply(resdf,2,quantile,seq(0,1,.1))
 ```
+
+Calculate the design score for each possible design. The design score combines
+the overall balance p-value, the balance p-value for just the three crime
+variables (including perceptions of crime), average pair-adjusted differences in
+robberies and violent robberis, the size of the maximum difference in
+robberies/violent robberies within pair, the size of the the treatment group
+(i.e. the number of selling pharmacies included in the design, currently
+restricted to 16 --- not dropping any of them), and the effective sample size
+at the level of the neighborhood/pharmacy (which ranges from about 16 for pairs
+to about 19 for cases with some 1 to more than one control pharmacy matches).
 
 ```{r}
 resdf <- resdf %>% rowwise() %>%
@@ -93,11 +102,13 @@ resdf %>% filter(resdf$design_score!=999999) %>%
     dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff, maxbdiff,n_trt,effn,effn_i,design_score) %>%
     arrange(design_score)
 
+## The  best design score
 resdf %>% filter(design_score==min(design_score))
 
 ## Focus on solutions in the best 10%
-candidates <- resdf %>% filter(resdf$design_score!=999999)  %>% filter(design_score<quantile(design_score,.1))
-
+candidates <- resdf %>% filter(resdf$design_score!=999999)  %>% filter(design_score<quantile(design_score,.05))
+dim(candidates)
+summary(candidates)
 ```
 
 
@@ -114,12 +125,7 @@ print(gp4)
 
 ```
 
-A couple of possible solutions: (1) The solution that minimizes the design score
-(which is a combination of omnibus balance test, crime balance test,
-pair-adjusted mean differences in the two crime variables, maximum differences
-within pairs on the crime variables, effective sample size (in regards
-pharmacies); (2) a solution that chooses the design with largest sample size
-among those in the best 10% of the design scores.  Note: `maxadiff` is maximum
+A few possible solutions: Note: `maxadiff` is maximum
 difference in `robb` within set, `maxbdiff`, is maximum difference in `vrobb`
 within set. And the `vrobbdiff` and `robbdiff` are the set-adjusted mean
 differences).
@@ -127,12 +133,15 @@ differences).
 
 ```{r}
 
-parms1 <- candidates %>% filter(design_score==min(design_score))
+
+parms1 <- candidates %>% filter(maxadiff <= quantile(maxadiff,.25) & maxbdiff <= quantile(maxbdiff,.25) & abs(robbdiff) <= median(abs(robbdiff))) %>% filter(maxTp==max(maxTp))
 parms1
 
-parms2 <- candidates %>% filter(effn==max(effn)) %>% filter(x3==max(x3))
+parms2 <- candidates %>% filter(design_score==min(design_score))
 parms2
 
+parms3 <- candidates %>% filter(effn==max(effn)) %>% filter(maxTp==max(maxTp))
+parms3
 ```
 
 Now generate the actual matches and save them for analysis.
@@ -141,7 +150,7 @@ to x4 then)
 
 ```{r parms1_inspection}
 parms1_res <- find_design2(
-    x = unlist(dplyr::select(parms1,x2,x3,x4,x5)),
+    x = unlist(dplyr::select(parms1,x1,x2,x3,x4)),
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
   matchdist = NULL,
@@ -189,7 +198,7 @@ Parms2 inspection
 
 ```{r parms2_inspection}
 parms2_res <- find_design2(
-  x = unlist(select(parms2,x2,x3,x4,x5)),
+  x = unlist(select(parms2,x1,x2,x3,x4)),
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
   matchdist = NULL,
@@ -210,12 +219,40 @@ print(parms2_res$maxTp)
 print(parms2_res$crime_lm)
 print(parms2_res$crime_p)
 ```
-Looking at these, I prefer parms1, I don't think we gain that much by having
-more control pharmacies (18 for parms1 vs 30 for parms2)
+
+
+Parms3 inspection
+
+```{r parms3_inspection}
+parms3_res <- find_design2(
+  x = unlist(select(parms3,x1,x2,x3,x4)),
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  matchdist = NULL,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  thepsdisti = psdist_i,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_full_objs=TRUE
+)
+names(parms3_res)
+print(parms3_res$fm_p,grouped=TRUE)
+summary(parms3_res$fm_p,max.controls=Inf)
+summary(parms3_res$fm_i,max.controls=Inf)
+print(parms3_res$maxTp)
+print(parms3_res$crime_lm)
+print(parms3_res$crime_p)
+```
+
+
+
 
 ```{r}
 the_designs <- rbind(parms1=parms1,
-parms2=parms2)
+parms2=parms2,parms3=parms3)
 the_designs %>%
     dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff,maxbdiff,n,n_trt,n_ctrl,effn,effn_i,design_score)
 
@@ -225,8 +262,14 @@ summary(parms1_res$fm_i,max.controls=Inf)
 summary(parms2_res$fm_p,max.controls=Inf)
 summary(parms2_res$fm_i,max.controls=Inf)
 
+summary(parms3_res$fm_p,max.controls=Inf)
+summary(parms3_res$fm_i,max.controls=Inf)
 
 ```
+
+Choosing parms1. Basically as good as the others, but slightly better on worst
+pair in regards robberies. Differences in mean robbery differences within pair
+very slight.
 
 Save chosen design info:
 
