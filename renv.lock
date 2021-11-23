@@ -60,15 +60,15 @@
     },
     "RItools": {
       "Package": "RItools",
-      "Version": "0.2.0.9002",
+      "Version": "0.2.0.9004",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "RItools",
       "RemoteUsername": "markmfredrickson",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "6c98042cba649d2b0599dfcf5a592f47cc333c51",
-      "Hash": "d3999146a401ee089a70f7dd1d3d9d54"
+      "RemoteRepo": "RItools",
+      "RemoteRef": "proj1-balT",
+      "RemoteSha": "c64c8a111e31c678405cdc246dcd2f117bd506d9",
+      "Hash": "646a9e03ddcd8815fd5977382873772b"
     },
     "Rcpp": {
       "Package": "Rcpp",
@@ -1021,13 +1021,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "911d101becedc0fde495bd910984bdc8"
-    },
-    "reshape2": {
-      "Package": "reshape2",
-      "Version": "1.4.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "bb5996d0bd962d214a11140d77589917"
     },
     "rio": {
       "Package": "rio",
