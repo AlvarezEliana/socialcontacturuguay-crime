@@ -1,5 +1,5 @@
 ---
-title: Outcome Analysis of the SoldVsNot Design
+title: Outcome Analysis of the Sold-Vs-Not Design
 author: Jake Bowers
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 fontsize: 11pt
@@ -22,7 +22,7 @@ output:
  md_extensions: +raw_attribute
 ---
 
-NOTE: Adjust for baseline crime covariates within set because of large variability across pharmacies in baseline crime.
+<!-- NOTE: Adjust for baseline crime covariates within set because of large variability across pharmacies in baseline crime. This may not be necessary now that we've done individual matching -->
 
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
@@ -48,7 +48,20 @@ We registered the following analyses in <https://osf.io/aey7w/registrations> and
 
 ## Data Setup for the Analyses
 
-Not all outcome variables are available in endline survey.
+Not all outcome variables are available in endline survey. See the
+`pap_soldvsnot.Rmd` for more details.
+
+
+| Hypothesis | Outcome | Variable(s) |
+|------------ | -------- | ---------------|
+| H1 | Neighbors' crime victimization in the last 12 months  |  vic12 |
+| H2 |Neighbors' insecurity perceptions. Country and neighborhood | c_sec_i and n_sec_i |
+| H3 | Existence of "bocas" in the neighborhood  | boca1_i |
+| H4 | Social Disorder Index  | social_dis |
+| H5 | Neighbors' insertion in neighborhood  | activities_index  |
+| H6 | Law's perceived of impact on public security  | ps_impact_i  |
+| H7 | Law's perceived of impact on drug trafficking | dt_impact_i  |
+
 
 ```{r}
 regoutcomes <- c("n_sec_i", "c_sec_i", "vic12_i", "dt_impact_i", "ps_impact_i", "boca1_i", "social_dis", "activities_index")
@@ -62,8 +75,10 @@ We want the versions of the variable without imputation for missing values
 ## Checking the relationship between ph_type and treat
 with(dat17p, table(soldvsnot17, ph_type, exclude = c()))
 
+## finaldat includes both 2017 and 2018 and is at the individual level
 with(finaldat, table(treat, ph_type, exclude = c()))
 
+## This is the outcome data
 fdat18i <- finaldat %>%
   dplyr::select(all_of(c(regdesignvars, regoutcomes, regcovs))) %>%
   filter(ronda == 2018) %>%
@@ -72,7 +87,11 @@ fdat18i <- finaldat %>%
 ## Since we do not have the same people in 2017 and 2018, we do covariance
 ## adjustment either by: ## (1) the rebar method (following Sales and Hansen)
 ## and/or lin approach using indivi level data and (2) more simply just using the
-## phramacy level data
+## phramacy level data. The idea is that a difference score might have more
+## statistical power, but we don't observe the same people twice.
+
+# Not clear we will do this. Let's do the simple
+## unadjusted approach first.
 
 replace_NA_0 <- function(x) {
   ifelse(x %in% c(88, 99), NA, x)
@@ -87,26 +106,27 @@ outdat3$age_i <- fdat18i$age_i
 ## How much missing data is there?
 outdat3 %>% summarise_all(~ sum(is.na(.)))
 ##  vrobb_2016 and robb_2016 are all missing because they are not recorded for the  2018 subjects. They are pharmacy  level.
-##  Leaving them here as placeholders.
+##  Leaving them here as placeholders. Otherwise very little missing data.
 ```
 
-Now merge the pharmacy level design onto the individual level data
+Now merge the pharmacy level design info onto the individual level data
 
 ```{r}
-designdat <- dat17p %>% dplyr::select(c(
+designdat_p <- dat17p %>% dplyr::select(c(
   "Q56", "parms1_fm_p", "soldvsnot17", "ph_type", "pscore1", "pscore2",
   "n_sec_i_mean", "robb_2016_mean", "vrobb_2016_mean"
 ))
 
 ## Two pharmacies (the placebos) were dropped
-stopifnot(length(unique(designdat$Q56)) == 58)
-stopifnot(unique(designdat$ph_type) != 5)
+stopifnot(length(unique(designdat_p$Q56)) == 58)
+stopifnot(unique(designdat_p$ph_type) != 5)
 
-outdat4 <- inner_join(outdat3, designdat)
-stopifnot(isTRUE(all.equal(sort(unique(designdat$Q56)), sort(unique(outdat4$Q56)))))
-
+outdat4 <- inner_join(outdat3, designdat_p)
+stopifnot(isTRUE(all.equal(sort(unique(designdat_p$Q56)), sort(unique(outdat4$Q56)))))
 outdat4 %>% summarise_all(~ sum(is.na(.)))
 dim(outdat4)
+## Dropped 6 non-selling pharmacies. (60 indivs)
+dim(outdat3)
 
 ## Remove non-selling pharmacies dropped during the design-search process
 ##  Remove variables that are all  missing
@@ -115,6 +135,16 @@ outdat5 <- outdat4 %>%
   dplyr::select(-c("robb_2016", "vrobb_2016")) %>%
   ungroup()
 dim(outdat5)
+
+## Add the individual level matching information
+## I forgot that we had different people available in 2018.
+designdat_i <- dat17i %>% dplyr::select(c("id",
+  "Q56", "parms1_fm_p","parms1_fm_i", "soldvsnot17", "ph_type",
+  "n_sec_i", "robb_2016", "vrobb_2016"
+))
+
+outdat6 <- left_join(outdat5,designdat_i,by="id",keep=TRUE) %>% droplevels()
+
 ```
 
 A quick check to ensure  that  we don't have too  much  missing  data.
@@ -360,7 +390,7 @@ testfn <- function(ynm, trtnm, blocknm, clusternm, thedat, thedatp) {
   coef(obj)["newz"]
 }
 
-thedatp <- designdat %>%
+thedatp <- designdat_p %>%
   dplyr::select(parms1_fm_p, Q56, soldvsnot17) %>%
   filter(!is.na(parms1_fm_p))
 thedati <- outdat5 %>%

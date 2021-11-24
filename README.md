@@ -1,4 +1,8 @@
-# socialcontacturuguay
+# A Paper on the Effects of Living near a Pharmacy that Sold Marijuana
+
+## Key Design Features
+
+ - Two surveys of 60 neighborhoods.
 
 ## General Workflow Rules
 

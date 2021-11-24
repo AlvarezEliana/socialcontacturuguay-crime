@@ -36,20 +36,6 @@ load(here::here("Analysis","match_data_prep.rda"),verbose=TRUE)
 load(here::here("Analysis","initial_balance.rda"),verbose=TRUE)
 ```
 
-First, drop the observations for the placebo pharmacies
-
-```{r}
-table(wdat17i$soldvsnot17,exclude=c())
-table(wdat17p$soldvsnot17,exclude=c())
-
-dat17i <- wdat17i %>% filter(!is.na(soldvsnot17))
-table(dat17i$soldvsnot17,exclude=c())
-
-dat17p <- wdat17p %>% filter(!is.na(soldvsnot17))
-table(dat17p$soldvsnot17,exclude=c())
-```
-
-
 ## Load results of the search for a good matched design
 
 ```{r}
@@ -64,16 +50,6 @@ them strictly speaking. `maxTp` and `d2p` are omnibus balance tests at level of
 the neighborhood --- so their values are p-values in the ordinary sense.
 
 ```{r}
-## Only keep valid results (fix this in utilityfns later.
-##res_lens <- sapply(results,length)
-##table(res_lens)
-##results[res_lens==18][1:2]
-##results1 <- results[res_lens==20]
-## Some text is being converted to NA. This is fine. They were error messages
-##results2 <- lapply(results1,function(x){ res<-as.numeric(x); names(res) <-
-##    names(x); return(res)})
-##results_num <- bind_rows(results2)
-
 resdf0 <- data.frame(t(results))
 ## Drop any row with NAs
 resdf <- na.omit(resdf0)

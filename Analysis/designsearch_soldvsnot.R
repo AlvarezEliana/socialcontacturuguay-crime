@@ -42,7 +42,7 @@ matchfmla
 ## create scores that capture some possible systematic differences between
 ## pharmacies here.
 
-###library(brms)
+## library(brms)
 ## library(cmdstanr)
 ## library(posterior)
 ## library(bayesplot)
@@ -50,7 +50,7 @@ matchfmla
 ## library(rstanarm)
 ##library(future)
 ## plan(multicore)
-##options(mc.cores=4)
+## options(mc.cores=4)
 
 setdiff(all.vars(baselineFmla), names(dat17i))
 ## Remove variables that don't vary that slipped through match_data_prep.Rmd.
@@ -93,6 +93,8 @@ bglm1mat <- summary(bglm1)$coef
 stopifnot(min(abs(bglm1mat)) > 0)
 dat17p$pscore1 <- predict(bglm1)
 
+## TODO: Stop matching at individual level. Change this in utility functions
+## too.
 ## Now fit the model at the individual level and predict to the cluster level
 bglm2 <- bayesglm(update(matchfmla_i, . ~ . + Q56F), data = droplevels(dat17i), family = binomial(link = "logit"))
 
@@ -206,29 +208,13 @@ source(here::here("Analysis", "utilityfns.R"))
 # Test the function.
 
 search_space <- as.matrix(expand.grid(
-  mhcal = quantile(mhdist, seq(.5, 1, length.out = 40)),
-  pscal = quantile(psdist2, seq(.5, 1, length.out = 40)),
-  robbcal = quantile(robbdist, seq(.2, 1, length.out = 40)),
-  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 40))
+  mhcal = quantile(mhdist, seq(.5, 1, length.out = 10)),
+  pscal = quantile(psdist2, seq(.5, 1, length.out = 10)),
+  robbcal = quantile(robbdist, seq(.2, 1, length.out = 10)),
+  vrobbcal = quantile(vrobbdist, seq(.2, 1, length.out = 10))
 ))
 
 dat17p$soldvsnot17F <- factor(dat17p$soldvsnot17)
-
-find_design2(
-  #x = search_space[which.max(rowSums(search_space)),],
-  x = search_space[1,],
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  thepsdisti = psdist_i,
-  dista = robbdist,
-  distb = vrobbdist,
-  datb = dat17p,
-  dati = dat17i
-)
-
 
 starting_par <- apply(search_space,2,mean)
 lower_par <-apply(search_space,2,min)
@@ -236,31 +222,26 @@ upper_par <-apply(search_space,2,max)
 
 find_design2(
   #x = search_space[which.max(rowSums(search_space)),],
-  x = search_space[2,],
+  #x = search_space[1,],
+  #  x=search_space[samp_search_space[2],],
+      x = upper_par,
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
   themhdist = mhdist,
   thepsdist = psdist2,
-  thepsdisti = psdist_i,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
-  dati = dat17i,
-  return_score=TRUE,
-  thelower=lower_par,
-  theupper=upper_par
+  dati = dat17i
 )
 
 find_design2(
   #x = search_space[which.max(rowSums(search_space)),],
-  x = starting_par,
+  x = upper_par,
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
   themhdist = mhdist,
   thepsdist = psdist2,
-  thepsdisti = psdist_i,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
@@ -270,33 +251,43 @@ find_design2(
   theupper=upper_par
 )
 
-
-
 ## Try an optimization approach first:
-## library(optimr)
-## opt_res <- optim(par=starting_par,thelower=lower_par,theupper=upper_par,method="SANN",
-##         fn=find_design2, thebalfmla_b = matchfmla, thebalfmla_i = matchfmla_i,
-##         matchdist = NULL, themhdist = mhdist, thepsdist = psdist2, thepsdisti =
-##             psdist_i, dista = robbdist, distb = vrobbdist, datb = dat17p, dati =
-##             dat17i, return_score=TRUE,control=list(trace=10,maxit=40000,tmax=100,temp=100000))
+library(GA)
 
-##control=list(all.methods=TRUE,trace=10,niter=20000))
+opt_res <- ga(type = "real-valued", fitness = find_design2, lower = lower_par, upper = upper_par,
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_score=TRUE,
+  thelower=lower_par,
+  theupper=upper_par,
+  suggestions = upper_par,
+  popSize = 100, maxiter = 1000, run = 10,parallel=16,seed=12345)
 
 
+find_design2(
+  #x = search_space[which.max(rowSums(search_space)),],
+  x = opt_res@solution,
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_score=FALSE,
+  thelower=lower_par,
+  theupper=upper_par
+)
 
-##find_design2(
-##  x = opt_res$par,
-##  thebalfmla_b = matchfmla,
-##  thebalfmla_i = matchfmla_i,
-##  matchdist = NULL,
-##  themhdist = mhdist,
-##  thepsdist = psdist2,
-##  thepsdisti = psdist_i,
-##  dista = robbdist,
-##  distb = vrobbdist,
-##  datb = dat17p,
-##  dati = dat17i
-##)
+save(opt_res,file=here("Analysis","opt_res.rda"))
+
 
 ## ----matchsearch, cache=FALSE--------------------------------------------
 ##ncores <- parallel::detectCores() - 1
@@ -305,7 +296,9 @@ ncores <- round(parallel::detectCores()/2)
 options(future.globals.maxSize = +Inf)
 ## This should work on all platforms.
 library(future.apply)
-plan(multiprocess, workers = ncores)
+plan(multicore, workers = ncores)
+
+samp_search_space <- sample(1:nrow(search_space),10)
 
 system.time(
   results <- future_mapply(
@@ -315,10 +308,8 @@ system.time(
           x = c(x1, x2, x3, x4),
           thebalfmla_b = matchfmla,
           thebalfmla_i = matchfmla_i,
-          matchdist = NULL,
           themhdist = mhdist,
           thepsdist = psdist2,
-          thepsdisti = psdist_i,
           dista = robbdist,
           distb = vrobbdist,
           datb = dat17p,
@@ -330,10 +321,10 @@ system.time(
         return(res)
       }
     },
-    x1 = search_space[, 1],
-    x2 = search_space[, 2],
-    x3 = search_space[, 3],
-    x4 = search_space[, 4] ,future.seed=TRUE
+    x1 = search_space[samp_search_space, 1],
+    x2 = search_space[samp_search_space, 2],
+    x3 = search_space[samp_search_space, 3],
+    x4 = search_space[samp_search_space, 4] ,future.seed=TRUE
   )
 )
 
