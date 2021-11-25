@@ -71,18 +71,18 @@ to about 19 for cases with some 1 to more than one control pharmacy matches).
 
 ```{r}
 resdf <- resdf %>% rowwise() %>%
-    mutate(design_score=design_score(maxTp,vrobbdiff,robbdiff,crime_p=crime_p.value,maxrobbdiff=maxadiff,maxvrobbdiff = maxbdiff,n_trt,effn)) %>% ungroup()
+    mutate(design_score=design_score(maxTp=maxTp,d2p_i=d2p_i,vrobbdiff=vrobbdiff,robbdiff=robbdiff,crime_p=crime_p.value,maxrobbdiff=maxadiff,maxvrobbdiff = maxbdiff,n_trt=n_trt,effn=effn)) %>% ungroup()
 summary(resdf$design_score)
 
-resdf %>% filter(resdf$design_score!=999999) %>%
+resdf %>% filter(resdf$design_score!=-999999) %>%
     dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff, maxbdiff,n_trt,effn,effn_i,design_score) %>%
-    arrange(design_score)
+    arrange(desc(design_score))
 
 ## The  best design score
-resdf %>% filter(design_score==min(design_score))
+resdf %>% filter(design_score==max(design_score))
 
 ## Focus on solutions in the best 10%
-candidates <- resdf %>% filter(resdf$design_score!=999999)  %>% filter(design_score<quantile(design_score,.05))
+candidates <- resdf %>% filter(resdf$design_score!=-999999)  %>% filter(design_score>quantile(design_score,.95))
 dim(candidates)
 summary(candidates)
 ```

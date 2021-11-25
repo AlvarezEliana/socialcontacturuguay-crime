@@ -251,7 +251,16 @@ find_design2(
   theupper=upper_par
 )
 
-## Try an optimization approach first:
+## Other good solutions
+##x1 x2 x3 x4
+## ## 115 78.6 74 1
+## > parms1 <- candidates %>% filter(maxadiff <= quantile(maxadiff,.25) & maxbdiff <= quantile(maxbdiff,.25) & abs(robbdiff) <= median(abs(robbdiff))) %>% filter(maxTp==max(maxTp))
+## > parms1
+## # A tibble: 1 × 20
+## x1    x2    x3    x4   d2p        d2p_i maxTp vrobbdiff robbdiff vrobbp robbp crime_p.value maxadiff maxbdiff     n n_trt
+## 123.  77.4    24     1 0.456      5.31e-9 0.606   -0.0125   -0.844  0.793 0.309         0.992       24        1    34    16
+##   # … with 4 more variables: n_ctrl <dbl>, effn <dbl>, effn_i <dbl>, design_score <dbl>
+# Try an optimization approach first:
 library(GA)
 
 opt_res <- ga(type = "real-valued", fitness = find_design2, lower = lower_par, upper = upper_par,
@@ -267,7 +276,7 @@ opt_res <- ga(type = "real-valued", fitness = find_design2, lower = lower_par, u
   thelower=lower_par,
   theupper=upper_par,
   suggestions = upper_par,
-  popSize = 100, maxiter = 1000, run = 10,parallel=16,seed=12345)
+  popSize = 50, maxiter = 1000, run = 100,parallel=30,seed=12345)
 
 
 find_design2(
