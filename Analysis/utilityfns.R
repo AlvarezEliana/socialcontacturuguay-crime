@@ -267,21 +267,18 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, thepsdist, themhdist, di
   if (return_full_objs) {
     return(list(
       fm_p = thefm,
-      fm_i = thefm_i,
       xb_p = xb,
+     xb_i = xb_i,
       maxTp = coin_obj,
       crime_lm = bal_lm,
       robb_mod = robb_mod,
       vrobb_mod = vrobb_mod,
       crime_p = p_thef,
-      xb_i = xb_i,
       parms = x,
       dista = dista,
       distb = distb,
       thepsdist = thepsdist,
       themhdist = themhdist,
-      new_psdisti = new_psdisti,
-      psdisti = thepsdisti,
       newdist = newdist
     ))
   }

@@ -22,7 +22,7 @@ output:
  md_extensions: +raw_attribute
 ---
 
-<!-- NOTE: Adjust for baseline crime covariates within set because of large variability across pharmacies in baseline crime. This may not be necessary now that we've done individual matching -->
+<!-- NOTE: Adjust for baseline crime covariates within set because of large variability across pharmacies in baseline crime. We do this because we cannot match people within set since much of our outcome data is from people not interviewed in 2017. We would be matching on outcomes if we were not careful.-->
 
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
@@ -45,6 +45,7 @@ load(here::here("Analysis", "design_soldvsnot.rda"), verbose = TRUE)
 # Analyses Registered
 
 We registered the following analyses in <https://osf.io/aey7w/registrations> and <https://osf.io/2a693> and will submit differences from the planned analyses there,too.
+TODO: Put the latest designs there.
 
 ## Data Setup for the Analyses
 
@@ -90,9 +91,6 @@ fdat18i <- finaldat %>%
 ## phramacy level data. The idea is that a difference score might have more
 ## statistical power, but we don't observe the same people twice.
 
-# Not clear we will do this. Let's do the simple
-## unadjusted approach first.
-
 replace_NA_0 <- function(x) {
   ifelse(x %in% c(88, 99), NA, x)
 }
@@ -112,8 +110,11 @@ outdat3 %>% summarise_all(~ sum(is.na(.)))
 Now merge the pharmacy level design info onto the individual level data
 
 ```{r}
+stopifnot(all.equal(names(parms1_res$fm_p),row.names(dat17p)))
+dat17p$parms1_fm_p <- parms1_res$fm_p
+
 designdat_p <- dat17p %>% dplyr::select(c(
-  "Q56", "parms1_fm_p", "soldvsnot17", "ph_type", "pscore1", "pscore2",
+  "Q56", "parms1_fm_p", "soldvsnot17", "ph_type",
   "n_sec_i_mean", "robb_2016_mean", "vrobb_2016_mean"
 ))
 
@@ -135,16 +136,6 @@ outdat5 <- outdat4 %>%
   dplyr::select(-c("robb_2016", "vrobb_2016")) %>%
   ungroup()
 dim(outdat5)
-
-## Add the individual level matching information
-## I forgot that we had different people available in 2018.
-designdat_i <- dat17i %>% dplyr::select(c("id",
-  "Q56", "parms1_fm_p","parms1_fm_i", "soldvsnot17", "ph_type",
-  "n_sec_i", "robb_2016", "vrobb_2016"
-))
-
-outdat6 <- left_join(outdat5,designdat_i,by="id",keep=TRUE) %>% droplevels()
-
 ```
 
 A quick check to ensure  that  we don't have too  much  missing  data.
@@ -160,13 +151,7 @@ outdat5 %>%
   summarize_all(~ length(unique(.)))
 ```
 
-
-## Testing hypotheses of no effects
-
-Comparing a few approaches here (as preregistered) because of concerns about the small number of clusters. Later we will mount a small simulation to assess the false positive rate of the tests done here.
-
-Doing the tests without covariance adjustment first.
-
+## Estimating average effects and testing the weak null of no effects
 
 
 ### Tests of of the weak null combined with estimates of the ATE
@@ -214,7 +199,6 @@ est1fn <- function(ynm, trtnm, icovnms = NULL, pcovnms = NULL, dat, blocknm, clu
   dat <- dat %>%
     group_by(!!rlang::sym(clusternm)) %>%
     mutate(nclus = n())
-  ##  But in this case the clusternm  are all basically  the same  size
   fmla <- update(simpfmla, . ~ . + nclus)
   if (!is.null(weights)) {
     obj <- lm_robust(fmla,
@@ -233,6 +217,7 @@ est1fn <- function(ynm, trtnm, icovnms = NULL, pcovnms = NULL, dat, blocknm, clu
   return(res)
 }
 
+## Here doing some testing of the above function.
 outdat5 <- outdat5 %>%
   group_by(Q56) %>%
   mutate(nclus = n())
@@ -282,27 +267,28 @@ tidy(lr0) %>% filter(term == "soldvsnot17")
 
 ### Now taking into  account the clusters but only in the  standard errors so some bias probable because cluster size might be correlated with treatment  effects
 difference_in_means(n_sec_i ~ soldvsnot17, blocks = parms1_fm_p, clusters = Q56, data = tmpdat)
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = nbwt, clusters = Q56, se_type = "CR0")
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR0")
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, fixed_effects = ~parms1_fm_p, clusters = Q56, se_type = "CR0")
-lr0a <- lm_robust(n_sec_i ~ soldvsnot17 + parms1_fm_p, dat = tmpdat, clusters = Q56, se_type = "CR0")
+lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = nbwt, clusters = Q56, se_type = "CR2") # block size weights
+lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR2") # precision weights
+lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, fixed_effects = ~parms1_fm_p, clusters = Q56, se_type = "CR2")
+lr0a <- lm_robust(n_sec_i ~ soldvsnot17 + parms1_fm_p, dat = tmpdat, clusters = Q56, se_type = "CR2")
 tidy(lr0a) %>% filter(term == "soldvsnot17")
 
 ### Now  adjusting for unequal cluster  sizes (Middleton and  Aronow)
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = nbwt, clusters = Q56, se_type = "CR0")
+lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = nbwt, clusters = Q56, se_type = "CR2")
 ##  The next approaches differ because of correlations between block size and cluster size.
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR0") ## this  one like  balanceTest
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, fixed_effects = ~parms1_fm_p, dat = tmpdat, clusters = Q56, se_type = "CR0")
-lr0b <- lm_robust(n_sec_i ~ soldvsnot17 + nclus + parms1_fm_p, dat = tmpdat, clusters = Q56, se_typ = "CR0")
+lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR2") ## this  one like  balanceTest
+lm_robust(n_sec_i ~ soldvsnot17 + nclus, fixed_effects = ~parms1_fm_p, dat = tmpdat, clusters = Q56, se_type = "CR2")
+lr0b <- lm_robust(n_sec_i ~ soldvsnot17 + nclus + parms1_fm_p, dat = tmpdat, clusters = Q56, se_typ = "CR2")
 tidy(lr0b) %>% filter(term == "soldvsnot17")
 ## Compare to the following test (which is like the  first  of  the precision weighted approaches above)
 test1 <- balanceTest(soldvsnot17 ~ n_sec_i + strata(parms1_fm_p) + cluster(Q56), data = tmpdat, report = "all")
-test1$results
+test1$results[,,"parms1_fm_p"]
 test1$overall[, ]
 
 lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR0") ## this  one like  balanceTest
 lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR2") ## this  one like  balanceTest
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "stata") ## this  one like  balanceTest
+## Don't use the stata ses
+## lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "stata") ## this  one like  balanceTest
 
 
 ##  Now with  covariates
@@ -321,8 +307,6 @@ lr3 <- lm_robust(reformulate(c("soldvsnot17", icovs, pcovs, "nclus", "parms1_fm_
 tidy(lr3) %>% filter(term == "soldvsnot17")
 
 
-
-
 ## Now  test  the function. The test.  parts always  use precision  weights and  ignore covariates
 ### or blocksize weights
 est1fn("n_sec_i", trtnm = "soldvsnot17", dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "nbwt")
@@ -338,20 +322,20 @@ est1fn("n_sec_i", trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, dat =
 est1fn("n_sec_i", trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", fixed_effects = ~parms1_fm_p)
 
 ## Compare to multilevel model (like precision weights)
-# library(lme4)
-# lme1 <- lmer(n_sec_i ~ (1 | Q56) + soldvsnot17+ideol_si_i+educ_i+sex_i+age_i+n_sec_i+robb_2016_mean+vrobb_2016_mean+n_sec_i_mean + nclus  + parms1_fm_p, data=tmpdat)
-# fixef(lme1)["soldvsnot17"]
+## library(lme4)
+## lme1 <- lmer(n_sec_i ~ (1|Q56) + (1|parms1_fm_p) + soldvsnot17+ideol_si_i+educ_i+sex_i+age_i+robb_2016_mean+vrobb_2016_mean+ nclus , data=tmpdat)
+## fixef(lme1)["soldvsnot17"]
 ```
 
-Do the basic analyses. Using `CR0`  standard errors because I think  we have enough  clusters.
+Do the basic analyses. Using `CR2`  standard errors because I think  we have enough  clusters.
 
 
 ```{r}
 # options(warn=1)
 res1 <- lapply(regoutcomes, function(ynm) {
   message(ynm)
-  unadj <- est1fn(ynm, trtnm = "soldvsnot17", dat = outdat5, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "nbwt", se_type = "CR0")
-  covadj <- est1fn(ynm, trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, blocknm = "parms1_fm_p", dat = outdat5, clusternm = "Q56", weights = "nbwt", se_type = "CR0")
+  unadj <- est1fn(ynm, trtnm = "soldvsnot17", dat = outdat5, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "nbwt", se_type = "CR2")
+  covadj <- est1fn(ynm, trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, blocknm = "parms1_fm_p", dat = outdat5, clusternm = "Q56", weights = "nbwt", se_type = "CR2")
   tmp <- bind_cols(unadj = unadj, covadj = covadj)
 })
 res1dt <- bind_rows(res1)

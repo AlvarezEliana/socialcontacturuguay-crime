@@ -39,9 +39,13 @@ load(here::here("Analysis","initial_balance.rda"),verbose=TRUE)
 ## Load results of the search for a good matched design
 
 ```{r}
+load(here::here("Analysis","opt_res.rda"),verbose=TRUE)
 load(here::here("Analysis", "design_soldvsnot_search_res2.rda"),verbose=TRUE)
 source(here("Analysis","utilityfns.R"))
 ```
+
+TODO: Clean this up given optimization approach.
+
 
 `crime_p.value` is from a cluster adjusted assessment of the three crime
 variables and treatment. For now, `d2p_i` and `vrobbp` and `robbp` are all
@@ -75,7 +79,7 @@ resdf <- resdf %>% rowwise() %>%
 summary(resdf$design_score)
 
 resdf %>% filter(resdf$design_score!=-999999) %>%
-    dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff, maxbdiff,n_trt,effn,effn_i,design_score) %>%
+    dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff, maxbdiff,n_trt,effn,design_score) %>%
     arrange(desc(design_score))
 
 ## The  best design score
@@ -110,13 +114,42 @@ differences).
 ```{r}
 
 
-parms1 <- candidates %>% filter(maxadiff <= quantile(maxadiff,.25) & maxbdiff <= quantile(maxbdiff,.25) & abs(robbdiff) <= median(abs(robbdiff))) %>% filter(maxTp==max(maxTp))
+parms1 <- resdf %>% filter(maxadiff <= quantile(maxadiff,.5) & maxbdiff <= quantile(maxbdiff,.5)) %>% filter(maxTp==max(maxTp))
 parms1
 
-parms2 <- candidates %>% filter(design_score==min(design_score))
+parms2 <- resdf %>% filter(design_score==max(design_score))
 parms2
 
-parms3 <- candidates %>% filter(effn==max(effn)) %>% filter(maxTp==max(maxTp))
+parms3_lst <- sapply(1:nrow(opt_res@solution),function(i){
+    x <- opt_res@solution[i,]
+find_design2(
+    x = x,
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_full_objs=FALSE
+)
+})
+parms3_lst ## all identical so just use first one
+
+parms3 <- find_design2(
+    x = opt_res@solution[1,],
+  thebalfmla_b = matchfmla,
+  thebalfmla_i = matchfmla_i,
+  themhdist = mhdist,
+  thepsdist = psdist2,
+  dista = robbdist,
+  distb = vrobbdist,
+  datb = dat17p,
+  dati = dat17i,
+  return_full_objs=FALSE
+)
+
 parms3
 ```
 
@@ -129,10 +162,8 @@ parms1_res <- find_design2(
     x = unlist(dplyr::select(parms1,x1,x2,x3,x4)),
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
   themhdist = mhdist,
   thepsdist = psdist2,
-  thepsdisti = psdist_i,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
@@ -143,94 +174,74 @@ parms1_res <- find_design2(
 names(parms1_res)
 ##print(parms1_res$fm_p,grouped=TRUE)
 summary(parms1_res$fm_p,max.controls=Inf)
-summary(parms1_res$fm_i,max.controls=Inf)
 print(parms1_res$maxTp)
+print(parms1_res$xb_i$overall[,])
 print(parms1_res$crime_lm)
 print(parms1_res$crime_p)
 ```
 
-We dropped 24 control neighborhoods at the first stage and 20 people living in
-control neighborhoods at the second stage.
-
-```{r}
-## Just check that our fm_i stratification is nested within fm_p so that we can
-## use it to compare people living in treatment versus control neighborhoods.
-
-## Also add the stratifications to the main datasets
-dat17p[names(parms1_res$fm_p),"parms1_fm_p"] <- factor(parms1_res$fm_p)
-dat17i[names(parms1_res$fm_i),"parms1_fm_i"] <- factor(parms1_res$fm_i)
-dat17i <- inner_join(dat17i,dat17p[,c("Q56","parms1_fm_p")],by="Q56")
-
-## This is what is looks like
-dat17i %>% filter(parms1_fm_p=="1.1") %>% select(id,Q56,soldvsnot17,parms1_fm_p,parms1_fm_i) %>% arrange(parms1_fm_i,desc(soldvsnot17),Q56)
-dat17i %>% filter(parms1_fm_p=="1.6") %>% select(id,Q56,soldvsnot17,parms1_fm_p,parms1_fm_i) %>% arrange(parms1_fm_i,desc(soldvsnot17),Q56)
-dat17i %>% filter(parms1_fm_i=="12.1.5") %>% select(id,Q56,soldvsnot17,parms1_fm_p,parms1_fm_i) %>% arrange(parms1_fm_i,desc(soldvsnot17),Q56)
-
-test1 <- dat17i %>% filter(!is.na(parms1_fm_i)) %>% group_by(parms1_fm_i) %>% summarize(num_fm_p=length(unique(parms1_fm_p)))
-stopifnot(all(test1$num_fm_p==1))
-```
 
 Parms2 inspection
 
 ```{r parms2_inspection}
 parms2_res <- find_design2(
-  x = unlist(select(parms2,x1,x2,x3,x4)),
+    x = unlist(dplyr::select(parms2,x1,x2,x3,x4)),
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
   themhdist = mhdist,
   thepsdist = psdist2,
-  thepsdisti = psdist_i,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
   dati = dat17i,
   return_full_objs=TRUE
 )
+
 names(parms2_res)
-print(parms2_res$fm_p,grouped=TRUE)
+##print(parms2_res$fm_p,grouped=TRUE)
 summary(parms2_res$fm_p,max.controls=Inf)
-summary(parms2_res$fm_i,max.controls=Inf)
 print(parms2_res$maxTp)
+print(parms2_res$xb_i$overall[,])
 print(parms2_res$crime_lm)
 print(parms2_res$crime_p)
 ```
 
 
+
 Parms3 inspection
+
 
 ```{r parms3_inspection}
 parms3_res <- find_design2(
-  x = unlist(select(parms3,x1,x2,x3,x4)),
+    x = parms3[1:4],
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
-  matchdist = NULL,
   themhdist = mhdist,
   thepsdist = psdist2,
-  thepsdisti = psdist_i,
   dista = robbdist,
   distb = vrobbdist,
   datb = dat17p,
   dati = dat17i,
   return_full_objs=TRUE
 )
+
 names(parms3_res)
-print(parms3_res$fm_p,grouped=TRUE)
+##print(parms3_res$fm_p,grouped=TRUE)
 summary(parms3_res$fm_p,max.controls=Inf)
-summary(parms3_res$fm_i,max.controls=Inf)
 print(parms3_res$maxTp)
+print(parms3_res$xb_i$overall[,])
 print(parms3_res$crime_lm)
 print(parms3_res$crime_p)
 ```
 
 
 
-
 ```{r}
 the_designs <- rbind(parms1=parms1,
-parms2=parms2,parms3=parms3)
+    parms2=parms2,parms3=c(parms3,opt_res@fitnessValue))
+
 the_designs %>%
-    dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff,maxbdiff,n,n_trt,n_ctrl,effn,effn_i,design_score)
+    dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff,maxbdiff,n,n_trt,n_ctrl,effn,design_score)
 
 summary(parms1_res$fm_p,max.controls=Inf)
 summary(parms1_res$fm_i,max.controls=Inf)
@@ -243,14 +254,11 @@ summary(parms3_res$fm_i,max.controls=Inf)
 
 ```
 
-Choosing parms1. Basically as good as the others, but slightly better on worst
-pair in regards robberies. Differences in mean robbery differences within pair
-very slight.
-
+Choosing parms1. 
 Save chosen design info:
 
 ```{r}
-save(parms1_res,parms2_res,dat17i,dat17p,file=here("Analysis","design_soldvsnot.rda"))
+save(parms1_res,parms2_res,parms3_res,parms1, parms2, parms3, dat17i,dat17p,file=here("Analysis","design_soldvsnot.rda"))
 ```
 
 
