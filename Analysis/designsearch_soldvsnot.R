@@ -219,6 +219,8 @@ dat17p$soldvsnot17F <- factor(dat17p$soldvsnot17)
 starting_par <- apply(search_space,2,mean)
 lower_par <-apply(search_space,2,min)
 upper_par <-apply(search_space,2,max)
+upper_par["robbcal"] <- quantile(robbdist,.5)
+upper_par["vrobbcal"] <- quantile(vrobbdist,.5)
 
 find_design2(
   #x = search_space[which.max(rowSums(search_space)),],
@@ -263,6 +265,20 @@ find_design2(
 # Try an optimization approach first:
 library(GA)
 
+## First opt: 421.1
+starting_values <- c(116.4,91.13,24.68,1.965)
+## Next opt: 421.1
+## 116.7,96.85,24.58,1.981
+
+## Final opt same:
+## > opt_res@solution
+##      mhcal pscal robbcal vrobbcal
+## [1,] 116.7 89.55   25.06    1.864
+## [2,] 116.5 92.83   25.00    1.847
+## [3,] 116.5 93.05   24.42    1.860
+## [4,] 116.6 88.68   24.73    1.680
+
+
 opt_res <- ga(type = "real-valued", fitness = find_design2, lower = lower_par, upper = upper_par,
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
@@ -275,13 +291,14 @@ opt_res <- ga(type = "real-valued", fitness = find_design2, lower = lower_par, u
   return_score=TRUE,
   thelower=lower_par,
   theupper=upper_par,
-  suggestions = upper_par,
-  popSize = 50, maxiter = 1000, run = 100,parallel=30,seed=12345)
+  suggestions = starting_values, #upper_par,
+  popSize = 1000, maxiter = 1000, run = 100,parallel=30,seed=12345)
 
+opt_res_sol <- opt_res@solution[1,]
 
 find_design2(
   #x = search_space[which.max(rowSums(search_space)),],
-  x = opt_res@solution,
+  x = opt_res_sol,
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
   themhdist = mhdist,
