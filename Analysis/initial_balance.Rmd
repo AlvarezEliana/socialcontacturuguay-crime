@@ -28,10 +28,12 @@ source("rmarkdownsetup.R")
 library(dplyr)
 library(coin)
 library(RItools)
+library(tidyverse)
+library(formula.tools)
 ```
 
 ```{r}
-load(here::here("Analysis","match_data_prep.rda"))
+load(here::here("Analysis", "match_data_prep.rda"))
 ```
 
 ### Look at baseline imbalance before matching
@@ -46,33 +48,36 @@ the registered pharmacies and the non-registered pharmacies.
 First, drop the observations for the placebo pharmacies
 ```{r}
 dat17i <- wdat17i %>% filter(!is.na(soldvsnot17))
-table(dat17i$soldvsnot17,exclude=c())
+table(dat17i$soldvsnot17, exclude = c())
+dat17p <- wdat17p %>% filter(!is.na(soldvsnot17)) %>% as.data.frame()
 
 ```
 Looking at baseline (im)balance on individual level outcomes and covariates
 
-```{r eval=FALSE}
+```{r}
+## Leaving this code for now. I think that we have too many cluster-level
+## variables here and are getting p-values from a degenerate distribution.
+##  The calculations of the standardized differences are fine. So we will use
+##  this code for possible descriptive plots.
 baselineFmla <- reformulate(covs3, response = "soldvsnot17")
 baselineFmlaCluster <- update(baselineFmla, . ~ . + cluster(Q56))
-
 xb0i <- balanceTest(baselineFmlaCluster, data = dat17i, report = "all", p.adjust.method = "none")
 xb0i$overall[, ]
-xb0ionebyone <- data.frame(xb0i$results[,,])
+xb0ionebyone <- data.frame(xb0i$results[, , ])
 xb0ionebyone$varnm <- row.names(xb0ionebyone)
 xb0ionebyone <- xb0ionebyone %>% arrange(desc(abs(std.diff)))
-xb0ionebyone <- xb0ionebyone %>% filter(varnm!="(_non-null record_)")
+xb0ionebyone <- xb0ionebyone %>% filter(varnm != "(_non-null record_)")
 ## head(xb0ionebyone,n=20) ## Worst balanced
 ## Number of small p-values
 numsmallp1 <- sum(xb0ionebyone[, "p"] <= .05)
-
-##xb0itest <- balanceTest(baselineFmla, data = wdat17, report = "all", p.adjust.method = "none")
-##xb0itest$overall[,]
+## xb0itest <- balanceTest(baselineFmla, data = wdat17, report = "all", p.adjust.method = "none")
+## xb0itest$overall[,]
 ```
 
 ```{r eval=FALSE}
 summary(xb0ionebyone$std.diff)
 
-adjps <- p.adjust(xb0ionebyone$p,method="holm")
+adjps <- p.adjust(xb0ionebyone$p, method = "holm")
 ```
 
 Add informative labels.
@@ -80,115 +85,115 @@ Add informative labels.
 ```{r eval=FALSE}
 xb0ionebyone$thevar <- 1:nrow(xb0ionebyone)
 xb0ionebyone$varlab <- c(
-"Violent robberies",
-"Physical Disorder- trash in the street ",
-"Security Measures: Security Camera",
-"Mean age",
-"Physical Disorder- Potholes/Wells in the street",
-"Total population of the segment",
-"Robberies",
-"Security Measures: alarm response",
-"Mvd - Rest of the country",
-"Votes for P.N. (%)",
-"Average of years of education",
-"Percentage of votes to Frente Amplio (2014)",
-"Homes with defenses/bars",
-"Percentage of votes to Partido de los Trabajadores (2014)",
-"Perception of Insecurity in neighborhood",
-"Votes for PERI (%)",
-"Percentage of votes to Asamblea Uruguay (2014)",
-"Victimization - Last 12 Months",
-"Votes for P.C. (%)",
-"Frequency of activities in the neighborhood - Meets/ organizes with the neighbors for any improvement activity for the neighborhood",
-"Public stigma - Agreement: Most people feel that using marijuana is a sign of personal failure",
-"Homeowners(%)",
-"Public stigma - Agreement: Most employers do not hire a person who uses marijuana",
-"ubn_no",
-"Country insec. perception",
-"Percentage of homes with NONE UBN",
-"Public Stigma Factor ",
-"Votes for P.I. (%)",
-"Security Measures: Guard at night",
-"Agreement with the sale of marijuana for recreative use in pharmacies",
-"People who use marijuana are a threat to society",
-"Frequency of activities in the neighborhood - purchase in shops or shops in the neighborhood",
-"Public stigma - Agreement: Most people believe that marijuana users are dangerous",
-"Agreement - although they regulate, people will continue buying marijuana illegal",
-"Social disorder -  People drunk or stoned in the streets",
-"Agreement - The legalization of marijuana will contribute to solve social problems",
-"Frequency of activities in the neighborhood -  Talk with your neighbors",
-"Public stigma - Agreement: Most employers do not hire a person who uses marijuana",
-"Impact of the Law - Public Health",
-"Sex",
-"Number of offenses",
-"Impact of the law - Public Safety",
-"Homes with 3 or more UBNs(%)",
-"Social disorder -  people discussing in aggressive or violent",
-"Impact of the law - Individual Freedoms",
-"Public stigma - Most people believe that you cannot trust marjuana user",
-"Percentage of Renters",
-"Stigmatization Factor",
-"Stigmatization Agreement: Marijuana Users are dishonest",
-"neigh4_i sacle from 0 to 1",
-"Social disorder index",
-"Stigmatization Agreement: Most marijuana users are not well educated",
-"Agreement - The legalization of marijuana will prevent the consumption of drugs more dangerous",
-"Perception of risk - Try marijuana once or twice in a lifetime",
-"Public stigma - Most people do not take seriously the views of a marijuna user",
-"Agreement with the decriminalization and regulation by the state of the market of marijuana",
-"Type of crime",
-"Risk perception of frequent marijuana use",
-"Frequency of activities in the neighborhood -  buy at the pharmacy in the neighborhood",
-"Valor Catastral 2017 ($)",
-"Age",
-"Density population of the segment",
-"Social disorder -  young people or children in the streets without doing anything, who are wandering",
-"Perceived impact on drug trafficking",
-"Agreement - marijuana is the gateway to other drugs such as cocaine, LSD and base paste",
-"Prevalence of consumption - at some point in their lives.",
-"Contact with marijuana consumers",
-"Public stigma - Agreement: Most people feel that using marijuana is a sign of personal failure",
-"Frequency of activities in the neighborhood - Use health services",
-"Public stigma - Most people would treat marijuana users as any person ",
-"Security Measures: 222 Service or security guard during the day",
-"Perception of risk - Using marijuana occasionally",
-"Citizens insertion in the neighborhood",
-"Public stigma - Agreement: Most people would not accept a marijuana user as a high school teacher",
-"Agreement - Using marijuana is harmful to health ",
-"Highest educational level",
-"Stigmatization Agreement: marijuana users make me mad",
-"neigh8_i sacle from 0 to 1",
-"Self-ideology identification",
-"Percentage of homes with TWO UBNs",
-"Public stigma - Agreement: Most people underestimate marijuana users"
+  "Violent robberies",
+  "Physical Disorder- trash in the street ",
+  "Security Measures: Security Camera",
+  "Mean age",
+  "Physical Disorder- Potholes/Wells in the street",
+  "Total population of the segment",
+  "Robberies",
+  "Security Measures: alarm response",
+  "Mvd - Rest of the country",
+  "Votes for P.N. (%)",
+  "Average of years of education",
+  "Percentage of votes to Frente Amplio (2014)",
+  "Homes with defenses/bars",
+  "Percentage of votes to Partido de los Trabajadores (2014)",
+  "Perception of Insecurity in neighborhood",
+  "Votes for PERI (%)",
+  "Percentage of votes to Asamblea Uruguay (2014)",
+  "Victimization - Last 12 Months",
+  "Votes for P.C. (%)",
+  "Frequency of activities in the neighborhood - Meets/ organizes with the neighbors for any improvement activity for the neighborhood",
+  "Public stigma - Agreement: Most people feel that using marijuana is a sign of personal failure",
+  "Homeowners(%)",
+  "Public stigma - Agreement: Most employers do not hire a person who uses marijuana",
+  "ubn_no",
+  "Country insec. perception",
+  "Percentage of homes with NONE UBN",
+  "Public Stigma Factor ",
+  "Votes for P.I. (%)",
+  "Security Measures: Guard at night",
+  "Agreement with the sale of marijuana for recreative use in pharmacies",
+  "People who use marijuana are a threat to society",
+  "Frequency of activities in the neighborhood - purchase in shops or shops in the neighborhood",
+  "Public stigma - Agreement: Most people believe that marijuana users are dangerous",
+  "Agreement - although they regulate, people will continue buying marijuana illegal",
+  "Social disorder -  People drunk or stoned in the streets",
+  "Agreement - The legalization of marijuana will contribute to solve social problems",
+  "Frequency of activities in the neighborhood -  Talk with your neighbors",
+  "Public stigma - Agreement: Most employers do not hire a person who uses marijuana",
+  "Impact of the Law - Public Health",
+  "Sex",
+  "Number of offenses",
+  "Impact of the law - Public Safety",
+  "Homes with 3 or more UBNs(%)",
+  "Social disorder -  people discussing in aggressive or violent",
+  "Impact of the law - Individual Freedoms",
+  "Public stigma - Most people believe that you cannot trust marjuana user",
+  "Percentage of Renters",
+  "Stigmatization Factor",
+  "Stigmatization Agreement: Marijuana Users are dishonest",
+  "neigh4_i sacle from 0 to 1",
+  "Social disorder index",
+  "Stigmatization Agreement: Most marijuana users are not well educated",
+  "Agreement - The legalization of marijuana will prevent the consumption of drugs more dangerous",
+  "Perception of risk - Try marijuana once or twice in a lifetime",
+  "Public stigma - Most people do not take seriously the views of a marijuna user",
+  "Agreement with the decriminalization and regulation by the state of the market of marijuana",
+  "Type of crime",
+  "Risk perception of frequent marijuana use",
+  "Frequency of activities in the neighborhood -  buy at the pharmacy in the neighborhood",
+  "Valor Catastral 2017 ($)",
+  "Age",
+  "Density population of the segment",
+  "Social disorder -  young people or children in the streets without doing anything, who are wandering",
+  "Perceived impact on drug trafficking",
+  "Agreement - marijuana is the gateway to other drugs such as cocaine, LSD and base paste",
+  "Prevalence of consumption - at some point in their lives.",
+  "Contact with marijuana consumers",
+  "Public stigma - Agreement: Most people feel that using marijuana is a sign of personal failure",
+  "Frequency of activities in the neighborhood - Use health services",
+  "Public stigma - Most people would treat marijuana users as any person ",
+  "Security Measures: 222 Service or security guard during the day",
+  "Perception of risk - Using marijuana occasionally",
+  "Citizens insertion in the neighborhood",
+  "Public stigma - Agreement: Most people would not accept a marijuana user as a high school teacher",
+  "Agreement - Using marijuana is harmful to health ",
+  "Highest educational level",
+  "Stigmatization Agreement: marijuana users make me mad",
+  "neigh8_i sacle from 0 to 1",
+  "Self-ideology identification",
+  "Percentage of homes with TWO UBNs",
+  "Public stigma - Agreement: Most people underestimate marijuana users"
 )
 
-#age_av	Mean age
-#robb_2016	Number of robberies
-#pn_per	Votes for Partido Nacional (%)
-#dis3_i	Homes that have defenses/metal grilles or bars on the windows (includes perimeter fence, barbed wire, and similar)
-#peri_per	Votes for PERI (%)
-#pc_per	Votes for Partido Colorado (%)
-#h_owners	Percentage of homeowners
-#c_sec_i	Country insecurity perception
-#pi_per	Votes for Partido Independiente (%)
-#op6_m_i	Agreement - The people who use marijuana are a threat to society
-#op5_m_i	Agreement - although they regulate, people will continue buying marijuana illegal
-#neigh2_i	Frequency of activities in the neighborhood -  Talk with your neighbors
-#sex_i	Sex
-#ubn_more	Percentage of homes with THREE OR MORE UBNs
-#pstigma1_i	Public stigma - Agreement: Most people believe that you cannot trust marjuana user
-#stigma6_i	Stigmatization Agreement: Marijuana Users are dishonest
-#stigma1_i	Stigmatization Agreement: Most marijuana users are not well educated
-#pstigma6_i	Public stigma - Agreement: Most people do not take seriously the views of a marijuna user
-#rp_m3_i	Risk perception of frequent marijuana use
-#age_i	Age
-#dt_impact_i	Perceived impact on drug trafficking
-#ffuse_i	Contact with marijuana consumers
-#pstigma5_i	Public stigma - Agreement: Most people would treat marijuana users as any person 
-#activities_index	Citizens insertion in the neighborhood
-#educ_i	Educational level
-#ideol_si_i	Ideological self-identification
+# age_av	Mean age
+# robb_2016	Number of robberies
+# pn_per	Votes for Partido Nacional (%)
+# dis3_i	Homes that have defenses/metal grilles or bars on the windows (includes perimeter fence, barbed wire, and similar)
+# peri_per	Votes for PERI (%)
+# pc_per	Votes for Partido Colorado (%)
+# h_owners	Percentage of homeowners
+# c_sec_i	Country insecurity perception
+# pi_per	Votes for Partido Independiente (%)
+# op6_m_i	Agreement - The people who use marijuana are a threat to society
+# op5_m_i	Agreement - although they regulate, people will continue buying marijuana illegal
+# neigh2_i	Frequency of activities in the neighborhood -  Talk with your neighbors
+# sex_i	Sex
+# ubn_more	Percentage of homes with THREE OR MORE UBNs
+# pstigma1_i	Public stigma - Agreement: Most people believe that you cannot trust marjuana user
+# stigma6_i	Stigmatization Agreement: Marijuana Users are dishonest
+# stigma1_i	Stigmatization Agreement: Most marijuana users are not well educated
+# pstigma6_i	Public stigma - Agreement: Most people do not take seriously the views of a marijuna user
+# rp_m3_i	Risk perception of frequent marijuana use
+# age_i	Age
+# dt_impact_i	Perceived impact on drug trafficking
+# ffuse_i	Contact with marijuana consumers
+# pstigma5_i	Public stigma - Agreement: Most people would treat marijuana users as any person
+# activities_index	Citizens insertion in the neighborhood
+# educ_i	Educational level
+# ideol_si_i	Ideological self-identification
 ```
 
 Make the  plot
@@ -197,30 +202,29 @@ Make the  plot
 
 xb0ionebyone$abs_std_diff <- abs(xb0ionebyone$std.diff)
 
-
-is_outlier <- function(x,mult=1.5,pos_only=TRUE) {
-	if(!pos_only){
-  return(x < quantile(x, 0.25) - mult * IQR(x) | x > quantile(x, 0.75) + mult * IQR(x))
-	} else {
-  return( x > quantile(x, 0.75) + mult * IQR(x))
+is_outlier <- function(x, mult = 1.5, pos_only = TRUE) {
+  if (!pos_only) {
+    return(x < quantile(x, 0.25) - mult * IQR(x) | x > quantile(x, 0.75) + mult * IQR(x))
+  } else {
+    return(x > quantile(x, 0.75) + mult * IQR(x))
   }
 }
 
-dat <- xb0ionebyone %>% mutate(is_outlier=ifelse(is_outlier(abs_std_diff,.1), abs_std_diff, as.numeric(NA)))
+dat <- xb0ionebyone %>% mutate(is_outlier = ifelse(is_outlier(abs_std_diff, .1), abs_std_diff, as.numeric(NA)))
 dat$varlab[which(is.na(dat$is_outlier))] <- as.numeric(NA)
 dat$varlab
 
-pdf(file=here::here("media","initial_balance_plot.pdf"),width=4,height=8)
+pdf(file = here::here("media", "initial_balance_plot.pdf"), width = 4, height = 8)
 
-par(oma=rep(0,4)+.01,mar=c(3,8,0,0),mgp=c(1,.5,0))
+par(oma = rep(0, 4) + .01, mar = c(3, 8, 0, 0), mgp = c(1, .5, 0))
 
-g  <- ggplot(data=dat,aes(y=abs_std_diff,x="",label=varlab))+
-	geom_boxplot(outlier.shape=NA)+
-	#geom_point(aes(x=1)) +
-	theme_bw() +
-	ylab("Abs(Standardized Mean Differences, Pharmacy - No-Pharmacy)") + 
-	xlab("")
-fullg  <- g + geom_text(aes(label=varlab),na.rm=TRUE,nudge_y=0.05,size=3)
+g <- ggplot(data = dat, aes(y = abs_std_diff, x = "", label = varlab)) +
+  geom_boxplot(outlier.shape = NA) +
+  # geom_point(aes(x=1)) +
+  theme_bw() +
+  ylab("Abs(Standardized Mean Differences, Pharmacy - No-Pharmacy)") +
+  xlab("")
+fullg <- g + geom_text(aes(label = varlab), na.rm = TRUE, nudge_y = 0.05, size = 3)
 print(fullg)
 
 dev.off()
@@ -236,8 +240,6 @@ dev.off()
 ## segments(rep(0,nrow(xb0ionebyone)),thevar,abs(std.diff),thevar,lwd=.5,col="gray")
 ## }
 ## )
-
-
 ```
 
 
@@ -282,12 +284,51 @@ sum(xb0ionebyone[, "p"] <= .05)
 ## So perhaps some imbalance but not a lot.
 ```
 
-Save products
+A couple of other approaches to summarizing the covariate-to-treatment
+relationships using a single p-value.
+
+First, at the individual level with cluster-adjusted statistical inferences
 
 ```{r}
 
-save(xb0i, baselineFmla, baselineFmlaCluster, file="initial_balance.rda")
+num_singular_values <- 20
+   mm <-  model.matrix(update(baselineFmla,.~.-1),data=dat17i)
+   thesvd <- svd(mm,nu=num_singular_values)$u
+   colnames(thesvd) <- paste("V",1:ncol(thesvd),sep="")
+   newdat <- data.frame(dat17i,thesvd)
+   xb_i_fmla <- reformulate(colnames(thesvd),response="soldvsnot17")
+    xb_svd_i <- balanceTest(update(xb_i_fmla, . ~ .  + cluster(Q56)),
+      data = newdat)
+xb_svd_i$overall[,]
 
+```
+
+Next  at level of pharmacy:
+
+```{r}
+tmpnms <- names(dat17p)[!names(dat17p) %in% designvars]
+matchfmla <- reformulate(tmpnms, response = "soldvsnot17")
+matchfmla
+
+## Degenerate p-value
+xb0p <- balanceTest(matchfmla,data=dat17p,report="all")
+
+## Another way to see the same result
+initial_neigh_bal_fmla <- ~soldvsnot17
+lhs(initial_neigh_bal_fmla) <- rhs(matchfmla)
+initial_omnibus_bal <-
+  independence_test(initial_neigh_bal_fmla, data = dat17p, teststat = "quadratic")
+pvalue(initial_omnibus_bal)
+## Despite many covariates, the distribution looks good here.
+initial_omnibus_bal_perm <-
+  independence_test(initial_neigh_bal_fmla, data = dat17p, teststat = "quadratic", distribution = approximate(nresample = 10000))
+pvalue(initial_omnibus_bal_perm)
+```
+
+Save products
+
+```{r}
+save(xb0i, xb_svd_i, initial_omnibus_bal, initial_omnibus_bal_perm, baselineFmla, baselineFmlaCluster, file = "initial_balance.rda")
 ```
 
 

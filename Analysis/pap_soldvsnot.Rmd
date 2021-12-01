@@ -24,7 +24,7 @@ output:
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
 library(here)
-source(here::here("Analysis","rmarkdownsetup.R"))
+source(here::here("Analysis", "rmarkdownsetup.R"))
 ```
 
 ```{r setup1, echo=TRUE}
@@ -33,22 +33,21 @@ library(optmatch)
 library(tidyverse)
 library(arm)
 library(tidyverse)
-library(formula.tools)
 library(coin)
-load(here::here("Analysis","match_data_prep.rda"),verbose=TRUE)
-load(here::here("Analysis","initial_balance.rda"),verbose=TRUE)
+load(here::here("Analysis", "match_data_prep.rda"), verbose = TRUE)
+load(here::here("Analysis", "initial_balance.rda"), verbose = TRUE)
 ##  First, drop the observations for the placebo pharmacies
 
-table(wdat17i$soldvsnot17,exclude=c())
-table(wdat17p$soldvsnot17,exclude=c())
+table(wdat17i$soldvsnot17, exclude = c())
+table(wdat17p$soldvsnot17, exclude = c())
 
 dat17i <- wdat17i %>% filter(!is.na(soldvsnot17))
-table(dat17i$soldvsnot17,exclude=c())
+table(dat17i$soldvsnot17, exclude = c())
 
 dat17p <- wdat17p %>% filter(!is.na(soldvsnot17))
-table(dat17p$soldvsnot17,exclude=c())
+table(dat17p$soldvsnot17, exclude = c())
 
-load(here::here("Analysis","design_soldvsnot.rda"),verbose=TRUE)
+load(here::here("Analysis", "design_soldvsnot.rda"), verbose = TRUE)
 ```
 
 We aim to assess the effect of living near a pharmacy that sells marijuana on
@@ -83,7 +82,6 @@ that we label as ``wholetime'', (4) pharmacies that sold marijuana for some of
 that first year but stopped selling at some point between 2017 to 2018 (n=6)
 that we call ``dropouts'', and (5) pharmacies that joined the system at some
 point between the 2017 round and 2018 round (n=4) that we call ``newcomers''
-(see Table \ref{tab:pharmsalestatus} in APPENDIX TODO).
 
 \begin{figure}[htpb!]
     \centering
@@ -165,7 +163,7 @@ us measure the crime victimization experienced by those living near pharmacies
 and their attitudes towards the law and public security. None of these surveys
 were intended to be representative of the Uruguayan population. We conducted two
 rounds of surveys with neighbors of selling and non-selling pharmacies. In
-collaboration with TODO GOVERNMENT GROUP, our research team learned the names
+collaboration with TODO NAME OF THE GOVERNMENT GROUP, our research team learned the names
 and locations of the pharmacies that were going to sell marijuana as of the date
 that the law allowing sales at pharmacies went into effect (July 19, 2017). In the
 first survey round, fieldwork started on June 17, 2017 and finished in July 1,
@@ -190,7 +188,7 @@ the pharmacies' representatives survey allowed us to characterize selling and
 non-selling pharmacies, and to describe any initial differences
 between them using the 2017 data.
 
-The data that we collected (as described in TODO APPENDIX) show that selling and
+The data that we collected show that selling and
 non-selling pharmacies are not different in terms of their general
 characteristics: TODO explain a bit more. The only relevant distinction is that
 among non-selling there are stores that are part of a larger pharmacy's chain.
@@ -208,7 +206,7 @@ The most important distinction among sellers and non-sellers is concerning
 opinions towards the public policy itself. Owners and representatives of pharmacies
 that decided to sell are consistently more in favor of the regulation and
 anticipate it would have more positive impacts TODO ON SOCIETY? (Table
-\ref{tab:pharmaciesperceptions} in Appendix A).
+\ref{tab:pharmaciesperceptions} in the Appendix).
 
 ## The Stratification Design
 
@@ -238,36 +236,24 @@ observational study. [@hansen2008cbs] develop a formal way to compare a
 given observed comparison with what would be expected if that comparison had
 been randomized: they provide a test for the hypothesis
 that the neighbors of selling pharmacies and the neighbors of not selling
-pharmacies might have been allocated at random. In our case, the raw comparison
+pharmacies might have been allocated at random.
+
+ In our case, the raw comparison
 of attitudes around pharmacies selling cannabis and those not selling cannabis,
 confirms our hunch that the places do not in fact compare favorably to a
-randomized experiment: the Hansen and Bowers omnibus test across 81 covariates
-reports a $p$-value of `r xb0i$overall[,"p.value"]`. That is, it would be
-surprising to see the overall differences that we do see here, if, in fact, the
-study were a randomized experiment.
-
-
-```{r}
-## Another way to see the same result
-initial_neigh_bal_fmla <- ~soldvsnot17
-tmpfmla <- formula(terms(parms1_res$maxTp@statistic@y))
-lhs(initial_neigh_bal_fmla) <- rhs(tmpfmla)
-initial_omnibus_bal <-
-    independence_test(initial_neigh_bal_fmla,data=dat17p,teststat="quadratic")
-pvalue(initial_omnibus_bal)
-## Despite many covariates, the distribution looks good here.
-initial_omnibus_bal_perm <-
-    independence_test(initial_neigh_bal_fmla,data=dat17p,teststat="quadratic",distribution=approximate(nresample=10000))
-pvalue(initial_omnibus_bal_perm)
-```
+randomized experiment: an omnibus balance test [@hansen2008cbs] across `r nrow(initial_omnibus_bal@statistic@linearstatistic)` covariates
+reports a $p$-value of `r pvalue(initial_omnibus_bal)[[1]]`.
 
 ## Designing a Better Baseline Comparison
 
 Our strategy to finding comparisons between people living near selling versus
-non-selling pharmacies involves stratification: we will be creating pairs of
-people, one of whom lives near a selling pharmacy and one of whom lives in a
-non-selling pharmacy, where the two people are similiar in baseline
-characteristics and the two neighborhoods and pharmacies are also similar.
+non-selling pharmacies involves stratification: we create pairs of pharmacies
+which are similar in the characteristics of their neighborhoods before they
+began to sell marijuana. These characteristics include aggregated survey data
+from the neighborhoods that these pharmacies serve -- for example, the mean age
+of the survey respondents as well as the 25th percentile of the age of those
+survey respondents. Overall, we use more than 80 covariates measured before the
+pharmacies began selling marijuana.
 
 Why create pairs? Let's consider the hypothetical case of a pair-randomized
 experiment. If we had managed to convince the government to issue the
@@ -304,10 +290,10 @@ For example, it created 14 pairs and two sets with one selling pharmacy and two
 non-selling pharmacies. It also dropped 24 comparison pharmacies. The comparison
 to a randomized experiment across many covariates suggests little evidence
 against the idea that this design is compatible with the randomized hypothetical
-design.
+design (p=.58).
 ```{r}
-summary(parms1_res$fm_p,max.controls=Inf)
-pvalue(parms1_res$maxTp)
+summary(parms1_res$fm_p, max.controls = Inf)
+pvalue(parms1_res$maxTp)[[1]]
 ```
 
 To further return differences in exposure to a selling pharmacy, we next matched
@@ -326,7 +312,7 @@ pharmacy level sets, so that a comparison with a pair of people is also a
 comparison between two pharmacies that were matched as above.
 
 ```{r}
-summary(parms1_res$fm_i,max.controls=Inf)
+summary(parms1_res$fm_i, max.controls = Inf)
 parms1_res$crime_p
 ```
 
@@ -341,7 +327,7 @@ Finally, we have created the "activities_index" that show how much people are in
 Our outcome variables are the following:
 
 ```{r}
-outcomes <- c("n_sec_i","c_sec_i","vic12","dt_impact_i","ps_impact_i","boca1_i","social_dis","activities_index")
+outcomes <- c("n_sec_i", "c_sec_i", "vic12", "dt_impact_i", "ps_impact_i", "boca1_i", "social_dis", "activities_index")
 ```
 
 
@@ -456,7 +442,7 @@ estimate effects and calculate confidence intervals for the average effect as
 follows:
 
 ```{r eval=FALSE}
-lm1 <- lm_robust(outcome1~soldvsnot17,fixed_effects=~fm_i,cluster=Q56,data=dat17i)
+lm1 <- lm_robust(outcome1 ~ soldvsnot17, fixed_effects = ~fm_i, cluster = Q56, data = dat17i)
 ```
 
 ## Subgroup analysis
@@ -468,7 +454,7 @@ same analytic strategy as above, but allowing different effects for people
 living near the dropout pharmacies. For example, we would use code like this:
 
 ```{r eval=FALSE}
-lm2 <- lm_robust(outcome1~soldvsnot17*I(dropout),fixed_effects=~fm_i,cluster=Q56,data=dat17i)
+lm2 <- lm_robust(outcome1 ~ soldvsnot17 * I(dropout), fixed_effects = ~fm_i, cluster = Q56, data = dat17i)
 ```
 
 ## Approach to multiple testing

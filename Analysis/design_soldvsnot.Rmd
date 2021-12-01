@@ -44,83 +44,53 @@ load(here::here("Analysis", "design_soldvsnot_search_res2.rda"),verbose=TRUE)
 source(here("Analysis","utilityfns.R"))
 ```
 
-TODO: Clean this up given optimization approach.
+We searched for a design that compared neighborhoods to each other that
+satisfied several criteria: (1) across a large number of covariates,
+covariate-to-treatment relation ship had to compare favorably to those typical
+of a randomized experiment (calculated at both the pharmacy level and the level
+of individual survey respondents, adjusted for clustering at the
+pharmacy/neighborhood level) (`score_maxTp` and `score_d2_p_i_p`; (2)
+administrative data on violent robberies, robberies, and survey data on
+perceptions of crime should not strongly related to whether or not a pharmacy
+sold marijuana conditional on strata `score_crime_p`; (3) mean robberies and
+violent robberies should be very similar between treated and control pharmacies
+conditional on strata, `score_vrobbdiff` and `score_robbdiff`; (4) the largest
+differences in robberies and violent robberies between treated and control
+neighborhoods within set should be a small as possible (it cannot be zero, but
+we can make this maximum difference small), `score_maxvrobbdiff` and
+`score_maxrobbdiff`; and (5) the effective sample size should be as large as
+possible (`effn`). We required that we use all 16 of the selling pharmacies as
+the treated pharmacies, but we preferred to keep as many of the non-selling
+pharmacies as possible (thus the effective sample size).
 
-
-`crime_p.value` is from a cluster adjusted assessment of the three crime
-variables and treatment. For now, `d2p_i` and `vrobbp` and `robbp` are all
-without cluster adjustment --- so, bigger is better but we shouldn't interpret
-them strictly speaking. `maxTp` and `d2p` are omnibus balance tests at level of
-the neighborhood --- so their values are p-values in the ordinary sense.
+The code below shows this score:
 
 ```{r}
-resdf0 <- data.frame(t(results))
-## Drop any row with NAs
-resdf <- na.omit(resdf0)
-apply(resdf, 2, summary)
-quantile(resdf$maxTp,seq(0,1,.1))
-quantile(resdf$d2p,seq(0,1,.1))
-apply(resdf,2,quantile,seq(0,1,.1))
+print(design_score)
 ```
 
-Calculate the design score for each possible design. The design score combines
-the overall balance p-value, the balance p-value for just the three crime
-variables (including perceptions of crime), average pair-adjusted differences in
-robberies and violent robberis, the size of the maximum difference in
-robberies/violent robberies within pair, the size of the the treatment group
-(i.e. the number of selling pharmacies included in the design, currently
-restricted to 16 --- not dropping any of them), and the effective sample size
-at the level of the neighborhood/pharmacy (which ranges from about 16 for pairs
-to about 19 for cases with some 1 to more than one control pharmacy matches).
+We searched for a stratification that would maximize this score by varying
+calipers on a mahalanobis distance matrix, a propensity score distance matrix,
+a matrix of differences in robberies, a matrix of differences in violent
+robberies. The search used a genetic algorithm run in multiple passes to ensure
+that it was not overly dependent on starting values. Code in
+`designsearch_soldvsnot.R`.
+
+We show the raw scores for the found best design below.
+
+Note: `maxadiff` is maximum difference in `robb` within set, `maxbdiff`, is
+maximum difference in `vrobb` within set. And the `vrobbdiff` and `robbdiff` are
+the set-adjusted mean differences).
+
+So, below we see that the chosen design compares favorably with a randomized
+experiment (`d2p_i` and `maxTp`), has little difference in crime between treated
+and control neighborhoods within pair on average (`vrobbdiff`, `robbdiff`), and
+in the worse set (`maxadiff` and `maxbdiff`), nor can we predict treatment
+status from crime variables conditional on strata (`crime_p.value`). We use all
+treated pharmacies `n_trt` and 18 control pharmarcies `n_ctrl`.
 
 ```{r}
-resdf <- resdf %>% rowwise() %>%
-    mutate(design_score=design_score(maxTp=maxTp,d2p_i=d2p_i,vrobbdiff=vrobbdiff,robbdiff=robbdiff,crime_p=crime_p.value,maxrobbdiff=maxadiff,maxvrobbdiff = maxbdiff,n_trt=n_trt,effn=effn)) %>% ungroup()
-summary(resdf$design_score)
-
-resdf %>% filter(resdf$design_score!=-999999) %>%
-    dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff, maxbdiff,n_trt,effn,design_score) %>%
-    arrange(desc(design_score))
-
-## The  best design score
-resdf %>% filter(design_score==max(design_score))
-
-## Focus on solutions in the best 10%
-candidates <- resdf %>% filter(resdf$design_score!=-999999)  %>% filter(design_score>quantile(design_score,.95))
-dim(candidates)
-summary(candidates)
-```
-
-
-```{r}
-pdf(file="designps.pdf")
-gp3 <-  ggplot(data=candidates,aes(x=maxTp,y=effn,color=design_score)) +
-	geom_point()
-print(gp3)
-dev.off()
-
-gp4 <- ggplot(data=candidates,aes(x=abs(robbdiff),y=maxadiff,color=design_score)) +
-	geom_point()
-print(gp4)
-
-```
-
-A few possible solutions: Note: `maxadiff` is maximum
-difference in `robb` within set, `maxbdiff`, is maximum difference in `vrobb`
-within set. And the `vrobbdiff` and `robbdiff` are the set-adjusted mean
-differences).
-
-
-```{r}
-
-
-parms1 <- resdf %>% filter(maxadiff <= quantile(maxadiff,.5) & maxbdiff <= quantile(maxbdiff,.5)) %>% filter(maxTp==max(maxTp))
-parms1
-
-parms2 <- resdf %>% filter(design_score==max(design_score))
-parms2
-
-parms3_lst <- sapply(1:nrow(opt_res@solution),function(i){
+parms1_lst <- sapply(1:nrow(opt_res@solution),function(i){
     x <- opt_res@solution[i,]
 find_design2(
     x = x,
@@ -135,9 +105,9 @@ find_design2(
   return_full_objs=FALSE
 )
 })
-parms3_lst ## all identical so just use first one
+parms1_lst ## all identical so just use first one
 
-parms3 <- find_design2(
+parms1 <- find_design2(
     x = opt_res@solution[1,],
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
@@ -150,16 +120,16 @@ parms3 <- find_design2(
   return_full_objs=FALSE
 )
 
-parms3
+parms1
 ```
 
 Now generate the actual matches and save them for analysis.
-Inspect parms1 solution (change this after next run since we will only have x1
-to x4 then)
+
+Inspect parms1 solution
 
 ```{r parms1_inspection}
 parms1_res <- find_design2(
-    x = unlist(dplyr::select(parms1,x1,x2,x3,x4)),
+    x = parms1[1:4],
   thebalfmla_b = matchfmla,
   thebalfmla_i = matchfmla_i,
   themhdist = mhdist,
@@ -179,86 +149,10 @@ print(parms1_res$xb_i$overall[,])
 print(parms1_res$crime_lm)
 print(parms1_res$crime_p)
 ```
-
-
-Parms2 inspection
-
-```{r parms2_inspection}
-parms2_res <- find_design2(
-    x = unlist(dplyr::select(parms2,x1,x2,x3,x4)),
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_i,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  dista = robbdist,
-  distb = vrobbdist,
-  datb = dat17p,
-  dati = dat17i,
-  return_full_objs=TRUE
-)
-
-names(parms2_res)
-##print(parms2_res$fm_p,grouped=TRUE)
-summary(parms2_res$fm_p,max.controls=Inf)
-print(parms2_res$maxTp)
-print(parms2_res$xb_i$overall[,])
-print(parms2_res$crime_lm)
-print(parms2_res$crime_p)
-```
-
-
-
-Parms3 inspection
-
-
-```{r parms3_inspection}
-parms3_res <- find_design2(
-    x = parms3[1:4],
-  thebalfmla_b = matchfmla,
-  thebalfmla_i = matchfmla_i,
-  themhdist = mhdist,
-  thepsdist = psdist2,
-  dista = robbdist,
-  distb = vrobbdist,
-  datb = dat17p,
-  dati = dat17i,
-  return_full_objs=TRUE
-)
-
-names(parms3_res)
-##print(parms3_res$fm_p,grouped=TRUE)
-summary(parms3_res$fm_p,max.controls=Inf)
-print(parms3_res$maxTp)
-print(parms3_res$xb_i$overall[,])
-print(parms3_res$crime_lm)
-print(parms3_res$crime_p)
-```
-
-
-
-```{r}
-the_designs <- rbind(parms1=parms1,
-    parms2=parms2,parms3=c(parms3,opt_res@fitnessValue))
-
-the_designs %>%
-    dplyr::select(maxTp,vrobbdiff,robbdiff,crime_p.value,maxadiff,maxbdiff,n,n_trt,n_ctrl,effn,design_score)
-
-summary(parms1_res$fm_p,max.controls=Inf)
-summary(parms1_res$fm_i,max.controls=Inf)
-
-summary(parms2_res$fm_p,max.controls=Inf)
-summary(parms2_res$fm_i,max.controls=Inf)
-
-summary(parms3_res$fm_p,max.controls=Inf)
-summary(parms3_res$fm_i,max.controls=Inf)
-
-```
-
-Choosing parms1. 
 Save chosen design info:
 
 ```{r}
-save(parms1_res,parms2_res,parms3_res,parms1, parms2, parms3, dat17i,dat17p,file=here("Analysis","design_soldvsnot.rda"))
+save(parms1_res,parms1, dat17i,dat17p,file=here("Analysis","design_soldvsnot.rda"))
 ```
 
 

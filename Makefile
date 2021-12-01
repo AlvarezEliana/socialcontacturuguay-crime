@@ -33,10 +33,10 @@ Analysis/pap_soldvsnot.pdf: Analysis/pap_soldvsnot.Rmd Analysis/design_soldvsnot
 media/fm2_balance_plot.pdf: Analysis/pap_soldvsnot.pdf
 
 Analysis/design_soldvsnot.rda: Analysis/design_soldvsnot.Rmd Analysis/match_data_prep.rda \
-	Analysis/initial_balance.rda Analysis/design_soldvsnot_search_res2.rda
+	Analysis/initial_balance.rda Analysis/opt_res.rda
 	Rscript -e "library(rmarkdown);render('Analysis/design_soldvsnot.Rmd')"
 
-Analysis/design_soldvsnot_search_res2.rda: Analysis/designsearch_soldvsnot.R Analysis/match_data_prep.rda \
+Analysis/opt_res.rda: Analysis/designsearch_soldvsnot.R Analysis/match_data_prep.rda \
 	Analysis/initial_balance.rda
 	R --file=Analysis/designsearch_soldvsnot.R
 
