@@ -1,6 +1,6 @@
 ---
 title: Pre-analysis plan and design description
-author: Jake Bowers
+author: Jake Bowers, Rosario Queirolo, Eliana Alvarez, Lorena Repetto
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 fontsize: 11pt
 geometry: margin=1in
@@ -9,6 +9,8 @@ indent: false
 bibliography:
  - ../refs.bib
 biblio-style: authoryear-comp
+header-includes: |
+   \usepackage{lscape}
 output:
   pdf_document:
     toc: true
@@ -40,12 +42,6 @@ load(here::here("Analysis", "initial_balance.rda"), verbose = TRUE)
 
 table(wdat17i$soldvsnot17, exclude = c())
 table(wdat17p$soldvsnot17, exclude = c())
-
-dat17i <- wdat17i %>% filter(!is.na(soldvsnot17))
-table(dat17i$soldvsnot17, exclude = c())
-
-dat17p <- wdat17p %>% filter(!is.na(soldvsnot17))
-table(dat17p$soldvsnot17, exclude = c())
 
 load(here::here("Analysis", "design_soldvsnot.rda"), verbose = TRUE)
 ```
@@ -91,26 +87,27 @@ point between the 2017 round and 2018 round (n=4) that we call ``newcomers''
 \footnotesize{Note: green symbols show pharmacies registered to sell marijuana as of June 2017. \\ Blue symbols are comparison pharmacies.}
 \end{figure}
 
-The comparison group of pharmacies was selected following four criteria that
-aimed to produce a set of pharmacies that was not selling cannabis where the
-neighborhood characteristics would be at least roughly similar to the
-neighborhood characteristics of the selling pharmacies.  Here we describe
-the first steps in our selection process. The first criteria was ``same
-geographical unit'':  pharmacies in the same administrative region (the
-``departamento'') without at least one selling pharmacy were deleted from the
-sampling frame. The second criteria was ``population density'':  pharmacies in
-rural areas were deleted from the sample because none of the selling pharmacies
-is located in rural areas. The third criteria was``criminality rate'':
-pharmacies in neighborhoods (for Montevideo) or cities where homicides reports,
-assaults reports and robberies reports are too high or too low  in comparison
-with the neighborhoods where selling pharmacies were situated, were discarded.
-The fourth criteria is ``distance'': pharmacies in the control group should be
-at least 6 blocks away from any treatment pharmacy. After eliminating the
+The selection process for pool of non-selling pharmacies used for comparison
+with the selling pharmacies followed four criteria that aimed to produce a set
+of pharmacies that was not selling cannabis where the neighborhood
+characteristics would be at least roughly similar to the neighborhood
+characteristics of the selling pharmacies.  Here we describe the first steps in
+our selection process. The first criteria was ``same geographical unit'' ---
+pharmacies in the same administrative region (the ``departamento'') without at
+least one selling pharmacy were deleted from the sampling frame. The second
+criteria was ``population density'' --- pharmacies in rural areas were deleted
+from the sample because none of the selling pharmacies is located in rural
+areas. The third criteria was ``criminality rate'' --- pharmacies in
+neighborhoods (for Montevideo) or cities where homicides reports, assaults
+reports and robberies reports are too high or too low  in comparison with the
+neighborhoods where selling pharmacies were situated, were discarded.  The
+fourth criteria is ``distance'' --- pharmacies in the control group should be at
+least 6 blocks away from any treatment pharmacy. After eliminating the
 pharmacies that did not pass the four criteria, we randomly selected 42 control
-pharmacies among the about 1000 pharmacies that exist in the country
-\footnote{We used official sociodemographic information about the
+pharmacies among the remaining roughly 1000 pharmacies \footnote{We used
+official sociodemographic information about the
 neighbourhoods/localities/``departamentos''. See Table \ref{tab:phlongtable} in
-Appendix A for more details on the pharmacies characteristics}.
+the Appendix for more details on the pharmacies characteristics}.
 
 \begin{small}
 \begin{table}[htbp!]
@@ -167,7 +164,7 @@ collaboration with TODO NAME OF THE GOVERNMENT GROUP, our research team learned 
 and locations of the pharmacies that were going to sell marijuana as of the date
 that the law allowing sales at pharmacies went into effect (July 19, 2017). In the
 first survey round, fieldwork started on June 17, 2017 and finished in July 1,
-2017 before the sales started. The sample contains 600 neighbors
+2017 before the sales started. The final sample contains 600 neighbors
 of 60 pharmacies, 10 neighbors per pharmacy. The list of pharmacies that were
 licensed to sell marijuana was confidential until the sale started, so this initial group of
 neighbors did not know if their closest pharmacy was going to sell.
@@ -190,7 +187,7 @@ between them using the 2017 data.
 
 The data that we collected show that selling and
 non-selling pharmacies are not different in terms of their general
-characteristics: TODO explain a bit more. The only relevant distinction is that
+characteristics: TODO EXPLAIN A BIT MORE SHOW A TABLE MAYBE. The only relevant distinction is that
 among non-selling there are stores that are part of a larger pharmacy's chain.
 In terms of infrastructure both selling and non-selling pharmacies are quite
 similar, and they are also similar regarding security measures, perceptions of
@@ -205,7 +202,7 @@ Table/Figure TODO in Appendix).
 The most important distinction among sellers and non-sellers is concerning
 opinions towards the public policy itself. Owners and representatives of pharmacies
 that decided to sell are consistently more in favor of the regulation and
-anticipate it would have more positive impacts TODO ON SOCIETY? (Table
+anticipate it would have more positive impacts on society? (TODO Table
 \ref{tab:pharmaciesperceptions} in the Appendix).
 
 ## The Stratification Design
@@ -238,11 +235,11 @@ been randomized: they provide a test for the hypothesis
 that the neighbors of selling pharmacies and the neighbors of not selling
 pharmacies might have been allocated at random.
 
- In our case, the raw comparison
-of attitudes around pharmacies selling cannabis and those not selling cannabis,
-confirms our hunch that the places do not in fact compare favorably to a
-randomized experiment: an omnibus balance test [@hansen2008cbs] across `r nrow(initial_omnibus_bal@statistic@linearstatistic)` covariates
-reports a $p$-value of `r pvalue(initial_omnibus_bal)[[1]]`.
+ In our case, the raw comparison of attitudes around pharmacies selling cannabis
+ and those not selling cannabis, confirms our hunch that the places do not in
+ fact compare favorably to a randomized experiment: an omnibus balance test
+ [@hansen2008cbs] across `r nrow(initial_omnibus_bal@statistic@linearstatistic)`
+ covariates reports a $p$-value of `r pvalue(initial_omnibus_bal)[[1]]`.
 
 ## Designing a Better Baseline Comparison
 
@@ -264,23 +261,30 @@ and associated neighborhoods losing the lottery. This would also be the case if
 the lottery occurred in groups of places --- say, the right to sell were
 randomly assigned among pharmacies in Montevideo and also among pharmacies
 outside of Montevideo.  This kind of design would yield a block-randomized
-experiment. If Montevideo/Interior were the only observed covariates that might
+experiment. If Montevideo/Interior were the only observed covariate that might
 confound our comparison, we could directly compare pharmacies to each other
 within area, and we could compare that stratified design to a hypothetical
 block-randomized experiment in order to assess the comparison (just as we did
 above when we compared the simple selling-vs-not selling comparison to a simple
 randomized experiment with 16 treated and 42 control groups and 81 background
 covariates).  This is what we do below. We use an optimization strategy to
-produce a series of strata that collectively, across observed covariates,
-compares favorably to a hypothetical block-randomized experiment. Of course, we
-do not claim that a stratified design substitutes for an experiment --- we can
-only speak to differences on the covariates we observed, not on all possible
-observed and unobserved as we could if we had an actually randomized experiment.
-Later, in \S~\ref{sec:sensitivity}, we assess the extent to which we might
-change our substantive conclusions based on the stratified design due to the
-influence of unobserved covariates.\footnote{See [@rosenbaum2010design], Chapter 3 for an overview of this method of sensitivity analysis.}
+produce a series of strata that compares favorably to a hypothetical
+block-randomized experiment across many observed covariates.
 
-Our specific design first creates strata with similar neighborhoods where one
+Of course, we do not claim that a stratified design substitutes for an
+experiment --- we can only speak to differences on the covariates we observed,
+not on all possible observed and unobserved as we could if we had an actually
+randomized experiment.  
+
+If we find that we have strong evidence against the null of no effects of living
+near a pharmacy (say, $p$-values of less than .05 on tests of that hypothesis in
+the outcome analysis), the we will assess the extent to which we might change
+our substantive conclusions based on the stratified design due to the influence
+of unobserved covariates.\footnote{See [@rosenbaum2010design], Chapter 3 for an
+overview of this method of sensitivity analysis and [@cinelli2020making] for an
+approach we would use with our linear models.}
+
+Our specific design creates strata with similar neighborhoods where one
 neighborhood has a pharmarcy selling marijuana and the other comparison
 neighborhoods were places where a pharmacy did not sell marijuana. This design
 compared favorably with a randomized experiment. The algorithm ended up dropping
@@ -290,48 +294,21 @@ For example, it created 14 pairs and two sets with one selling pharmacy and two
 non-selling pharmacies. It also dropped 24 comparison pharmacies. The comparison
 to a randomized experiment across many covariates suggests little evidence
 against the idea that this design is compatible with the randomized hypothetical
-design (p=.58).
+design (p=`r pvalue(parms1_res$maxTp)[[1]]`).
+
 ```{r}
 summary(parms1_res$fm_p, max.controls = Inf)
 pvalue(parms1_res$maxTp)[[1]]
 ```
-
-To further return differences in exposure to a selling pharmacy, we next matched
-people to each other within the sets just described: we required pairs, so we
-end up with 160 pairs of people. Within each pair, we have one person living in
-a neighborhood where a pharmacy sold marijuana and one person living in a
-previously matched neighborhood where a pharmacy did not sell marijuana.
-Although we know that we have made good pharmacy-level comparisons, we further
-evaluate this individual level design using just the key outcomes as measured at
-baseline (number of violent robberies in the neighborhood, robberies in the
-neighborhood, and perceptions of neighborhood safety by people). We see that
-these pairs of people differ little from what would be expected in a randomized
-experiment in which exposure to a pharmacy selling marijuana  was randomly
-assigned to people within pair. These pairs of people were all within the
-pharmacy level sets, so that a comparison with a pair of people is also a
-comparison between two pharmacies that were matched as above.
-
-```{r}
-summary(parms1_res$fm_i, max.controls = Inf)
-parms1_res$crime_p
-```
-
 # Analysis Plan
 
 ## Outcomes
-
-We also have a social disorder index: `social_dis` made from  "dis4_i" "dis5_i" "dis6_i" Higher values of the index indicates higher disorder.
-
-Finally, we have created the "activities_index" that show how much people are involved in their neighborhood´s daily life.  This index has a 0-1 scale, 1 meaning greater frequency of activities in the neighborhood and 0 meaning none.  "neigh2_i" "neigh3_i" "neigh4_i" "neigh5_i" "neigh6_i" "neigh7_i" "neigh8_i".
 
 Our outcome variables are the following:
 
 ```{r}
 outcomes <- c("n_sec_i", "c_sec_i", "vic12", "dt_impact_i", "ps_impact_i", "boca1_i", "social_dis", "activities_index")
 ```
-
-
-
 
 | Hypothesis | Outcome | Variable(s) |
 |------------ | -------- | ---------------|
@@ -343,12 +320,16 @@ outcomes <- c("n_sec_i", "c_sec_i", "vic12", "dt_impact_i", "ps_impact_i", "boca
 | H6 | Law's perceived of impact on public security  | ps_impact_i  |
 | H7 | Law's perceived of impact on drug trafficking | dt_impact_i  |
 
+For more on how these were created and their coding, see
+Table~\ref{tab:outcome_variable_info} in .
+\S~\ref{sec:outcome_variables}
+
 # Hypotheses
 
 We developed and motivated these hypotheses in our literature review and
 synthesis, not shown here. We list them here as a guide to our analysis.
 
-Our  two main confirmatory hypotheses are:
+Our two main confirmatory hypotheses are:
   -   H1: *Crime victimization of pharmacies' neighbors will not differ between
     people living near selling versus non-selling pharmacies*
 
@@ -448,7 +429,7 @@ lm1 <- lm_robust(outcome1 ~ soldvsnot17, fixed_effects = ~fm_i, cluster = Q56, d
 ## Subgroup analysis
 
 We expect that the effects of living near a pharmacy should be weaker for those
-people living near the ``dropout'' pharmacies if living near a pharmacy does
+people living near the "dropout" pharmacies if living near a pharmacy does
 matter for the outcomes. We also assess this exploratory hypothesis using the
 same analytic strategy as above, but allowing different effects for people
 living near the dropout pharmacies. For example, we would use code like this:
@@ -461,8 +442,8 @@ lm2 <- lm_robust(outcome1 ~ soldvsnot17 * I(dropout), fixed_effects = ~fm_i, clu
 
 We have 8 outcomes and one comparison (Selling versus Not Selling pharmacy). If
 we were going to make a decision about the effect of the pharmacies if *any one
-of the 8 comparisons yielded a p<.05*  then  we would make a false positive
-error not 1 in 20 tests, but $1 − (1 − .05)^8 \approx 1/3$  or almost 7/20.
+of the 8 comparisons yielded a $p<.05$*  then  we would make a false positive
+error not 1 in 20 tests, but $1 - (1 - .05)^8 \approx 1/3$  or almost 7/20.
 
 However,  if each analysis stands alone in terms of our  decision making: the
 assessment of perceptions of insecurity can be null  or significant
@@ -481,8 +462,16 @@ Since our data are from a survey we do not anticipate extreme data points in the
 
 We will conduct a sensitivity analysis using both the Rosenbaum style approach
 (probably using the `senstrat` package for R) and the Cinelli and Hazlett
-approach (using the `sensmakr` package for R).
+approach (using the `sensmakr` package for R) on results where we have strong
+evidence against the null of no effects.
 
+\clearpage
+\newpage
 
+# Appendix
+
+\input{../pharmacy_char_table}
+
+\input{../outcome_variables_info}
 
 # References
