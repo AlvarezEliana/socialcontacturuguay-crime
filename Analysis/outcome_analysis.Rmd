@@ -24,55 +24,13 @@ output:
 
 
 ```{r echo=FALSE, include=FALSE, cache=FALSE}
-# Some customization.  You can alter or delete as desired (if you know what you are doing).
-# knitr settings to control how R chunks work.
-rm(list=ls())
-
-require(knitr)
-
-## This plus size="\\scriptsize" from https://stackoverflow.com/questions/26372138/beamer-presentation-rstudio-change-font-size-for-chunk
-
-knitr::knit_hooks$set(mysize = function(before, options, envir) {
-			      if (before){
-				      return(options$size)
-			      } else {
-				      return("\\normalsize")
-			      }
-
-})
-
-knit_hooks$set(plotdefault = function(before, options, envir) {
-		       if (before) par(mar = c(3, 3, .1, .1),oma=rep(0,4),mgp=c(1.5,.5,0))
-})
-
-opts_chunk$set(
-	       tidy='styler',     # display code as typed
-	       echo=TRUE,
-	       results='markup',
-	       strip.white=TRUE,
-	       fig.path='figs/fig',
-	       cache=FALSE,
-	       highlight=TRUE,
-	       width.cutoff=132,
-	       size='\\scriptsize',
-	       out.width='.8\\textwidth',
-	       fig.retina=FALSE,
-	       message=FALSE,
-	       comment=NA,
-	       mysize=TRUE,
-	       plotdefault=TRUE)
-
-options(digits=4,
-	scipen=8,
-	width=132
-)
 ```
 
 
 ```{r setup1, echo=FALSE}
 ## Later make this installation to a local library
 ### This next will not re-run if there has not been change in Github
-devtools::install_github("markmfredrickson/RItools") 
+devtools::install_github("markmfredrickson/RItools")
 library(RItools)
 library(optmatch)
 library(here)
@@ -84,16 +42,16 @@ library(clubSandwich)
 
 
 ```{r makedirs, echo=FALSE, include=FALSE}
-if(!dir.exists('figs')) dir.create('figs')
+if (!dir.exists("figs")) dir.create("figs")
 
 ## Make a local library directory
-if(!dir.exists(here::here('libraries'))){
-        dir.create(here::here('libraries'))
+if (!dir.exists(here::here("libraries"))) {
+  dir.create(here::here("libraries"))
 }
 ```
 
 ```{r loadmatchingresults}
-load("matchingresults.rda",verbose = TRUE)
+load("matchingresults.rda", verbose = TRUE)
 ```
 
 This file asks whether and how the presence of a pharmacy might have had an
@@ -124,17 +82,15 @@ Covariates for covariance adjustment in addition to matching:
 
 ```{r}
 
-outcomes <- c("n_sec_i","c_sec_i","vic12","dt_impact_i","ps_impact_i","boca1_i")
-covariates <- c("ideol_si_i","educ_i","sex_i","age_i")
+outcomes <- c("n_sec_i", "c_sec_i", "vic12", "dt_impact_i", "ps_impact_i", "boca1_i")
+covariates <- c("ideol_si_i", "educ_i", "sex_i", "age_i")
 
-allvars <- c(outcomes,covariates)
+allvars <- c(outcomes, covariates)
 
-summary(wrkdat2[,allvars])
+summary(wrkdat2[, allvars])
 
 allvars[!(allvars %in% names(wrkdat2))]
 allvars[!(allvars %in% names(finaldat))]
-
-
 ```
 
 
@@ -144,16 +100,14 @@ We created a matched design using an optimal, full matching algorithm.
 
 ```{r}
 
-summary(fm2,min.controls=0,max.controls=Inf,data=datphm)
-
+summary(fm2, min.controls = 0, max.controls = Inf, data = datphm)
 ```
 
 These designs compare favorably to what we would expect to see from an equivalent block-randomized experiment.
 
 ```{r}
 
-xb2fm$overall[,]
-
+xb2fm$overall[, ]
 ```
 
 ## Analysis

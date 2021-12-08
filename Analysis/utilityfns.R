@@ -204,7 +204,7 @@ find_design2 <- function(x, thebalfmla_b, thebalfmla_i, thepsdist, themhdist, di
     ## Here we can use a nice cluster robust test.
 
     bal_lm <- lm_robust(soldvsnot17 ~ vrobb_2016 + robb_2016 + n_sec_i, fixed_effects = ~thefm_i, clusters = Q56, se_type = "CR2", data = droplevels(dati[!is.na(dati$thefm_i), ]))
-    thef <- bal_lm$proj_fstatistic
+    "thef <- bal_lm$proj_fstatistic
     p_thef <- pf(thef["value"], df1 = thef["numdf"], df2 = thef["dendf"], lower.tail = FALSE)
   } else {
 

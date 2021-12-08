@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
   highlight = TRUE,
   width.cutoff = 132,
   size = "\\scriptsize",
-  out.width = ".8\textwidth",
+  out.width = ".8\\textwidth",
   fig.retina = FALSE,
   message = FALSE,
   comment = NA,

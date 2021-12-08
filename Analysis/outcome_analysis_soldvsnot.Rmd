@@ -25,7 +25,7 @@ output:
 <!-- NOTE: Adjust for baseline crime covariates within set because of large variability across pharmacies in baseline crime. We do this because we cannot match people within set since much of our outcome data is from people not interviewed in 2017. We would be matching on outcomes if we were not careful.-->
 
 
-```{r echo=FALSE, include=FALSE, cache=FALSE}
+```{r setup, echo=FALSE, include=FALSE, cache=FALSE}
 library(here)
 source(here::here("Analysis", "rmarkdownsetup.R"))
 library(estimatr)
@@ -35,7 +35,7 @@ library(coin)
 library(RItools)
 ```
 
-```{r}
+```{r loaddat}
 load(here::here("Data", "finaldat.rda"), verbose = TRUE)
 load(here::here("Data", "wrkdat.rda"), verbose = TRUE)
 load(here::here("Analysis", "match_data_prep.rda"), verbose = TRUE)
@@ -44,8 +44,9 @@ load(here::here("Analysis", "design_soldvsnot.rda"), verbose = TRUE)
 
 # Analyses Registered
 
-We registered the following analyses in <https://osf.io/aey7w/registrations> and <https://osf.io/2a693> and will submit differences from the planned analyses there,too.
-TODO: Put the latest designs there.
+We registered the following analyses and research designs in
+<https://osf.io/sxe8q> and will submit differences from the planned analyses
+there, too.
 
 ## Data Setup for the Analyses
 
@@ -64,7 +65,7 @@ Not all outcome variables are available in endline survey. See the
 | H7 | Law's perceived of impact on drug trafficking | dt_impact_i  |
 
 
-```{r}
+```{r listvars}
 regoutcomes <- c("n_sec_i", "c_sec_i", "vic12_i", "dt_impact_i", "ps_impact_i", "boca1_i", "social_dis", "activities_index")
 regcovs <- c("ideol_si_i", "educ_i", "sex_i", "age_i", "robb_2016", "vrobb_2016") ## ,"n_sec_i" this will be used later  at pharmacy/neighborhood  level
 regdesignvars <- c("id", "Q56", "treat", "ronda", "ph_type")
@@ -81,7 +82,7 @@ with(finaldat, table(treat, ph_type, exclude = c()))
 
 ## This is the outcome data
 fdat18i <- finaldat %>%
-  dplyr::select(all_of(c(regdesignvars, regoutcomes, regcovs))) %>%
+  dplyr::select(one_of(c(regdesignvars, regoutcomes, regcovs))) %>%
   filter(ronda == 2018) %>%
   mutate_if(is.character, as.numeric)
 
@@ -144,302 +145,308 @@ A quick check to ensure  that  we don't have too  much  missing  data.
 ## Do we need to worry about means (maybe)
 regcovs1 <- c(grep("robb", regcovs, value = TRUE, invert = TRUE), "robb_2016_mean", "vrobb_2016_mean", "n_sec_i_mean")
 outdat5 %>%
-  dplyr::select(regoutcomes) %>%
+  dplyr::select(all_of(regoutcomes)) %>%
   summarize_all(~ length(unique(.)))
 outdat5 %>%
-  dplyr::select(regcovs1) %>%
+  dplyr::select(all_of(regcovs1)) %>%
   summarize_all(~ length(unique(.)))
 ```
+
+### Checking heterogeneity within set across individuals
+
+No strong relationships between the types of people living in a place and
+whether that place had a pharmacy selling marijuana conditional on set. Here,
+checking this relationship allowing for non-linear relationships between
+education and age and treatment status.
+
+```{r}
+library(splines)
+xb_i <- balanceTest(soldvsnot17~ns(educ_i,3)+sex_i+ns(age_i,3)+robb_2016_mean+vrobb_2016_mean+ideol_si_i+strata(parms1_fm_p)+cluster(Q56),data=outdat5,p.adjust.method="holm")
+xb_i$results[,,"parms1_fm_p"]
+xb_i$overall["parms1_fm_p",]
+
+lm_i <- lm_robust(soldvsnot17~ns(educ_i,3)+sex_i+ns(age_i,3)+robb_2016_mean+vrobb_2016_mean+ideol_si_i,fixed_effects=~parms1_fm_p,cluster=Q56,data=outdat5)
+thef <- lm_i$proj_fstatistic
+p_thef <- pf(thef["value"], df1 = thef["numdf"], df2 = thef["dendf"], lower.tail = FALSE)
+p_thef
+```
+
+## Does treatment assignment relate to missingness?
+
+No evidence against the idea that missingness on outcomes is random within set.
+
+```{r}
+outdat5 %>%
+  dplyr::select(all_of(regoutcomes)) %>%
+  summarize_all(~ sum(is.na(.)))
+
+missing_outcome_vars0 <- sapply(outdat5[,regoutcomes],function(x){ any(is.na(x))
+    })
+missing_outcome_vars <- names(missing_outcome_vars0[missing_outcome_vars0])
+
+outdat5 <- outdat5 %>%
+    mutate(across(one_of(missing_outcome_vars),~as.numeric(is.na(.)),.names="missing_{col}"))
+
+missing_test_i <- balanceTest(soldvsnot17~missing_dt_impact_i+missing_ps_impact_i+missing_boca1_i+strata(parms1_fm_p)+cluster(Q56),data=outdat5,p.adjust.method="none")
+missing_test_i$results[,,"parms1_fm_p"]
+missing_test_i$overall["parms1_fm_p",]
+```
+
 
 ## Estimating average effects and testing the weak null of no effects
 
 
 ### Tests of of the weak null combined with estimates of the ATE
 
-First, we do the simple thing --- estimate the ATE and test the weak null of no effects under asymptotic assumptions. If we define the ATE conditional on the non-missing outcomes (necessary if we are going to use simulations to assess operating characteristics of our estimators and tests), then we neeed to recalculate the block-size weights for each outcome.
+First, we do the simple thing --- estimate the ATE and test the weak null of no effects under asymptotic assumptions.
+
+```{r unadj_est}
+## Get cluster size and condition on it just to avoid bias as described by
+## Aronow and Middleton using the general approach from Lin --- mean centering
+## the covariate within block.
+outdat5 <- outdat5 %>% group_by(Q56) %>% mutate(n_clus=n()) %>% ungroup()
+
+summary(outdat5[,regoutcomes])
+
+unadj_fn <- function(ynm){
+    thedat <- outdat5 %>% filter(!is.na(!!rlang::sym(ynm))) %>% group_by(Q56) %>%
+        mutate(n_clus=n()) %>%  ungroup()
+    thedat <- thedat %>% group_by(parms1_fm_p) %>%
+        mutate(all_same_n=length(unique(n_clus)),n_clus_c=n_clus - mean(n_clus),valid_block=length(unique(soldvsnot17))>1) %>%
+        filter(valid_block) %>% droplevels() %>% ungroup()
+    if(all(thedat$all_same_n!=1)){
+            fmla <- paste(ynm,"~soldvsnot17*n_clus_c",sep="")
+    } else {
+    fmla <- paste(ynm,"~soldvsnot17",sep="")
+    }
+    mod <- lm_robust(as.formula(fmla),data=thedat,fixed_effects=~parms1_fm_p,clusters=Q56)
+    res <- tidy(mod)  %>% filter(term=="soldvsnot17")
+    res$n_clus_used <- length(unique(thedat$n_clus))
+    return(res)
+}
+
+## unadj_fn("boca1_i")
+## unadj_fn(regoutcomes[1])
+
+unadj_coefs_lst <- lapply(regoutcomes,unadj_fn)
+unadj_coefs <- bind_rows(unadj_coefs_lst)
+unadj_coefs
+```
+
+```{r print_unadj_est}
+kableExtra::kable(unadj_coefs)
+```
+
+
+```{r naive_est}
+## The simple version with the full sample and no statistical adjustment: Mostly
+## to learn about power loss and bias reduction from our matched design:
+
+## A function that estimates the effects without the matched design.
+simp_fn<- function(ynm){
+    thedat <- outdat4 %>% filter(!is.na(!!rlang::sym(ynm))) %>% group_by(Q56) %>%
+        mutate(n_clus=n()) %>%  ungroup()
+    thedat <- thedat %>% mutate(n_clus_c=n_clus - mean(n_clus)) %>% droplevels() %>% ungroup()
+    fmla <- paste(ynm,"~soldvsnot17*n_clus_c",sep="")
+    mod <- lm_robust(as.formula(fmla),data=thedat,clusters=Q56)
+    res <- tidy(mod)  %>% filter(term=="soldvsnot17")
+    res$n_clus_used <- length(unique(thedat$n_clus))
+    return(res)
+}
+
+simp_coefs_lst <- lapply(regoutcomes,simp_fn)
+simp_coefs <- bind_rows(simp_coefs_lst)
+simp_coefs
+```
+
+Looks like we had more bias that mattered for some outcomes more so that
+others: social_dis, and vic12_i stand out as showin much larger
+ post-adjustment differences.
+
+```{r print_simp_est}
+kableExtra::kable(simp_coefs)
+```
+
+
+```{r mlm_versions, warning=FALSE}
+
+left_join(select(unadj_coefs,estimate,std.error,outcome,p.value),select(simp_coefs,estimate,std.error,outcome,p.value),by="outcome")
+
+## Also try a multilevel model for those more familiar with that approach.
+library(lme4)
+library(lmerTest)
+
+## A function that estimates the effects without the matched design.
+lmer_fn<- function(ynm){
+    thedat <- outdat5 %>% filter(!is.na(!!rlang::sym(ynm)))
+    fmla <- paste(ynm,"~(1|parms1_fm_p:Q56) + (1|Q56)+soldvsnot17",sep="")
+    mod <-
+        lmer(as.formula(fmla),data=thedat) #,control=lmerControl(optimizer="bobyqa"))
+    res0 <- summary(mod)$coefficients
+    res0_ci <- confint(mod)
+    res1 <-  data.frame(term=row.names(res0),estimate=res0[,"Estimate"],std.error=res0[,"Std. Error"],
+        "statistic"=res0[,"t value"],p.value=res0[,5],conf.low=res0_ci["soldvsnot17",1],conf.high=res0_ci["soldvsnot17",2],outcome=ynm)
+    res <- res1  %>% filter(term=="soldvsnot17")
+    return(res)
+}
+
+lmer_coefs_lst <- lapply(regoutcomes,lmer_fn)
+lmer_coefs <- bind_rows(lmer_coefs_lst)
+lmer_coefs
+```
+
+Compare the two different approaches
+
+```{r compare_mods}
+## No real substantive differences
+unadj_mods <- left_join(select(unadj_coefs,estimate,outcome,p.value,conf.low,conf.high),
+    select(lmer_coefs,estimate,outcome,p.value,conf.low,conf.high),by="outcome",suffix=c(".lm",".lmer"))
+
+kableExtra::kable(unadj_mods %>% select(outcome,estimate.lm,estimate.lmer,p.value.lm,p.value.lmer,conf.low.lm,conf.high.lm,
+        conf.low.lmer,conf.high.lmer))
+```
+
+
+As a check on the preceding, do this at the level of the pharmacy:
+
+```{r pharmacy_level}
+
+outdat5p <- outdat5 %>% group_by(Q56) %>%
+    summarize(across(one_of(c("soldvsnot17",regoutcomes)),mean,na.rm=TRUE),n_clus=n())
+outdat6p <- left_join(outdat5p,dat17p[,c("Q56","parms1_fm_p")],by="Q56")
+stopifnot(nrow(outdat5p)==nrow(outdat6p))
+
+unadj_fn_p <- function(ynm){
+    thedat <- outdat6p %>% filter(!is.na(!!rlang::sym(ynm)))
+    thedat <- thedat %>% group_by(parms1_fm_p) %>% mutate(n_uniq_sets =
+        n(),n_clus_c=n_clus - mean(n_clus)) %>%
+        filter(n_uniq_sets>1) %>% droplevels()
+    fmla <- paste(ynm,"~soldvsnot17*n_clus_c",sep="")
+    mod <- lm_robust(as.formula(fmla),data=thedat,fixed_effects=~parms1_fm_p)
+    res <- tidy(mod)  %>% filter(term=="soldvsnot17")
+    res$n_clus_used <- length(unique(thedat$n_clus))
+    return(res)
+}
+
+unadj_fn_p("boca1_i")
+unadj_fn_p(regoutcomes[1])
+
+unadj_coefs_p_lst <- lapply(regoutcomes,unadj_fn_p)
+unadj_coefs_p <- bind_rows(unadj_coefs_p_lst)
+unadj_coefs_p
+
+```
+
+
+```{r print_unadj_coefs_p}
+kableExtra::kable(unadj_coefs_p)
+```
+
+
+Now checking with covariance adjustment:
 
 ```{r}
 
-center_covs <- function(dat, covnms, blocknm) {
-  block_center <- function(x) {
-    x - mean(x)
-  }
-  covdat <- optmatch::fill.NAs(dat[, c(blocknm, covnms)])
-  covdat <- covdat %>%
-    group_by(!!rlang::sym(blocknm)) %>%
-    mutate_at(vars(-group_cols()), block_center)
-  return(covdat)
+adj_fn <- function(ynm){
+    thedat <- outdat5 %>% filter(!is.na(!!rlang::sym(ynm))) %>% group_by(Q56) %>%
+        mutate(n_clus=n()) %>%  ungroup()
+    thedat <- thedat %>% group_by(parms1_fm_p) %>%
+        mutate(all_same_n=length(unique(n_clus)),n_clus_c=n_clus - mean(n_clus),
+            ideol_c = ideol_si_i - mean(ideol_si_i,na.rm=TRUE),
+            educ_c = educ_i - mean(educ_i,na.rm=TRUE),
+            sex_c = sex_i - mean(sex_i,na.rm=TRUE),
+            age_c = age_i - mean(age_i,na.rm=TRUE),
+            valid_block=length(unique(soldvsnot17))>1) %>%
+        filter(valid_block) %>% droplevels() %>% ungroup()
+    thedat$ideol_c_NA <- as.numeric(is.na(thedat$ideol_c))
+    thedat$ideol_c_imp <- ifelse(is.na(thedat$ideol_c),0,thedat$ideol_c)
+    fmla <- paste(ynm,"~soldvsnot17*(n_clus_c+ideol_c_imp+ideol_c_NA+educ_c+sex_c+age_c)",sep="")
+    mod <- lm_robust(as.formula(fmla),data=thedat,fixed_effects=~parms1_fm_p,clusters=Q56)
+    res <- tidy(mod)  %>% filter(term=="soldvsnot17")
+    res$n_clus_used <- length(unique(thedat$n_clus))
+    return(res)
 }
 
-## Next works thanks to https://thisisnic.github.io/2018/03/27/using-tidy-eval-with-dplyr-filter/
-##' @param icovnms Names of the individual level covariates
-##' @param pcovnms  Names of the neighborhood or pharmacy level covariates. icovnms and pcovnms cannot overlap.
-est1fn <- function(ynm, trtnm, icovnms = NULL, pcovnms = NULL, dat, blocknm, clusternm, weights = NULL, ...) {
-  ## for now weights must be nbwt or hbwt
-  stopifnot(is.null(weights) | weights %in% c("nbwt", "hbwt"))
-  dat <- dat %>%
-    filter(!is.na(!!rlang::sym(ynm))) %>%
-    group_by(!!rlang::sym(blocknm)) %>%
-    mutate(
-      pib = mean(!!rlang::sym(trtnm)),
-      nbwt = ((!!rlang::sym(trtnm)) / pib) + (((1 - !!rlang::sym(trtnm))) / (1 - pib)),
-      hbwt = nbwt * (pib * (1 - pib))
-    )
-  ## Some blocknm have no treated or no controls after dumping missing data
-  dat <- dat %>% filter(pib != 0 & pib != 1)
-  if (!is.null(icovnms)) {
-    covdat <- center_covs(dat, icovnms, blocknm)
-    dat <- dplyr::select(dat, -icovnms)
-    dat <- bind_cols(dat, covdat)
-    icovnms <- names(covdat)[names(covdat) != blocknm]
-  }
-  rhs <- unique(c(trtnm, icovnms, pcovnms))
-  simpfmla <- reformulate(rhs, response = ynm)
-  ## Adjust for differential cluster size (middleton and aronow)
-  dat <- dat %>%
-    group_by(!!rlang::sym(clusternm)) %>%
-    mutate(nclus = n())
-  fmla <- update(simpfmla, . ~ . + nclus)
-  if (!is.null(weights)) {
-    obj <- lm_robust(fmla,
-      clusters = !!rlang::sym(clusternm), data = dat,
-      weights = !!rlang::sym(weights), ...
-    )
-  } else {
-    obj <- lm_robust(fmla, clusters = !!rlang::sym(clusternm), data = dat, ...)
-  }
-  res <- tidy(obj) %>% filter(term == trtnm)
-  ## Add a simple test
-  testfmla <- as.formula(paste(trtnm, "~", ynm, "+strata(", blocknm, ")+cluster(", clusternm, ")", sep = ""))
-  simptest <- balanceTest(testfmla, data = dat, report = "all", p.adjust.method = "none")
-  testres <- simptest$results[1, c("adj.diff", "p"), blocknm]
-  res[, c("test.adj.diff", "test.p")] <- testres
-  return(res)
-}
+## adj_fn("boca1_i")
+##adj_fn(regoutcomes[1])
 
-## Here doing some testing of the above function.
-outdat5 <- outdat5 %>%
-  group_by(Q56) %>%
-  mutate(nclus = n())
-
-tmpdat <- outdat5 %>% filter(!is.na(n_sec_i))
-tmpdat <- tmpdat %>%
-  group_by(parms1_fm_p) %>%
-  mutate(
-    pib = mean(soldvsnot17),
-    nbwt = (soldvsnot17 / pib) + ((1 - soldvsnot17) / (1 - pib)),
-    hbwt = nbwt * (pib * (1 - pib))
-  ) %>%
-  ungroup()
-tmpdat <- tmpdat %>%
-  group_by(Q56) %>%
-  mutate(nclus = n()) %>%
-  ungroup()
-
-## Ignoring clusters for now
-tmpdat_p <- tmpdat %>%
-  group_by(parms1_fm_p) %>%
-  summarize(
-    ateb = mean(n_sec_i[soldvsnot17 == 1]) - mean(n_sec_i[soldvsnot17 == 0]),
-    nb = n(),
-    nTb = sum(soldvsnot17),
-    nCb = nb - nTb,
-    estvartaub = (nb / (nb - 1)) * (var(n_sec_i[soldvsnot17 == 1]) / nTb) + (var(n_sec_i[soldvsnot17 == 0]) / nCb),
-    pb = mean(soldvsnot17), # proportion treated
-    nbwt = unique(nb / nrow(tmpdat)),
-    pbwt = pb * (1 - pb),
-    hbwt = (2 * (nCb * nTb) / (nTb + nCb)),
-    barnclus = mean(nclus)
-  )
-
-## Showing  that we  get the correct answer using  all three approaches when we ignore  clustering.
-### Block size weights (unbiased, less precise)
-with(tmpdat_p, sum(ateb * nbwt))
-difference_in_means(n_sec_i ~ soldvsnot17, blocks = parms1_fm_p, data = tmpdat)
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = nbwt)
-
-### Precision  weights (some bias,  more precision)
-with(tmpdat_p, sum(ateb * hbwt / sum(hbwt)))
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = hbwt)
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, fixed_effects = ~parms1_fm_p)
-lr0 <- lm_robust(n_sec_i ~ soldvsnot17 + parms1_fm_p, dat = tmpdat)
-tidy(lr0) %>% filter(term == "soldvsnot17")
-
-### Now taking into  account the clusters but only in the  standard errors so some bias probable because cluster size might be correlated with treatment  effects
-difference_in_means(n_sec_i ~ soldvsnot17, blocks = parms1_fm_p, clusters = Q56, data = tmpdat)
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = nbwt, clusters = Q56, se_type = "CR2") # block size weights
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR2") # precision weights
-lm_robust(n_sec_i ~ soldvsnot17, dat = tmpdat, fixed_effects = ~parms1_fm_p, clusters = Q56, se_type = "CR2")
-lr0a <- lm_robust(n_sec_i ~ soldvsnot17 + parms1_fm_p, dat = tmpdat, clusters = Q56, se_type = "CR2")
-tidy(lr0a) %>% filter(term == "soldvsnot17")
-
-### Now  adjusting for unequal cluster  sizes (Middleton and  Aronow)
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = nbwt, clusters = Q56, se_type = "CR2")
-##  The next approaches differ because of correlations between block size and cluster size.
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR2") ## this  one like  balanceTest
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, fixed_effects = ~parms1_fm_p, dat = tmpdat, clusters = Q56, se_type = "CR2")
-lr0b <- lm_robust(n_sec_i ~ soldvsnot17 + nclus + parms1_fm_p, dat = tmpdat, clusters = Q56, se_typ = "CR2")
-tidy(lr0b) %>% filter(term == "soldvsnot17")
-## Compare to the following test (which is like the  first  of  the precision weighted approaches above)
-test1 <- balanceTest(soldvsnot17 ~ n_sec_i + strata(parms1_fm_p) + cluster(Q56), data = tmpdat, report = "all")
-test1$results[,,"parms1_fm_p"]
-test1$overall[, ]
-
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR0") ## this  one like  balanceTest
-lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "CR2") ## this  one like  balanceTest
-## Don't use the stata ses
-## lm_robust(n_sec_i ~ soldvsnot17 + nclus, dat = tmpdat, weights = hbwt, clusters = Q56, se_type = "stata") ## this  one like  balanceTest
-
-
-##  Now with  covariates
-icovs <- grep("mean", regcovs1, value = TRUE, invert = TRUE)
-pcovs <- grep("mean", regcovs1, value = TRUE, invert = FALSE)
-
-ll1 <- lm_lin(n_sec_i ~ soldvsnot17, covariates = reformulate(c(icovs, pcovs, "nclus", "parms1_fm_p")), data = tmpdat, clusters = Q56)
-tidy(ll1) %>% filter(term == "soldvsnot17")
-ll2 <- lm_lin(n_sec_i ~ soldvsnot17, covariates = reformulate(c(icovs, pcovs, "nclus")), data = tmpdat, clusters = Q56, weights = hbwt)
-tidy(ll2) %>% filter(term == "soldvsnot17")
-lr1 <- lm_robust(reformulate(c("soldvsnot17", icovs, pcovs, "nclus"), response = "n_sec_i"), fixed_effects = ~parms1_fm_p, data = tmpdat, clusters = Q56)
-tidy(lr1) %>% filter(term == "soldvsnot17")
-lr2 <- lm_robust(reformulate(c("soldvsnot17", icovs, pcovs, "nclus"), response = "n_sec_i"), data = tmpdat, clusters = Q56, weights = hbwt)
-tidy(lr2) %>% filter(term == "soldvsnot17")
-lr3 <- lm_robust(reformulate(c("soldvsnot17", icovs, pcovs, "nclus", "parms1_fm_p"), response = "n_sec_i"), data = tmpdat, clusters = Q56)
-tidy(lr3) %>% filter(term == "soldvsnot17")
-
-
-## Now  test  the function. The test.  parts always  use precision  weights and  ignore covariates
-### or blocksize weights
-est1fn("n_sec_i", trtnm = "soldvsnot17", dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "nbwt")
-###   precision  weights (hbwt). Probably prefer the second approach because  of what we  saw above.
-est1fn("n_sec_i", trtnm = "soldvsnot17", dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "hbwt")
-est1fn("n_sec_i", trtnm = "soldvsnot17", dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", fixed_effects = ~parms1_fm_p)
-
-## Again, block size weights
-est1fn("n_sec_i", trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, blocknm = "parms1_fm_p", dat = tmpdat, clusternm = "Q56", weights = "nbwt")
-
-## Precision weights
-est1fn("n_sec_i", trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "hbwt")
-est1fn("n_sec_i", trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, dat = tmpdat, blocknm = "parms1_fm_p", clusternm = "Q56", fixed_effects = ~parms1_fm_p)
-
-## Compare to multilevel model (like precision weights)
-## library(lme4)
-## lme1 <- lmer(n_sec_i ~ (1|Q56) + (1|parms1_fm_p) + soldvsnot17+ideol_si_i+educ_i+sex_i+age_i+robb_2016_mean+vrobb_2016_mean+ nclus , data=tmpdat)
-## fixef(lme1)["soldvsnot17"]
+adj_coefs_lst <- lapply(regoutcomes,adj_fn)
+adj_coefs <- bind_rows(adj_coefs_lst)
+adj_coefs
 ```
 
-Do the basic analyses. Using `CR2`  standard errors because I think  we have enough  clusters.
+```{r print_adj_coefs}
+kableExtra::kable(adj_coefs)
+```
 
 
 ```{r}
-# options(warn=1)
-res1 <- lapply(regoutcomes, function(ynm) {
-  message(ynm)
-  unadj <- est1fn(ynm, trtnm = "soldvsnot17", dat = outdat5, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "nbwt", se_type = "CR2")
-  covadj <- est1fn(ynm, trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, blocknm = "parms1_fm_p", dat = outdat5, clusternm = "Q56", weights = "nbwt", se_type = "CR2")
-  tmp <- bind_cols(unadj = unadj, covadj = covadj)
-})
-res1dt <- bind_rows(res1)
-res1dt[, c("outcome", "estimate", "p.value", "estimate1", "p.value1", "test.adj.diff", "test.p")]
-## kable(res1dt)
+unadj_coefs$approach <- "lm indiv"
+lmer_coefs$approach <- "lmer indiv"
+unadj_coefs_p$approach <- "lm pharm"
+adj_coefs$approach <- "lm covadj indiv"
 
-res2 <- lapply(regoutcomes, function(ynm) {
-  message(ynm)
-  unadj <- est1fn(ynm, trtnm = "soldvsnot17", dat = outdat5, blocknm = "parms1_fm_p", clusternm = "Q56", weights = "hbwt", se_type = "CR0")
-  covadj <- est1fn(ynm, trtnm = "soldvsnot17", icovnms = icovs, pcovnms = pcovs, blocknm = "parms1_fm_p", dat = outdat5, clusternm = "Q56", weights = "hbwt", se_type = "CR0")
-  tmp <- bind_cols(unadj = unadj, covadj = covadj)
-})
-res2dt <- bind_rows(res2)
-res2dt[, c("outcome", "estimate", "p.value", "estimate1", "p.value1", "test.adj.diff", "test.p")]
-## kable(res2dt)
+all_unadj <- bind_rows(unadj_coefs,lmer_coefs,unadj_coefs_p,adj_coefs)
+all_unadj$outcome_n <- as.numeric(as.factor(all_unadj$outcome))
+all_unadj$approach_n <- as.numeric(as.factor(all_unadj$approach)) - 1
+all_unadj$outcome_n_yvals <- all_unadj$outcome_n + all_unadj$approach_n/5
+
+g <- ggplot(all_unadj,aes(x=estimate,y=approach))+
+    geom_pointrange(aes(xmin=conf.low,xmax=conf.high),shape=21,alpha=.8)+
+    geom_vline(xintercept=0,color="dark gray")+
+    facet_wrap(~outcome,scales="free")+
+    theme_bw()
 ```
 
-## Compare to rank based tests
+All approaches agree.
 
-## Check performance of the estimator and tests
+```{r}
+print(g)
+```
 
-## Do direct permutation based tests
 
-This is very inefficient but just  a check on the above.
+## Test for all outcomes
+
+Checking to see if a more powerful test would reveal any effects. Simplify the
+hypothesis to a hypothesis of no effects for *any* outcome (other than
+`boca1_i`).
 
 ```{r}
 
+outdat6p$soldvsnot17F <- factor(outdat6p$soldvsnot17)
 
-testfn <- function(ynm, trtnm, blocknm, clusternm, thedat, thedatp) {
-  thedatp <- thedatp %>%
-    group_by(!!rlang::sym(blocknm)) %>%
-    mutate(newz = sample(!!rlang::sym(trtnm)))
-  dat <- inner_join(thedat, thedatp)
-  fmla <- as.formula(paste(ynm, "~newz+nclus", sep = ""))
-  obj <- lm_robust(fmla, dat, fixed_effects = ~ !!rlang::sym(blocknm), clusters = !!rlang::sym(clusternm), se_type = "CR0")
-  coef(obj)["newz"]
-}
+with(outdat6p %>% filter(!is.na(boca1_i)),table(soldvsnot17,parms1_fm_p,exclude=c()))
 
-thedatp <- designdat_p %>%
-  dplyr::select(parms1_fm_p, Q56, soldvsnot17) %>%
-  filter(!is.na(parms1_fm_p))
-thedati <- outdat5 %>%
-  dplyr::select(parms1_fm_p, Q56, regoutcomes, nclus, soldvsnot17) %>%
-  filter(!is.na(parms1_fm_p))
-testfn(ynm = "n_sec_i", trtnm = "soldvsnot17", blocknm = "parms1_fm_p", clusternm = "Q56", thedat = thedati, thedatp = thedatp)
+multi_outcome_fmla <- as.formula(paste(paste(regoutcomes[!(regoutcomes %in% c("boca1_i"))],collapse="+"),"~soldvsnot17F|parms1_fm_p",sep=""))
+
+multi_outcome_test_p <- independence_test(multi_outcome_fmla,data=outdat6p)
+multi_outcome_test_perm_p <- independence_test(multi_outcome_fmla,data=outdat6p,distribution=approximate())
+
+multi_outcome_test_p
+multi_outcome_test_perm_p
+
+## Checking for whether we lose power because of strange distributions. Using a
+## rank-based test
+outdat6p <- outdat6p %>% mutate(across(one_of(regoutcomes),rank,.names="rank_{col}"))
+
+multi_outcome_test_rank_p <- independence_test(multi_outcome_fmla,data=outdat6p,
+                      ytrafo=function(data){ trafo(data, numeric_trafo = rank_trafo) })
+multi_outcome_test_rank_perm_p <- independence_test(multi_outcome_fmla,data=outdat6p,
+                      ytrafo=function(data){ trafo(data, numeric_trafo = rank_trafo) },
+    distribution=approximate())
+
+multi_outcome_test_rank_p
+multi_outcome_test_rank_perm_p
+
 ```
 
-```{r eval=FALSE}
+# Sensitivity Analysis
 
-## tryCatch(load(here::here("Analysis", "outcome_analysis_resRI.rda")),
-## 	 error = function(e) {
-## 		 set.seed(12345)
-## 		 library(future)
-## 		 library(future.apply)
-## 		 ##plan(multicore,workers=parallel::detectCores())
-## 		 ##nulldist <- future_replicate(10000,testfn(ynm="n_sec_i",trtnm="soldvsnot17",blocknm="parms1_fm_p",clusternm="Q56",thedat=thedati,thedatp=thedatp))
-## 		 ##obsTZobj <- lm_robust(n_sec_i~soldvsnot17+nclus,data=outdat5,fixed_effects=~parms1_fm_p,clusters=Q56,se_type="CR0")
-## 		 ##obsTZ  <- coef(obsTZobj)["soldvsnot17"]
-## 		 ####plot(density(nulldist))
-## 		 ##plan(sequential)
-## 		 ##mean(nulldist >= obsTZ)
-## 		 ##2*min(mean(nulldist >= obsTZ),mean(nulldist <= obsTZ))
-##
-## 		 ## Perm  Inf for  all:
-## 		 plan(multicore,workers=parallel::detectCores())
-## 		 resRI <- future_lapply(regoutcomes,function(ynm){
-## 						message(ynm)
-## 						tmpdati <- thedati %>% filter(!is.na(!! rlang::sym(ynm)))
-## 						nulldist <- replicate(10000,testfn(ynm=ynm,trtnm="soldvsnot17",blocknm="parms1_fm_p",clusternm="Q56",thedat=tmpdati,thedatp=thedatp))
-## 						thefmla <- as.formula(paste(ynm,"~soldvsnot17+nclus",sep=""))
-## 						obsTZobj <- lm_robust(thefmla,data=tmpdati,fixed_effects=~parms1_fm_p,clusters=Q56,se_type="CR0")
-## 						obsTZ  <- coef(obsTZobj)["soldvsnot17"]
-## 						pval <-  2*min(mean(nulldist >= obsTZ),mean(nulldist <= obsTZ))
-## 						return(pval)
-## 					})
-## 		 names(resRI) <- regoutcomes
-##
-## 		 plan(sequential)
-## 		 save(resRI,file=here::here("Analysis","outcome_analysis_resRI.rda")),
-## 	 },
-## 	 finally = {
-## 		 load(here::here("Analysis", "outcome_analysis_resRI.rda"))
-## 	 }
-## )
-```
+Since we have no strong effects, relationships where a test of the null
+hypothesis of no effects passes the  $p<.05$ threshold, we do not do any
+sensitivity analysis.
 
-```{r }
-load(here::here("Analysis", "outcome_analysis_resRI.rda"))
-names(resRI) <- regoutcomes
-rips <- simplify2array(resRI)
-
-res_hbwt <- res2dt[, c("outcome", "estimate", "p.value", "estimate1", "p.value1", "test.adj.diff", "test.p")]
-row.names(res_hbwt) <- res2dt[, "outcome"]
-res_hbwt[names(rips), "rips"] <- rips
-```
-
-## A cluster level analysis?
-
-
-
-
-## Does treatment assignment relate to missingness?
-
-
+# References
 
 
 
