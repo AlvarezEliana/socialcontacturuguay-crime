@@ -1,10 +1,9 @@
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[spanish]{babel}
-
+\usepackage[english]{babel}
 \usepackage{graphicx} %,grffile}
 %\usepackage[small]{caption} %small font captions
-%\usepackage{parskip} %for no indent and more space between paragraphs
+\usepackage{parskip} %for no indent and more space between paragraphs
 \usepackage[letterpaper,bottom=1in,top=1in,right=1.25in,left=1.25in,includemp=FALSE,includeheadfoot=FALSE,headheight=0pt]{geometry}
 \usepackage[natbib=true,backend=biber,style=chicago-authordate]{biblatex}
 \addbibresource{refs.bib}
@@ -14,28 +13,28 @@
 %\usepackage{multicol}
 
 %  https://tex.stackexchange.com/questions/49788/hyperref-url-long-url-with-dashes-wont-break
-%\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[hyphens]{url}
 \usepackage[colorlinks  = true,
             linkcolor   = blue,
             urlcolor    = blue,
             citecolor   = blue,
             anchorcolor = white,
-	    unicode = true ]{hyperref}
-%\usepackage[hyphens]{url}
-%\urlstyle{same}  % don't use monospace font for urls
+	        unicode = true ]{hyperref}
 
+%\urlstyle{same}  % don't use monospace font for urls
 %\usepackage[T1]{fontenc}
 %\usepackage[utf8]{inputenc}
 %\usepackage{textcomp} % provides euro and other symbols
 % use upquote if available, for straight quotes in verbatim environments
-\usepackage{upquote}
+%\usepackage{upquote}
 % use microtype if available
 %\IfFileExists{microtype.sty}{%
 %	\usepackage[]{microtype}
 %	\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 %}{}
-\usepackage{parskip}
-\usepackage{xcolor}
+%\usepackage{parskip}
+%\usepackage{xcolor}
 \usepackage{soul}
 \usepackage{longtable}
 \usepackage{booktabs}
@@ -65,7 +64,6 @@
 % \let\oldsubparagraph\subparagraph
 % \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
 % \fi
-
 % set default figure placement to htbp
 %\makeatletter
 %\def\fps@figure{htbp}
@@ -74,38 +72,35 @@
 \author{Rosario Queirolo\thanks{Universidad Católica del Uruguay (\url{mailto:rosario.queirolo@ucu.edu.uy})}
 	\and Jake Bowers\thanks{University of Illinois @ Urbana-Champaign}
 	\and Eliana Álvarez\thanks{Universidad Católica del Uruguay}
-	\and Lorena Repetto\thanks{Universidad Católica del Uruguay}}
+	\and Lorena Repetto\thanks{Universidad de la República}}
 
 \title{The Impact of Cannabis Sale at Pharmacies on Crime Victimization and Insecurity Perceptions.\thanks{This research was supported by Open Society Foundations funds OR2017-35193 and OR2016-27307, and the National Agency for Research and Innovation (ANII) between 2017 and 2019.}}
-
 \graphicspath{{.}{Analysis/}{media/}}
 
 \begin{document}
 
 \maketitle
 
-
 \begin{abstract}
 TO BE REVISED AFTER FINISHING Do drugs' legalization have an impact on crime and public security? This paper presents the results of an observational design that evaluates the impact that recreational marijuana sale at pharmacies had on insecurity perceptions and crime victimization in Uruguay. Existing evidence about the impact of legal marijuana dispensaries on crime is not conclusive, and mainly based on the United States experience where national crime rates have been decreasing. On the contrary, Uruguay's crime rates have been consistently increasing in the last five years. Less is known about how legalization policies affect people's perceived public insecurity. We performed two surveys, one before and one after the implementation of the selling at pharmacies started. The sample is composed by 1.298 neighbors of 64 pharmacies in all the territory, 10 or more neighbors per pharmacy in each round. These outcomes included country’s insecurity perception, neighborhood’s insecurity perception, crime victimization in the last twelve months, perceived impact of the legalization on public insecurity, perceived impact on drug trafficking, reported existence of ``bocas'', insertion in the neighborhood and social disorder. \hl{Data is analyzed by differences in differences (DD) to estimate the causal effect before and after the implementation of the marijuana regulation. We found no significant impact of closeness to dispensaries on crime victimization}. Neither on public insecurity. This result add to part of the research done on the impact of marijuana legalization in several US states. We do find an impact on the perception of drug trafficking: neighbors of marijuana selling pharmacies consider that the legalization had a positive impact on traffic. While we cannot pin down the mechanisms behind this effect, we believe that seeing users buying legal marijuana might lead citizens to think that illegal deals have diminished.
-
 \end{abstract}
-%\begin{keywords}
-% Crime, Legal Marijuana dispensaries, Natural experiment, insecurity perception
-%\end{keywords}
 
+% Keywords command
+\providecommand{\keywords}[1]
+{
+  \small
+  {\centering\textbf{Keywords:}} #1
+}
+\keywords{Crime, Legal Marijuana Dispensaries, Insecurity Perceptions}
+
+\newpage
 \section[]{Laws, Crime, Public Insecurity, and the Sale of Marijuana in Neighborhoods in Uruguay}
 
-In 2013, Uruguay became the first country in the world to fully regulate the production, distribution and commercialization of cannabis. The law had three main objectives: decriminalize users, reduce public insecurity and drug-trafficking related violence, and improve public health through education, risk reduction and prevention campaigns, now made easy to implement because of their reference to a legal substance \citep{arraras2014inventando, pardo2014cannabis, queirolo2019uruguay}. The sale of recreational cannabis at pharmacies was implemented four years after the regulation approval, on July 19th, 2017. Many Uruguayans opposed the legislation and implementation out of fear that neighborhoods where pharmacies sold cannabis would see an increase in crime (TODO cite). In the context of pharmacies and neighborhoods in Uruguay, a pharmacy-level change is a neighborhood level change. Would those who live close to a cannabis selling pharmacy change their perceptions of the safety of their neighborhoods or report more crime victimization?  This paper answers those questions using surveys of neighbors of pharmacies where cannabis was sold and a comparison group of neighborhoods containing pharmacies that did not sell marijuana collected just before and one year after the sale of recreational cannabis began.
+In 2013, Uruguay became the first country in the world to fully regulate the production, distribution and commercialization of cannabis. The law had three main objectives: decriminalize users, reduce public insecurity and drug-trafficking related violence, and improve public health through education, risk reduction and prevention campaigns, now made easy to implement because of their reference to a legal substance \citep{arraras2014inventando, pardo2014cannabis, queirolo2019uruguay}. The sale of recreational cannabis at pharmacies was implemented on July 19th, 2017, four years after the regulation approval. Many Uruguayans opposed the legislation and implementation out of fear that neighborhoods where pharmacies sold cannabis would see an increase in crime (TODO cite). In the context of pharmacies and neighborhoods in Uruguay, a pharmacy-level change is a neighborhood level change. Would those who live close to a cannabis selling pharmacy change their perceptions of the safety of their neighborhoods or report more crime victimization?  This paper answers those questions using surveys of neighbors of pharmacies where cannabis was sold and a comparison group of neighborhoods containing pharmacies that did not sell marijuana collected just before and one year after the sale of recreational cannabis began.
 
-\paragraph{Why document the effect of the sale of cannabis on crime victimization and public insecurity?}
+Why document the effect of the sale of cannabis on crime victimization and public insecurity? We hope to contribute to the public policy discussion in Uruguay and elsewhere on whether, on balance, cannabis legalization may or may not have an impact on crime rates. Research has found mixed results about this relationship in general. Braakmann and Jones (\citeyear{braakmann2014cannabis}) for declassification cannabis laws in England and Wales, and Chu and Townsend (\citeyear{chu2019joint}) for US states with medical cannabis laws, find no significant relationship between these laws and crime. Hunt, Pacula and Weinberger (\citeyear{hunt2018high}) find no relationship between Californian counties with laws that legally permit dispensaries and reported violent crimes. At the same time, in Colorado, two studies find contradictory evidence. Freisthler et al.(\citeyear{freisthler2016micro}) show that the presence of cannabis dispensaries affects crime not where stores are located but in adjacent areas. In the contrary direction, Brinkman and Mok-Lamme (\citeyear{brinkman2019not}) finds that an additional dispensary has a significant impact on reducing crime on the neighborhood, particularly on non violent crimes, with no spillover effects to adjacent areas.  Other evidence from  quasi-experimental research has shown a decrease in some types of crimes in the areas around cannabis dispensaries \citep{dragone2019crime, gavrilova2014legal, Indigo:2016}.
 
-We hope to contribute to the public policy discussion in Uruguay and elsewhere on whether, on balance, cannabis legalization may or may not have an impact on crime rates. Research has found mixed results about this relationship in general. Braakmann and Jones (\citeyear{braakmann2014cannabis}) for declassification cannabis laws in England and Wales, and Chu and Townsend (\citeyear{chu2019joint}) for US states with medical cannabis laws, find no significant relationship between these laws and crime. Hunt, Pacula and Weinberger (\citeyear{hunt2018high}) find no relationship between Californian counties with laws that legally permit dispensaries and reported violent crimes. At the same time, in Colorado, two studies find contradictory evidence. Freisthler et al.(\citeyear{freisthler2016micro}) show that the presence of cannabis dispensaries affects crime not where stores are located but in adjacent areas. In the contrary direction, Brinkman and Mok-Lamme (\citeyear{brinkman2019not}) finds that an additional dispensary has a significant impact on reducing crime on the neighborhood, particularly on non violent crimes, with no spillover effects to adjacent areas.  Other evidence from  quasi-experimental research has shown a decrease in some types of crimes in the areas around cannabis dispensaries \citep{dragone2019crime, gavrilova2014legal, Indigo:2016}.
-
-Our research differs to the previously reviewed in three aspects. First, most of the articles published look at the relationship between cannabis laws and crime using administrative data from national agencies, mainly through crime reports. In this article, we followed a different path. In addition to measure crime victimization using individual self reports, we also measure people's perceptions: public insecurity perceptions and perceived impacts of marijuana legalization. The rationale to do so is that cannabis laws might have an impact on public insecurity perceptions in addition to on crime. We implemented a national survey designed specifically to measure these outcomes. Evidence shows that simple perceptions of demographics of neighborhoods often diverge from census reported figures \citep{wong2012bringing}, and fear of crime does not necessarily reflect crime prevalence or the probability of crime. As a result, understanding perceptions is as important as understanding actual crime figures.
-
-Second, main evidence on the relationship between crime and legalization comes from states in USA, where it has been a sustained downward trend in national crime rates \citep{gramlich5facts, james2018recent}. The situation is exactly the opposite in Uruguay, where national crime rates show a significant increase in the last years \citep{del2018obstacles, paternain2008panorama, aboal2007crimen}. It is highly probable that these contextual differences might alter the way in which cannabis laws impact crime and public insecurity.
-
-Third, most of the published articles asking the question of cannabis legalization impact on crime, use differences in differences analysis. In this article we try to approach an observational design to an experimental one using matching.
+Our research differs to the previously reviewed in three aspects. First, most of the articles published look at the relationship between cannabis laws and crime using administrative data from national agencies, mainly through crime reports. In this article, we followed a different path. In addition to measure crime victimization using individual self reports, we also measure people's perceptions: public insecurity perceptions and perceived impacts of marijuana legalization. The rationale to do so is that cannabis laws might have an impact on public insecurity perceptions in addition to on crime. We implemented a national survey designed specifically to measure these outcomes. Evidence shows that simple perceptions of demographics of neighborhoods often diverge from census reported figures \citep{wong2012bringing}, and fear of crime does not necessarily reflect crime prevalence or the probability of crime. As a result, understanding perceptions is as important as understanding actual crime figures. Second, main evidence on the relationship between crime and legalization comes from states in USA, where it has been a sustained downward trend in national crime rates \citep{gramlich5facts, james2018recent}. The situation is exactly the opposite in Uruguay, where national crime rates show a significant increase in the last years \citep{del2018obstacles, paternain2008panorama, aboal2007crimen}. It is highly probable that these contextual differences might alter the way in which cannabis laws impact crime and public insecurity. Third, most of the published articles asking the question of cannabis legalization impact on crime, use differences in differences analysis. In this article we try to approach an observational design to an experimental one using matching.
 
 These differences among the research already performed and ours, influence the expectations about the results. Regarding people's perceptions, the fact that a person's idea about the probability of crime may not be the same of a local police department or criminologist, means that we do not have strong priors about how a pharmacy selling cannabis may change such perceptions. If perceptions are malleable, then perhaps a new pharmacy might lead to quick change; if, however, people ignore their surroundings and/or only perceive which fits in their previous beliefs, then perhaps the pharmacies may have no effects. In addition, given the national crime trends in the country, we should not expect that legalization would have the same effect than in contexts where crime has been diminishing \citep{eisner2016achieving}.
 
@@ -121,7 +116,7 @@ Security concerns were also present at the time of the implementation of cannabi
 \section{The Legalization Effect in a Context of Increasing Crime}
 The academic discussion about the relationship between drugs and crime has not reach consensus \citep{white2000dynamics}. Specially, cannabis takes a particular place in this discussion. Most studies have concluded that cannabis consumption tends to inhibit violent behavior in the short term, disqualifying the psychopharmacological argument \citep{white2000dynamics} that states that crime occurs as a consequence of drug consumption \citep{goldstein1985drugs}.\footnote{Although a review by the National Research Council concluded that long-term cannabis use can affect the nervous system prompting violence behavior \citep{national1994understanding}.} By the same reasoning, cannabis use rarely generates economic violence as it does not produce the compulsive need to generate income to fund consumption since cannabis is relatively cheap \citep{caulkins2016marijuana}. Finally, given the low profitability of cannabis markets in comparison with other drugs, such as cocaine and heroin, observers believe that cannabis use does not play a significant part in the systemic type of violence \citep{pacula2003marijuana, caulkins2015considering} which relates to drug-trafficking and distribution \citep{goldstein1985drugs}. Thus, the legalization of cannabis should not have large short term effects on violence unless the removal of cannabis from the portfolios of illegal dealers somehow increases violence and competition in the cocaine and other drug markets.
 
-Despite these reasons, recent evidence for the US states that have legalized cannabis shows that these laws have an effect on the reduction of violent crimes and property crimes \citep{dragone2019crime, Indigo:2016, gavrilova2014legal, huber2016cannabis, brinkman2017not}. The causal mechanisms behind these relationships are still unclear. Based on a review of the existing evidence, \citet{dragone2019crime} suggest that they might be: \textbf{1)} that the psychotropic effect of consuming cannabis is sedative, which decreases the chances of getting involved in violent crimes \citep{no2001health, green2003being}; or \textbf{2)} that users of alcohol and other drugs are substituting their consumption with cannabis which is a less violent drug \citep{anderson2014legalization, kelly2014policing} ; or \textbf{3)} that the decrease in crime rate is an effect of the reallocation of police efforts which after the legalization does not need to prosecute cannabis consumption \citep{adda2014crime}; or \textbf{4)} that by withdrawing the sale of cannabis from unsafe places and placing it in legal and secure contexts, criminal gangs, intermediaries and dealers become weaker \citep{becker2013have}.
+Despite these reasons, recent evidence for the US states that have legalized cannabis shows that these laws have an effect on the reduction of violent crimes and property crimes \citep{dragone2019crime, Indigo:2016, gavrilova2014legal, huber2016cannabis, brinkman2017not}. The causal mechanisms behind these relationships are still unclear. Based on a review of the existing evidence, \citet{dragone2019crime} suggest that they might be: 1) that the psychotropic effect of consuming cannabis is sedative, which decreases the chances of getting involved in violent crimes \citep{no2001health, green2003being}; or 2) that users of alcohol and other drugs are substituting their consumption with cannabis which is a less violent drug \citep{anderson2014legalization, kelly2014policing} ; or 3) that the decrease in crime rate is an effect of the reallocation of police efforts which after the legalization does not need to prosecute cannabis consumption \citep{adda2014crime}; or 4) that by withdrawing the sale of cannabis from unsafe places and placing it in legal and secure contexts, criminal gangs, intermediaries and dealers become weaker \citep{becker2013have}.
 
 However, this evidence comes from contexts with opposite crime trends to those of Uruguay. In United States crime rates have been showing a drop in time \citep{gramlich5facts, james2018recent}, so maybe these findings might be related to that fact. On the contrary, in Uruguay homicides, robberies and assaults rates have been increasing at least since 2012, as we can see on Figure~\ref{fig:homrap19802017}. Considering this difference, our study can show how legalization processes might have different results depending on national circumstances.
 
@@ -174,41 +169,33 @@ We list the primary hypotheses of the study below.
 
 \end{itemize}
 
-\section{Research Design and Methods: Comparing pharmacies and Neighbors' Attitudes}
-\subsection{Data Collection: Pharmacies and Neighbors Survey}
-The data used in this analysis come from face-to-face surveys that aimed to help us measure the crime victimization experienced by those living near pharmacies and their attitudes towards the law and public insecurity. None of these surveys were intended to be representative of the Uruguayan population. We conducted two rounds of surveys with neighbors of selling and non selling pharmacies. In the first survey round, fieldwork started on June 17, 2017 and finished in July 1, 2017 before the sales started (July 19, 2017). The sample contains 600 neighbors of 60 pharmacies, 10 neighbors per pharmacy. The list of pharmacies joining the dispensation was confidential until the sale started, so this initial group of neighbors did not know if their closest pharmacy was going to sell.
-
-The second round of the survey was carried out approximately one year later, between August 9 and September 30, 2018. Overall, we have conducted 1298 interviews across the country in the two rounds. Respondents were selected among people over 18 years old that lived in the sampled household and were present at the moment of the interview. The most recent birthday selection process was used to choose among households residents.
-
-\subsection{Selling and Non-selling Pharmacies}
-In addition to neighbors, we also interviewed one representative of each pharmacy (sellers and non-sellers) in both rounds. Overall, we conducted 119 surveys with representatives (59 in 2017 and 60 en 2018). Because marijuana selling was not randomly assigned by the government to pharmacies, and each pharmacy decided to adhere or not to the selling, those that sell and those that do not sell might be different. Data from the pharmacies' representatives survey allowed us to characterize selling and non-selling pharmacies, and analyze if there were any initial differences between them that could explain the differences on outcomes.
-
-Selling and non-selling pharmacies are not different in terms of their general characteristics. The only relevant distinction is that among non-selling there are stores that are part of a pharmacy's chain. In terms of infrastructure both selling and non-selling pharmacies are quite similar, and they are also similar regarding security measures, insecurity perceptions and crime victimization. The later goes against the idea that pharmacies that sell cannabis did so because they are better equipped in terms of security protection, have suffered less crimes and feel more secure in their neighborhoods. There are not significant differences either in their perceptions about cannabis and its users.
-
-The most important distinction among sellers and non-sellers is concerning opinions towards the public policy. Owners and representatives of pharmacies that decided to sell are consistently more in favor of the regulation and anticipate it would have more positive impacts. Balance tests (see Table \ref{tab:pharmaciesperceptions} in Appendix A) show statistically significant differences between sellers and non-sellers among almost all outcomes related with policy opinions. The only exception is the perceived impact on drug trafficking in which there are no significant differences. In addition sellers are significantly more against the idea that cannabis is a gateway drug than non sellers.
-
-\subsubsection{Changes in Selling Pharmacies}
-Our initial sample contained 42 non-selling pharmacies and 18 selling ones. Figure \ref{fig:ctrltrtpharms_1} shows the geographical distribution of the pharmacies in our study. During the first year of policy implementation, some changes in the pharmacies selling group occurred. First, two pharmacies that initially were registered to sell, never actually did it: this reduced our selling group to 16. Second, six pharmacies that had entered the system abandoned it due to the prohibition imposed by US banks that forbid cannabis selling pharmacies to operate with bank accounts.\footnote{For information about the problem with the banking system see: \url{https://www.elobservador.com.uy/nota/brou-cierra-cuentas-vinculadas-con-marihuana-y-mas-farmacias-evaluan-dejar-de-venderla-20178175004}.} And third, because pharmacy registration remained open, 4 new pharmacies entered the system.
+\section{Research Design and Methods: Comparing Neighbors' Attitudes}
+\subsection{Data Collection: Changes in Selling Pharmacies}
+Our initial sample contained 42 non-selling pharmacies and 18 selling ones. Figure \ref{fig:locations} shows the geographical distribution of the pharmacies in our study. During the first year of policy implementation, some changes in the pharmacies selling group occurred. First, two pharmacies that initially were registered to sell, never actually did it: this reduced our selling group to 16. Second, six pharmacies that had entered the system abandoned it due to the prohibition imposed by US banks that forbid cannabis selling pharmacies to operate with bank accounts.%\footnote{For information about the problem with the banking system see: \url{https://www.elobservador.com.uy/nota/brou-cierra-cuentas-vinculadas-con-marihuana-y-mas-farmacias-evaluan-dejar-de-venderla-20178175004}.} 
+And third, because pharmacy registration remained open, 4 new pharmacies entered the system.
 
 This means that by the second round of data collection we had (1) pharmacies that never sold and never registered to do it (n=42) that we call ``control'' or ``comparison'' pharmacies, (2) two pharmacies that never sold but initially were willing to do it (n=2) named as ``placebo'' pharmacies, (3)  pharmacies that sold cannabis during the entire time between the first and second round (n=10) that we label as ``wholetime'', (4) pharmacies that dropped out from 2017 to 2018 (n=6) that we call ``dropouts'', and (5) pharmacies that joined the system at some point between the 2017 round and 2018 round (n=4) that we call ``newcomers'' (see Table \ref{tab:pharmsalestatus}).
 
-\begin{figure}[htpb!]
+\begin{figure}[H]
     \centering
-    \label{fig:ctrltrtpharms_1}
     \caption{Pharmacies registered to sell marijuana and comparison pharmacies}
+    \label{fig:locations}
+    \vspace{4px}
     \includegraphics[width=6.5in,height=3.4851in]{./media/country.png}
 \footnotesize{Note: green symbols show pharmacies registered to sell marijuana as of June 2017. \\ Blue symbols are comparison pharmacies.}
 \end{figure}
 
-The comparison group was selected following four criteria that aimed to produce a set of pharmacies that was not selling cannabis where the neighborhood characteristics would be at least roughly similar to the neighborhood characteristics of the selling pharmacies. We further enhance these comparisons using matching to create strata as described below. Here we describe the first steps in our selection process. The first criteria was ``same  geographical unit'':  pharmacies in the same administrative region (the ``departamento'') without at least one selling pharmacy were deleted from the sampling frame. The second criteria was ``population density'':  pharmacies in rural areas were deleted from the sample because none of the selling pharmacies is located in rural areas. The third criteria was``criminality rate'': pharmacies in neighborhoods (for Montevideo) or cities where homicides reports, assaults reports and robberies reports are too high or too low  in comparison with the neighborhoods where selling pharmacies were situated, were discarded. The fourth criteria is ``distance'': pharmacies in the control group should be at least 6 blocks away from any treatment pharmacy. After eliminating the pharmacies that did not pass the four criteria, we randomly selected 42 control pharmacies among the about 1000 pharmacies that exist in the country \footnote{We used official sociodemographic information about the neighbourhoods/localities/``departamentos''. See Table \ref{tab:phlongtable} in Appendix A for more details on the pharmacies characteristics}.
+The comparison group was selected following four criteria that aimed to produce a set of pharmacies that was not selling cannabis where the neighborhood characteristics would be at least roughly similar to the neighborhood characteristics of the selling pharmacies. We further enhance these comparisons using matching to create strata as described below. Here we describe the first steps in our selection process. The first criteria was ``same  geographical unit'':  pharmacies in the same administrative region (the ``departamento'') without at least one selling pharmacy were deleted from the sampling frame. The second criteria was ``population density'':  pharmacies in rural areas were deleted from the sample because none of the selling pharmacies is located in rural areas. The third criteria was ``criminality rate'': pharmacies in neighborhoods (for Montevideo) or cities where homicides reports, assaults reports and robberies reports are too high or too low  in comparison with the neighborhoods where selling pharmacies were situated, were discarded. The fourth criteria is ``distance'': pharmacies in the control group should be at least 6 blocks away from any treatment pharmacy. After eliminating the pharmacies that did not pass the four criteria, we randomly selected 42 control pharmacies among the about 1000 pharmacies that exist in the country\footnote{We used official sociodemographic information about the neighbourhoods/localities/``departamentos''. See Table \ref{tab:phlongtable} in Appendix A for more details on the pharmacies characteristics}.
 
 \begin{small}
-\begin{table}[htbp!]
+\begin{table}[H]
 \scriptsize
   \centering
-   \caption{Status of  marijuana selling pharmacies}
+  \caption{Status of  marijuana selling pharmacies}
+  \vspace{4px} 
   \label{tab:pharmsalestatus}
   \begin{tabular}{@{}lllcccccc@{}}
+  \hline
 \textbf{Pharmacy}  &  \textbf{Neighborhood}  &  \textbf{Dpt.}  &  \textbf{Round 1}  &  \textbf{Round 2}  &  \textbf{Entrance}  &  \textbf{Drop out}  &  \textbf{Type}  \\
 \midrule
 Antartida     &     Centro     &     Montevideo     &     Yes     &     Yes     &     7/19/17     &        &     wholetime  \\
@@ -236,8 +223,35 @@ Antartida     &     Centro     &     Montevideo     &     Yes     &     Yes     
 \end{table}
 \end{small}
 
-\subsection{Stratification for Fair Comparison}
-To learn about whether sale of cannabis in pharmacies influences crime victimization, attitudes and perceptions of neighbors, we compare the survey responses of neighbors living near pharmacies selling cannabis to the responses of neighbors who did not live near such pharmacies. The problem arising from a strategy like this, is that neighborhoods where pharmacy owners decided to sell cannabis are probably different from neighborhoods where they decided to pass over the opportunity to sell cannabis (we already know that owners and representatives of the pharmacies differ on their opinions towards the policy). The question is whether the amount of difference between the two groups of pharmacies would mislead our comparison to learn about the effects of selling cannabis on crime victimization and attitudes. What is the standard to judge whether a comparison might mislead us? We know that if an intervention is randomly assigned, then the comparisons based on that intervention would not confuse causal effects with confounding. \citet{hansen2008cbs} develop a formal way to compare a given observed comparison with what would be expected if that comparison had been randomized: in essence, they develop a hypothesis test for the hypothesis that the neighbors of selling pharmacies and the neighbors of not selling pharmacies might have been allocated at random. In our case, the raw comparison of attitudes around pharmacies selling cannabis and those not selling cannabis, confirms our hunch that the places do not in fact compare favorably to a randomized experiment:  the Hansen and Bowers omnibus test across 81 covariates reports a $p$-value of .07. The boxplot, Figure XX, in the  appendix shows that very few of the covariates differed between the two groups of people by more than about .07 standard deviations, although one or two variables at the pharmacy level (average age and number of violent robberies) did differ appreciably at or beyond 1 standard deviation. That figure uses black dots to show when one-by-one hypothesis tests of the hypothesis of no difference between groups indicate a significant departure from the null. We see 11 $p$-values less than .05 out of 81 unadjusted tests (a Holm adjustment would yield only 3 $p$-values different from 1.0, and lowest $p$-value would be .38). In 81 tests of the null of no difference, we would expect approximately 4 tests with $p \le .05$ if there were truly no difference. The excess of 11-4 = 7 tests here is just another way to show what the omnibus $d^2$ tests reported --- more work can be done to improve our baseline comparison.
+For this study we are interested in the effects of living near a pharmacy that sold marijuana for at least part of the period. Since we did not have baseline data for the ``newcomer'' pharmacies, we do not use them in our analysis as described here. We combine ``thewholetime'' and ``dropout'' pharmacies as our selling group (16 pharmacies) and use the 42 comparison pharmacies which never sold marijuana as the source of our comparison group. We describe more below about how we designed our specific comparisons after we describe the survey data collection that measured attitudes about marijuana before and after the pharmacies began sales.
+
+\subsection{Neighbors Survey}
+The data used in this analysis come from face-to-face surveys that aimed to help us measure the crime victimization experienced by those living near pharmacies and their attitudes towards the law and public insecurity. None of these surveys were intended to be representative of the Uruguayan population. We conducted two rounds of surveys with neighbors of selling and non selling pharmacies. In collaboration with the cannabis control and regulation national agency (IRCCA), our research team learned the names and locations of the pharmacies that were going to sell marijuana as of the date that the authorization allowing sales at pharmacies went into effect (July 19, 2017)
+
+In the first survey round, fieldwork started on June 17, 2017 and finished in July 1, 2017 before the sales started. The sample contains 600 neighbors of 60 pharmacies, 10 neighbors per pharmacy. The list of pharmacies joining the dispensation was confidential until the sale started, so this initial group of neighbors did not know if their closest pharmacy was going to sell.
+
+The second round of the survey was carried out approximately one year later, between August 9 and September 30, 2018. Overall, we have conducted 1298 interviews across the country in the two rounds. Respondents were selected among people over 18 years old that lived in the sampled household and were present at the moment of the interview. The most recent birthday selection process was used to choose among households residents.
+
+\subsection{Pharmacy Interviews}
+In addition to neighbors, we also interviewed one representative of each pharmacy (sellers and non-sellers) in both rounds. Overall, we conducted 119 surveys with representatives (59 in 2017 and 60 en 2018). Data from the pharmacies’ representatives survey allowed us to characterize selling and non-selling pharmacies, and to describe any initial differences between them using the 2017 data.
+
+%Because marijuana selling was not randomly assigned by the government to pharmacies, and each pharmacy decided to adhere or not to the selling, those that sell and those that do not sell might be different. Data from the pharmacies' representatives survey allowed us to characterize selling and non-selling pharmacies, and analyze if there were any initial differences between them that could explain the differences on outcomes.
+
+The data that we collected show that selling and non-selling pharmacies are not different in terms of their general characteristics: \colorbox{yellow}{TODO EXPLAIN A BIT MORE SHOW A TABLE MAYBE}. The only relevant distinction is that among non-selling there are stores that are part of a larger pharmacy’s chain. In terms of infrastructure both selling and non-selling pharmacies are quite similar, and they are also similar regarding security measures, perceptions of security by their workers (the representatives of the pharmacy who spoke with our interviewer) and crime victimization. These data suggest that pharmacies that sell cannabis did so not because they are better equipped in terms of security protection, have suffered less crimes and/or feel more secure in their neighborhoods. We also did not detect large differences between the ways that pharmacy representatives thought about cannabis and its users \colorbox{yellow}{(TODO see Table/Figure TODO in Appendix)}.
+
+The most important distinction among sellers and non-sellers is concerning opinions towards the public policy. Owners and representatives of pharmacies that decided to sell are consistently more in favor of the regulation and anticipate it would have more positive impacts on \colorbox{yellow}{(TODO see Table/Figure TODO in Appendix)}.
+
+%Balance tests (see Table \ref{tab:pharmaciesperceptions} in Appendix A) show statistically significant differences between sellers and non-sellers among almost all outcomes related with policy opinions. The only exception is the perceived impact on drug trafficking in which there are no significant differences. In addition sellers are significantly more against the idea that cannabis is a gateway drug than non sellers.
+
+\subsection{The Stratification Design}
+To learn about whether sale of cannabis in pharmacies influences crime victimization, attitudes and perceptions of neighbors, we compare the survey responses of neighbors living near pharmacies selling cannabis to the responses of neighbors who did not live near such pharmacies. The problem arising from a strategy like this, is that neighborhoods where pharmacy owners decided to sell cannabis are probably different from neighborhoods where they decided to pass over the opportunity to sell cannabis (we already know that owners and representatives of the pharmacies differ on their opinions towards the policy. See \colorbox{yellow}{(TODO see Table/Figure TODO in Appendix)}). 
+
+The question is whether the amount of difference between the two groups of pharmacies would mislead our comparison to learn about the effects of selling cannabis on crime victimization and attitudes. What is the standard to judge whether a comparison might mislead us? We know that if an intervention is randomly assigned, then the comparisons based on that intervention would not confuse causal effects with confounding. We know that if an intervention is randomly assigned, then the comparisons based on that intervention would not confuse causal effects with confounding. That is, we know that, say, if we  were to randomly assign licenses to sell marijuana to 16 out of 60 pharmacies, those 16 pharmacies and their surrounding neighborhoods might well differ, but those differences would not be systematically related to the decision to sell marijuana, and thus not systematically related to the exposure of people nearby to the selling of marijuana. Now, we do not have such a randomized design, but we know what such a design would look like. And we can use the hypothetical design as a standard against which we can compare an observational study. \citeauthor{hansen2008cbs} (\citeyear{hansen2008cbs}) develop a formal way to compare a given observed comparison with what would be expected if that comparison had been randomized: they provide a test for the hypothesis that the neighbors of selling pharmacies and the neighbors of not selling pharmacies might have been allocated at random.
+
+In our case, the raw comparison of attitudes around pharmacies selling cannabis and those not selling cannabis, confirms our hunch that the places do not in fact compare favorably to a randomized experiment: an omnibus balance test \citet{hansen2008cbs} across 89 covariates reports
+a $p$-value of 0.0682.
+
+%The boxplot, Figure XX, in the  appendix shows that very few of the covariates differed between the two groups of people by more than about .07 standard deviations, although one or two variables at the pharmacy level (average age and number of violent robberies) did differ appreciably at or beyond 1 standard deviation. That figure uses black dots to show when one-by-one hypothesis tests of the hypothesis of no difference between groups indicate a significant departure from the null. We see 11 $p$-values less than .05 out of 81 unadjusted tests (a Holm adjustment would yield only 3 $p$-values different from 1.0, and lowest $p$-value would be .38). In 81 tests of the null of no difference, we would expect approximately 4 tests with $p \le .05$ if there were truly no difference. The excess of 11-4 = 7 tests here is just another way to show what the omnibus $d^2$ tests reported --- more work can be done to improve our baseline comparison.
 
 %\begin{figure}[htbp!]
 %\centering
@@ -249,47 +263,93 @@ To learn about whether sale of cannabis in pharmacies influences crime victimiza
 %\end{figure}
 
 \subsection{Designing a Better Baseline Comparison}
-If we had managed to convince the government to issue the registrations by lottery and if a large pool of pharmacies had entered the lottery, we would be able to say that the pharmacies and nearby neighborhoods selected by lottery to sell cannabis would be no different from the pharmacies and associated neighborhoods losing the lottery. This would also be the case if the lottery occurred in groups of places --- say, the right to sell were randomly assigned among pharmacies in Montevideo and also among pharmacies outside of Montevideo. This kind of design would yield a block-randomized experiment. If Montevideo/Interior were the only observed covariates that might confound our comparison, we could directly compare pharmacies to each other within area, and we could compare that stratified design to a hypothetical block-randomized experiment in order to assess the comparison (just as we did above when we compared the simple selling-vs-not selling comparison to a simple randomized experiment with 16 treated and 42 control groups and 81 background covariates). This is what we do below. We use an optimization strategy to produce a series of strata that collectively, across 81 observed covariates, compares favorably to a hypothetical block-randomized experiment. Of course, we do not claim that a stratified design substitutes for an experiment --- we can only speak to differences on 81 covariates, not on all possible observed and unobserved as we could if we had an actually randomized experiment. Later, in \S~\ref{sec:sensitivity}, we assess the extent to which we might change our substantive conclusions based on the stratified design due to the influence of unobserved covariates.\footnote{See \citep[Chapter 3]{rosenbaum2010design} for an overview of this method of sensitivity analysis.}
+Our strategy to finding comparisons between people living near selling versus non-selling pharmacies involves stratification: we create pairs of pharmacies which are similar in the characteristics of their neighborhoods before they began to sell marijuana. These characteristics include aggregated survey
+data from the neighborhoods that these pharmacies serve – for example, the mean age of the survey respondents as well as the 25th. percentile of the age of those survey respondents. Overall, we use more than 80 covariates measured before the pharmacies began selling marijuana.
 
+Why create pairs? Let’s consider the hypothetical case of a pair-randomized experiment. If we had managed to convince the government to issue the registrations by lottery and if a large pool of pharmacies had entered the lottery, we would be able to say that the pharmacies and nearby neighborhoods selected by lottery to sell cannabis would be no different from the pharmacies and associated neighborhoods losing the lottery. This would also be the case if the lottery occurred in groups of places — say, the right to sell were randomly assigned among pharmacies in Montevideo and also among pharmacies outside of Montevideo. This kind of design would yield a block-randomized experiment. If Montevideo/Interior were the only observed covariate that might confound our comparison, we could directly compare pharmacies to each other within area, and we could compare that stratified design to a hypothetical block-randomized experiment in order to assess the comparison (just as we did above when we compared the simple selling-vs-not selling comparison to a simple randomized experiment with 16 treated and 42 control groups and 81 background covariates). This is what we do below. We use an optimization strategy to produce a series of strata that compares favorably to a hypothetical block-randomized experiment across many observed covariates.
 
-DESCRIBE THE STRATIFICATION IN SUBSTANTIVE TERMS AND ALSO AS COMPARED TO A HYPOTHETICAL BLOCK-RANDOMIZED EXPERIMENT ON 81 COVARIATES.
+Of course, we do not claim that a stratified design substitutes for an experiment — we can only speak to differences on the covariates we observed, not on all possible observed and unobserved as we could if we had an actually randomized experiment.
 
-\section{Outcome Analysis}
-\subsection{Comparisons between Pharmacies}
-We run different comparisons considering the distinct status of pharmacies, looking after different effects (see Table \ref{tab:comparisons}). The first comparison is between survey responses of neighbors of all pharmacies registered to sell cannabis in the time period of our study. We named this group as ``sellers'' and includes ``wholetime'', ``dropouts'' and ``newcomers''. We compare ''sellers'' versus responses of neighbors of non-selling pharmacies, conditioning on matched set. If having a selling pharmacy in the neighborhood has any effect on crime victimization and public insecurity perceptions, this effect must be shown comparing these two groups.
+If we find that we have strong evidence against the null of no effects of living near a pharmacy (say, $p$-values of less than .05 on tests of that hypothesis in the outcome analysis), the we will assess the extent to which we might change our substantive conclusions based on the stratified design due to the influence of unobserved covariates.
 
-A second comparison is between neighbors of pharmacies that sold cannabis at the beginning of the implementation of the policy , which includes ``wholetime'' and ``dropouts'', with neighbors of non-selling pharmacies. It differs from the previous one because excludes the ``newcomers'' pharmacies for which we do not have baseline information, but the expectations about the effect of selling cannabis on outcomes are the same.
+Our specific design creates strata with similar neighborhoods where one neighborhood has a pharmacy selling marijuana and the other comparison neighborhoods were places where a pharmacy did not sell marijuana. This design compared favorably with a randomized experiment. The algorithm ended up dropping 13 neighborhoods as too different from the focal neighborhoods.
 
-The third comparison is done in order to provide robustness to the analysis. We compare ``placebo'' pharmacies with ``sellers'' selling pharmacies. This would help us to dismiss a possible self-selection bias brought by specific characteristics of selling pharmacies. As we mentioned, the ``placebo'' are two pharmacies that established contact with the IRCCA to be a part of the dispensary network but never actually started to sell cannabis. We consider these two cases as placebos. In this comparison, placebos neighbors would be compared with neighbors of ``sellers''. The expectation is to find an effect on ``sellers'' neighbors if the effect is about selling. On the contrary, if the effect is about some characteristic related with the pharmacies' decision to sell, it won't be any difference between the two groups. Another version of this match is the fourth comparison between ``placebo'' and neighbors of non-selling pharmacies. In this case, the expectation is the opposite: no effect if the effect is about selling.
+For example, it created 14 pairs and two sets with one selling pharmacy and two non-selling pharmacies. It also dropped 24 comparison pharmacies. The comparison to a randomized experiment across many covariates suggests little evidence against the idea that this design is compatible with the randomized hypothetical design ($p$=0.5762).
 
-Finally, we will compare pharmacies depending on how long they have been selling  cannabis. The argument is that if there is any effect of selling this would be higher among neighbors of pharmacies that have been selling for more time. In order to test that we compare neighbors of ``wholetime'' pharmacies that were exposed to the selling during the entire period of analysis versus neighbors of pharmacies that, either because they dropped out (``dropouts'') or because they joined later (``newcomers''), were exposed less intensively, named as ``part-time.'' We expect larger effects on the ``wholetime'' than on the ``part-time''. Among the five comparisons, the first two are about the effect of having a cannabis  selling pharmacy closed by, while the other three are robust tests.
+MAYBE HERE BRIEFLY EXPLAIN OTHER POSSIBLE DESIGNS AND "MORE DETAILS IN APPENDIX"
 
-\begin{table}[h]
-        \centering
-        \footnotesize
-        \caption{Pharmacies Group Comparisons}
-    \label{tab:comparisons}
-    \begin{tabular}{clll}
-\hline
-Comparison    &		&		&	Expected effect	\\ \hline
-1	      &	Sellers (wholetime) \&	&	Non-sellers	&	Effect on ``sellers'' if effect is	\\
-	      &	dropouts\& newcomers)	&		&	about selling	\\
-2	      &	Baseline (16 wholetime)	&	Non-sellers	&	Effect on ``baseline'' if the effect is 	\\
-	      &	\& dropouts)	&		&	about selling	\\
-3	      &	Sellers (wholetime) \&	&	Placebo	&	Effect if it is about actually selling or 	\\
-	      &	dropouts \& newcomers)	&		&  no effect if it is about the decision of selling	\\
-4	      &	Placebo 	&	Non-sellers	&	No effect if the effect is about selling. 	\\
-5	      &	Wholetime	&	Part-time	&	Larger effect on ``wholetime'' 	\\
-	      &		&	 (dropouts \& newcomers)	&	than on the ``part-time''	\\ \hline
-\end{tabular}
-\end{table}
+%If we had managed to convince the government to issue the registrations by lottery and if a large pool of pharmacies had entered the lottery, we would be able to say that the pharmacies and nearby neighborhoods selected by lottery to sell cannabis would be no different from the pharmacies and associated neighborhoods losing the lottery. This would also be the case if the lottery occurred in groups of places --- say, the right to sell were randomly assigned among pharmacies in Montevideo and also among pharmacies outside of Montevideo. This kind of design would yield a block-randomized experiment. If Montevideo/Interior were the only observed covariates that might confound our comparison, we could directly compare pharmacies to each other within area, and we could compare that stratified design to a hypothetical block-randomized experiment in order to assess the comparison (just as we did above when we compared the simple selling-vs-not selling comparison to a simple randomized experiment with 16 treated and 42 control groups and 81 background covariates). This is what we do below. We use an optimization strategy to produce a series of strata that collectively, across 81 observed covariates, compares favorably to a hypothetical block-randomized experiment. Of course, we do not claim that a stratified design substitutes for an experiment --- we can only speak to differences on 81 covariates, not on all possible observed and unobserved as we could if we had an actually randomized experiment. Later, in \S~\ref{sec:sensitivity}, we assess the extent to which we might change our substantive conclusions based on the stratified design due to the influence of unobserved covariates.\footnote{See \citep[Chapter 3]{rosenbaum2010design} for an overview of this method of sensitivity analysis.}
+%DESCRIBE THE STRATIFICATION IN SUBSTANTIVE TERMS AND ALSO AS COMPARED TO A HYPOTHETICAL BLOCK-RANDOMIZED EXPERIMENT ON 81 COVARIATES.
 
-\section{Sensitivity to Unobserved Confounds} \label{sec:sensitivity}
-Our stratified research design successfully adjusted for 81 covariates, but it did not adjust for the many other unobserved differences existing between the selling and not-selling pharmacies. In this section we ask how severe the unobserved differences would have to be before we would change our substantive interpretation of our results. This kind of sensitivity analysis a formalized what-if exercise because, in fact, we do not know how much unobserved confounding to worry about.
+\section{Analysis}
+\subsection{Outcomes}
+Name outcomes
+brief description of how are their measure. More details in appendix. 
 
-TO DO.
+\subsection{Estimation}
+We will estimate the average effect of living near a pharmacy that sells marijuana using differences of means conditional on matched set, adjusting the standard errors for hypothesis testing and confidence interval creation using the CR2 cluster-robust standard errors at the level of the neighborhood (cite).
+
+We expect that the effects of living near a pharmacy should be weaker for those people living near the “dropout” pharmacies if living near a pharmacy does matter for the outcomes. We also assess this exploratory hypothesis using the same analytic strategy as above, but allowing different effects
+for people living near the dropout pharmacies. 
+
+We have 8 outcomes and one comparison (selling versus not--selling pharmacy). If we were going to make a decision about the effect of the pharmacies if any one of the 8 comparisons yielded a $p$<.05 then we would make a false positive error not 1 in 20 tests, but 1 − (1 − .05)8 ≈ 1/3 or almost 7/20. However, if each analysis stands alone in terms of our decision making: the assessment of perceptions of insecurity can be null or significant independently of the assessment of reports of experiences with crime, then we do not need to adjust the tests. In the case of this project, we do not make any adjustment because decisions regarding the effect of the pharmacy stand alone.
+
+%\subsection{Comparisons between Pharmacies}
+%We run different comparisons considering the distinct status of pharmacies, looking after different effects (see Table \ref{tab:comparisons}). The first comparison is between survey responses of neighbors of all pharmacies registered to sell cannabis in the time period of our study. We named this group as ``sellers'' and includes ``wholetime'', ``dropouts'' and ``newcomers''. We compare ''sellers'' versus responses of neighbors of non-selling pharmacies, conditioning on matched set. If having a selling pharmacy in the neighborhood has any effect on crime victimization and public insecurity perceptions, this effect must be shown comparing these two groups.
+
+%A second comparison is between neighbors of pharmacies that sold cannabis at the beginning of the implementation of the policy , which includes ``wholetime'' and ``dropouts'', with neighbors of non-selling pharmacies. It differs from the previous one because excludes the ``newcomers'' pharmacies for which we do not have baseline information, but the expectations about the effect of selling cannabis on outcomes are the same.
+
+%The third comparison is done in order to provide robustness to the analysis. We compare ``placebo'' pharmacies with ``sellers'' selling pharmacies. This would help us to dismiss a possible self-selection bias brought by specific characteristics of selling pharmacies. As we mentioned, the ``placebo'' are two pharmacies that established contact with the IRCCA to be a part of the dispensary network but never actually started to sell cannabis. We consider these two cases as placebos. In this comparison, placebos neighbors would be compared with neighbors of ``sellers''. The expectation is to find an effect on ``sellers'' neighbors if the effect is about selling. On the contrary, if the effect is about some characteristic related with the pharmacies' decision to sell, it won't be any difference between the two groups. Another version of this match is the fourth comparison between ``placebo'' and neighbors of non-selling pharmacies. In this case, the expectation is the opposite: no effect if the effect is about selling.
+
+%Finally, we will compare pharmacies depending on how long they have been selling  cannabis. The argument is that if there is any effect of selling this would be higher among neighbors of pharmacies that have been selling for more time. In order to test that we compare neighbors of ``wholetime'' pharmacies that were exposed to the selling during the entire period of analysis versus neighbors of pharmacies that, either because they dropped out (``dropouts'') or because they joined later (``newcomers''), were exposed less intensively, named as ``part-time.'' We expect larger effects on the ``wholetime'' than on the ``part-time''. Among the five comparisons, the first two are about the effect of having a cannabis  selling pharmacy closed by, while the other three are robust tests.
+
+%\begin{table}[H]
+        %\centering
+        %\footnotesize
+        %\caption{Pharmacies Group Comparisons}
+        %\vspace{4px}
+    %\label{tab:comparisons}
+    %\begin{tabular}{clll}
+%\hline
+%Comparison    &		&		&	Expected effect	\\ \hline
+%1	      &	Sellers (wholetime) \&	&	Non-sellers	&	Effect on ``sellers'' if effect is	\\
+%	      &	dropouts\& newcomers)	&		&	about selling	\\
+%2	      &	Baseline (16 wholetime)	&	Non-sellers	&	Effect on ``baseline'' if the effect is 	\\
+%	      &	\& dropouts)	&		&	about selling	\\
+%3	      &	Sellers (wholetime) \&	&	Placebo	&	Effect if it is about %actually selling or 	\\
+%	      &	dropouts \& newcomers)	&		&  no effect if it is about the decision of selling	\\
+%4	      &	Placebo 	&	Non-sellers	&	No effect if the effect is about selling. 	\\
+%5	      &	Wholetime	&	Part-time	&	Larger effect on ``wholetime'' 	\\
+%	      &		&	 (dropouts \& newcomers)	&	than on the ``part-time''	%\\ \hline
+%\end{tabular}
+%\end{table}
+
+%\section{Sensitivity to Unobserved Confounds} \label{sec:sensitivity}
+%Our stratified research design successfully adjusted for 81 covariates, but it did not adjust for the many other unobserved differences existing between the selling and not-selling pharmacies. In this section we ask how severe the unobserved differences would have to be before we would change our substantive interpretation of our results. This kind of sensitivity analysis a formalized what-if exercise because, in fact, we do not know how much unobserved confounding to worry about.
+%TO DO.
 
 \section{Results?}
+Since we do not have the same people in 2017 and 2018, we do covariance adjustment either by: ## (1) the \textit{rebar method} (following Sales and Hansen) and/or lin approach using individual level data and (2) more simply just using the pharmacy level data. The idea is that a difference score might have more statistical power, but we don't observe the same people twice.
+
+No evidence against the idea that missingness on outcomes is random within set.
+
+-- Being closer to a selling pharmacy (from adj_coefs estimates, table on page 9 of outcome analysis. Check if its correct): 
+   - positive effect on:
+                 - neighbor insecurity perception (4= "very safe" - higher values, more safe)
+                 - victimization in last 12 months (1=No - higher values, less victimization)
+                 - existence about "bocas" in neighborhood (2==NO, higher values, less presence of "bocas")
+                 - social disorder (4=="Nothing" - higher values, less disorder)
+                 - people's activities in the neighborhood (activities_indx) (1=all activities - higher values, more activities)
+                 
+   - negative effect on:
+                - country insecurity perception (4= "very safe" - higher values, more safe)
+                - drug trafficking impact (3="Better", higher values, more impact)
+                - public safety impact  (3="Better", higher values, more impact)
+  
+-- BUT! Non significant effects after one year for any outcome (from adj_coefs p values)                                                                                          
+%APUNTE: Al principio las filas eran visibles. En seguida es posible que si tuviera efecto el vivir cerca de una farmacia. Pero un año después, ese efecto se "desvance".
+
+
 
 \section{Discussion and Final Remarks}
 This paper has a twofold purpose. On one side, it wants to contribute to the literature which tackles the causal effect between crime and cannabis legalization. On the other side, it aims to evaluate the impact of cannabis regulation in Uruguay on insecurity perceptions and crime victimization, and by doing that inform the public policy.
@@ -329,13 +389,16 @@ FUTURE STEPS
 \renewcommand\thesection{Appendix \Alph{mycounter}}
 
 \section{Pharmacies Description}
-\begin{table}
+\begin{table}[H]
     \begin{small}
     \centering
     \caption{Balance test for pharmacies variables in baseline}
+    \vspace{4px}
     \addtolength{\tabcolsep}{-3pt}
     \label{tab:pharmaciesperceptions}
+    \makebox[\textwidth]{%
     \begin{tabular}{lccccc}
+\hline
 &	Mean diff.	&	Std. Error	&	P value	&	[95\% Conf. Interval]\\	\hline
 Pharmacies' general characteristics	&		&		&		&	\\	\hline
 Number of individual stores 	&	.7268908 	&	.2582723	&	0.0067 **	&	.2097093    1.244072\\
@@ -366,12 +429,14 @@ are a threat to society''	&	.9803922	&	 .5347	&	0.0719	&	-.0903262     2.05111	\
 Agreement with ``marijuana is a gateway drug''	&	1.535014	&	.6544214	&	0.0225** 	&	.2245578     2.84547	\\
 Agreement with ``marijuana use 	&		&		&		&			\\
 is detrimental to health''	&	-.4672619	&	.6445555	&	0.4715	&	-1.758462    .8239378	\\	\hline
-\end{tabular}
+\end{tabular}%
+}
 **Significant at 95\%.
 \end{small}
 \end{table}
 
 \newpage
+\thispagestyle{empty}
 \newgeometry{margin=1cm}
 \begin{landscape}
   \tiny
@@ -448,15 +513,23 @@ Flor de Maroñas	&	Constitución Sur	&	Montevideo	&	Yes	&	0	&	11409	&	239	&	31.1
 Punta Carretas	&	Lilen	&	Montevideo	&	Yes	&	617	&	11409	&	170	&	31.137	&	113	&	1.305.082	&	24.181	&	8.858	&	46.759	&	43	\tabularnewline
 \bottomrule
 \end{longtable}
-
 Source: Own elaboration. Population data from National Census (2011). Income and age data from National Household Survey (2017). Criminality data per administrative regions from Ministry of Interior (1st. semester 2018) Criminality data per neighborhoods in Montevideo from Ministry of Interior (1st. semester 2018).  Criminality data per localities in the rest of the country from Ministry of Interior (2016).
 \end{landscape}
 \restoregeometry
 
-
 \section{Outcome Variable Description}
+The \textit{Social Disorder Index} was built using three variables: presence of young people loitering, presence of drunk or stoned people in the streets, and presence of people arguing with each other. Each of these variables have the following values: 1 (Very much), 2 (Somewhat), 3 (Little), and 4 (Not at all). In order to construct the index we assume intermediate substitutability among variables and assign the mean value \citep{goertz2006social}.
+
+The variable \textit{Citizens' Insertion on their Neighborhood} is an index constructed with eight variables grouped in four dimensions. The dimensions are: use of services (education and health) in the neighborhood, contact among neighbors (chat and/or meet for collective action activities), perform recreational activities in the neighborhood, and shopping in the neighborhood. We assume intermediate substitutability among dimensions and assign the mean value. The use of services dimension has two indicators: use of educational services (kindergarten, school,high school) in the neighborhood and use of health services (doctor, hospital) in the neighborhood. We assume total substitutability among the two indicators and assign the maximum value  \citep{goertz2006social}. Contact among neighbors dimension also has two indicators: ``Talk with your neighbors'' and ``Meets/ organizes with the neighbors for any improvement activity for the neighborhood''. We also assume total substitutability among the two indicators and assign the maximum value. Perform recreational activities in the neighborhood is measured by the question: ``Do you perform any recreational activities in the neighborhood?'' Finally, shopping in the neighborhood is measured by the question: ``Do you purchase in warehouses or stores in the neighborhood?'' Each indicator is measured using the same scale: 1 (Never), 2 (Once or twice a year), 3 (Once or twice a month), and 4 (Once a week). Citizens' insertion is an index standardized, values go from 0 to 1. Table \ref{tab:varsdescription} presents all the questions for these indexes and the rest of the outcomes.
+
+\begin{table}[H]
 \begin{tiny}
-\begin{tabular}{lllcc}
+    \centering
+    \caption{Question Wordings, Scales, Minimum and Maximum of Outcome Variables}
+    \vspace{4px}
+    \makebox[\textwidth]{%
+    \begin{tabular}{lllcc}
+\hline
 \textbf{Variable }	&	\textbf{Survey question} 	&	\textbf{Scale}	&	\textbf{Min.}	&	\textbf{Max.}		\\	\hline
 Country insecurity  perception	&	In general, in your country, do you feel very safe	&	1. Very unsafe 	&	1	&	4	\\
 	&	somewhat unsafe or very unsafe?	&	2. Somewhat unsafe 	&		&		\\
@@ -521,18 +594,20 @@ Do recreational activities 	&	Finally, thinking about the activities you do in 	
 in the neighborhood	&	this neighborhood, please tell me how many times you:	&	2. Once or twice a year	&	1	&	4	\\
 	&	do recreational activities in the neighborhood	&	3. Once or twice a week	&		&		\\
 	&		&	4. Once a week	&		&		\\\hline
-*Standarized
-\end{tabular}
-\end{tiny}
+    \end{tabular}%
+    }
+    \label{tab:varsdescription}
+    *Standarized
+    \end{tiny}
+\end{table}
 \restoregeometry
 
 
-\newpage The social disorder index was built using three variables: presence of young people loitering, presence of drunk or stoned people in the streets, and presence of people arguing with each other. Each of these variables have the following values: 1 (Very much), 2 (Somewhat), 3 (Little), and 4 (Not at all). In order to construct the index we assume intermediate substitutability among variables and assign the mean value \citep{goertz2006social}.
-
-Citizens' Insertion on their Neighborhood is an index constructed with eight variables grouped in four dimensions. The dimensions are: use of services (education and health) in the neighborhood, contact among neighbors (chat and/or meet for collective action activities), perform recreational activities in the neighborhood, and shopping in the neighborhood. We assume intermediate substitutability among dimensions and assign the mean value. The use of services dimension has two indicators: use of educational services (kindergarten, school,high school) in the neighborhood and use of health services (doctor, hospital) in the neighborhood. We assume total substitutability among the two indicators and assign the maximum value  \citep{goertz2006social}.Contact among neighbors dimension also has two indicators: talk with your neighbors and meets/ organizes with the neighbors for any improvement activity for the neighborhood. We also assume total substitutability among the two indicators and assign the maximum value. Perform recreational activities in the neighborhood is measured by the question: do you perform any recreational activities in the neighborhood? Finally, shopping in the neighborhood is measured by the question: do you purchase in warehouses or stores in the neighborhood? Each indicator is measured using the same scale:1 (Never), 2 (Once or twice a year), 3 (Once or twice a month), and 4 (Once a week).  Citizens' insertion is an index standardized, values go from 0 to 1.
 
 \section{Details of the search for stratification}
 Here we will describe in more detail how we used a full optimal matching algorithm \citep{hansen:2004} to find a stratified comparison between selling and non-selling pharmacies that met the standard of comparing favorably with a hypothetical block-randomized experiment.
+
+\colorbox{yellow}{TO DO}
 
 \section{Threats to Inference: Attrition and Spillovers}
 One problem for this design could be sample attrition. It is possible that some people moved, leaving either the treatment or the control group. In general, moving is not a frequent behavior in Uruguay. Although we do not know for sure how many respondents from the baseline survey moved before the second round, we do know that only 4.33 percent (n=30) of those interviewed in the second round moved after we run the baseline.
